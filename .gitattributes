@@ -1,0 +1,26 @@
+* text=auto eol=lf
+
+# PowerShell reads BOM-less files as ANSI and CRLF is what it expects.
+# These files must also stay pure ASCII — see CLAUDE.md.
+*.ps1   text eol=crlf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.avif  binary
+*.ico   binary
+*.svg   text eol=lf
+*.woff  binary
+*.woff2 binary
+*.otf   binary
+*.ttf   binary
+*.mp4   binary
+*.pdf   binary
+
+pnpm-lock.yaml -diff linguist-generated=true
+
+# The design handoff is read-only source material, not our code.
+design_handoff_charva/** linguist-vendored=true

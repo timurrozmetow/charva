@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+coverage/
+storybook-static/
+playwright-report/
+.turbo/
+.services/
+uploads/
+pnpm-lock.yaml
+
+# The design handoff is read-only source material — never reformat it.
+design_handoff_charva/

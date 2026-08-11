@@ -1,0 +1,12 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# pnpm 10 blocks lifecycle scripts by default. These need theirs: esbuild and unrs-resolver
+# download platform binaries, sharp needs libvips, @node-rs/argon2 a prebuilt NAPI module.
+# Without the allowance they install silently and fail at runtime with a missing binary.
+onlyBuiltDependencies:
+  - esbuild
+  - unrs-resolver
+  - sharp
+  - "@node-rs/argon2"
