@@ -1,0 +1,20 @@
+/*
+ * Global stylesheet for every Charva front-end.
+ *
+ * Phase 1 fills this with the font face declarations, the `data-theme` custom-property blocks
+ * and the Tailwind layers. For now it carries only what the design prototypes' `<helmet>`
+ * blocks establish and every page needs: box sizing, and a reset of the two margins the
+ * prototypes clear by hand.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
