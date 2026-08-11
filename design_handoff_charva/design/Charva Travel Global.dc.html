@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Prata&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="./image-slot.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-style: normal; font-display: swap; }
+
+  html, body { margin: 0; padding: 0; background: #FAF6EF; }
+  a { color: #A9722C; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes gdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#FAF6EF;color:#33261B;min-width:1280px">
+
+  <dc-import name="Charva Nav" active="home" hint-size="100%,96px"></dc-import>
+
+  <div style="position:relative;margin:-78px 0 0;height:88vh;min-height:720px;display:flex;align-items:flex-end;overflow:hidden">
+    <sc-for list="{{ slides }}" as="s" hint-placeholder-count="1">
+      <div style="position:absolute;inset:0;z-index:0;transition:opacity 1200ms cubic-bezier(.4,0,.2,1);opacity:{{ s.opacity }}">
+        <image-slot id="{{ s.slot }}" shape="rect" fit="cover" placeholder="{{ s.photo }}"></image-slot>
+      </div>
+    </sc-for>
+    <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(38,27,18,.94) 0%,rgba(38,27,18,.5) 46%,rgba(38,27,18,.34) 100%)"></div>
+
+    <div style="position:absolute;top:50%;right:60px;z-index:4;transform:translateY(-50%);display:flex;flex-direction:column;gap:14px">
+      <sc-for list="{{ slides }}" as="s" hint-placeholder-count="4">
+        <div onClick="{{ s.go }}" style="display:flex;align-items:center;gap:12px;cursor:pointer;justify-content:flex-end">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;transition:color 300ms,opacity 300ms;color:{{ s.dotFg }};opacity:{{ s.labelOpacity }}">{{ s.label }}</span>
+          <span style="width:{{ s.dotW }};height:3px;border-radius:999px;transition:all 500ms cubic-bezier(.4,0,.2,1);background:{{ s.dotBg }}"></span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="position:relative;z-index:2;width:100%;max-width:1480px;margin:0 auto;padding:0 60px 66px">
+      <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:24px">Charva Travel · Туркменистан</div>
+      <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:82px;line-height:1;letter-spacing:-.02em;color:#FDF9F3;margin:0;max-width:900px;text-wrap:pretty">Земля пустынь, ковров и ахалтекинских коней</h1>
+      <p style="margin:26px 0 0;font-size:19px;line-height:1.6;color:rgba(253,249,243,.76);max-width:560px;font-weight:300">Готовые туры и конструктор, в котором вы сами выбираете города, отель, питание и транспорт.</p>
+
+      <div style="margin-top:44px;display:flex;align-items:stretch;gap:1px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.2);border-radius:20px;overflow:hidden;backdrop-filter:blur(14px);max-width:1000px">
+        <div style="flex:1.2;padding:18px 24px;background:rgba(255,255,255,.9)">
+          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#93806E;font-weight:700;margin-bottom:6px">Направление</div>
+          <div style="font-size:15px;font-weight:600;color:#33261B">Ашхабад · Дарваза</div>
+        </div>
+        <div style="flex:1;padding:18px 24px;background:rgba(255,255,255,.9)">
+          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#93806E;font-weight:700;margin-bottom:6px">Даты</div>
+          <div style="font-size:15px;font-weight:600;color:#33261B">14 — 21 сентября</div>
+        </div>
+        <div style="flex:.8;padding:18px 24px;background:rgba(255,255,255,.9)">
+          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#93806E;font-weight:700;margin-bottom:6px">Гостей</div>
+          <div style="font-size:15px;font-weight:600;color:#33261B">2 гостя</div>
+        </div>
+        <a href="Charva Builder.dc.html" style="display:flex;align-items:center;gap:12px;padding:18px 34px;background:#DFA059;color:#201509;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase" style-hover="background:#33261B;color:#FAF6EF">Подобрать <span>→</span></a>
+      </div>
+    </div>
+  </div>
+
+  <div id="tours" style="max-width:1480px;margin:0 auto;padding:110px 60px 0">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:48px">
+      <div>
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A9722C;font-weight:700;margin-bottom:18px">Популярные туры</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:50px;line-height:1.1;margin:0;letter-spacing:-.015em;max-width:600px">Маршруты, которые выбирают чаще всего</h2>
+      </div>
+      <a href="Charva Tours.dc.html" style="flex-shrink:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #DFA059;padding-bottom:6px;color:#33261B" style-hover="color:#A9722C">Все туры — 32 →</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:26px">
+      <sc-for list="{{ tours }}" as="t" hint-placeholder-count="6">
+        <a href="Charva Tours.dc.html" style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid rgba(90,66,44,.1);border-radius:22px;overflow:hidden;transition:transform 320ms cubic-bezier(.22,.8,.2,1),box-shadow 320ms;text-decoration:none" style-hover="transform:translateY(-6px);box-shadow:0 26px 50px -26px rgba(90,66,44,.34)">
+          <div style="position:relative;height:250px">
+            <image-slot id="{{ t.slot }}" shape="rect" fit="cover" placeholder="{{ t.photo }}"></image-slot>
+            <div style="position:absolute;top:16px;left:16px;z-index:3;background:rgba(255,255,255,.92);color:#33261B;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 13px;border-radius:999px">{{ t.tag }}</div>
+          </div>
+          <div style="padding:26px 26px 28px;display:flex;flex-direction:column;gap:14px;flex:1">
+            <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:23px;line-height:1.25;color:#33261B">{{ t.title }}</div>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#6E594A;font-weight:300;flex:1">{{ t.desc }}</p>
+            <div style="display:flex;gap:16px;font-size:12px;color:#93806E;letter-spacing:.04em;padding-top:6px">
+              <span>{{ t.days }}</span><span>·</span><span>{{ t.cities }}</span><span>·</span><span>{{ t.stars }}</span>
+            </div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid rgba(90,66,44,.11);padding-top:18px;margin-top:4px">
+              <div><span style="font-size:11px;color:#93806E;letter-spacing:.1em;text-transform:uppercase">от </span><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:26px;color:#33261B">{{ t.price }}</span></div>
+              <span style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#A9722C">Подробнее →</span>
+            </div>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+  </div>
+
+  <div id="builder" style="margin-top:120px;background:#33261B;padding:100px 0 110px;color:#FDF9F3">
+    <div style="max-width:1480px;margin:0 auto;padding:0 60px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:52px">
+        <div>
+          <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:18px">Сборщик туров</div>
+          <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:50px;line-height:1.1;margin:0;letter-spacing:-.015em;max-width:640px;color:#FDF9F3">Соберите свой тур за 9 шагов</h2>
+        </div>
+        <p style="margin:0;font-size:15px;line-height:1.7;color:rgba(253,249,243,.6);max-width:340px;font-weight:300">Выбирайте города, отель, питание и транспорт — цена пересчитывается сразу, заявка уходит менеджеру.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:250px 1fr 320px;gap:30px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:14px">
+          <sc-for list="{{ rail }}" as="s" hint-placeholder-count="9">
+            <div onClick="{{ s.go }}" style="display:flex;align-items:center;gap:13px;padding:12px 13px;border-radius:12px;cursor:pointer;transition:background 200ms;background:{{ s.bg }}">
+              <span style="width:25px;height:25px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:{{ s.dotBg }};color:{{ s.dotFg }}">{{ s.num }}</span>
+              <span style="font-size:13px;font-weight:600;line-height:1.3;color:{{ s.fg }}">{{ s.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:24px;padding:36px 36px 30px;min-height:520px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#DFA059;font-weight:700">Шаг {{ stepNum }} из 9</span>
+            <span style="font-size:12px;color:rgba(253,249,243,.5)">{{ stepHint }}</span>
+          </div>
+          <h3 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:33px;margin:6px 0 26px;color:#FDF9F3;font-weight:400">{{ stepTitle }}</h3>
+
+          <sc-if value="{{ showOptions }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1;align-content:start">
+              <sc-for list="{{ options }}" as="o" hint-placeholder-count="6">
+                <div onClick="{{ o.pick }}" style="cursor:pointer;border-radius:16px;padding:20px 18px;transition:all 220ms;display:flex;flex-direction:column;gap:8px;border:1px solid {{ o.bc }};background:{{ o.bg }}">
+                  <span style="font-size:16px;font-weight:700;line-height:1.3;color:{{ o.fg }}">{{ o.name }}</span>
+                  <span style="font-size:12px;line-height:1.5;color:{{ o.subFg }};font-weight:300">{{ o.note }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showForm }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;gap:16px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(253,249,243,.5);font-weight:700">Имя</span><input placeholder="Имя и фамилия" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px 16px;color:#FDF9F3;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" /></div>
+                <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(253,249,243,.5);font-weight:700">Телефон</span><input placeholder="+993 12 456 789" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px 16px;color:#FDF9F3;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" /></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(253,249,243,.5);font-weight:700">Комментарий</span><textarea placeholder="Пожелания по маршруту" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px 16px;color:#FDF9F3;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none;min-height:104px;resize:vertical"></textarea></div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(253,249,243,.55);font-weight:300"><span style="width:16px;height:16px;border:1px solid rgba(255,255,255,.3);border-radius:4px;flex-shrink:0"></span>Согласен на обработку данных</div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,.1)">
+            <div onClick="{{ prev }}" style="cursor:pointer;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(253,249,243,.55)" style-hover="color:#FDF9F3">← Назад</div>
+            <div style="display:flex;align-items:center;gap:22px">
+              <span style="font-size:13px;color:rgba(253,249,243,.5)">{{ progressText }}</span>
+              <div onClick="{{ next }}" style="cursor:pointer;background:#DFA059;color:#201509;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:16px 30px;border-radius:999px;transition:all 250ms" style-hover="background:#F0C48E">{{ nextLabel }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#FAF6EF;border-radius:24px;padding:30px 28px;color:#33261B;position:sticky;top:110px">
+          <div style="font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#A9722C;font-weight:800;margin-bottom:22px">Ваш тур</div>
+          <div style="display:flex;flex-direction:column;gap:0">
+            <sc-for list="{{ summary }}" as="r" hint-placeholder-count="8">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid rgba(90,66,44,.11)">
+                <span style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#93806E;font-weight:700;flex-shrink:0">{{ r.label }}</span>
+                <span style="font-size:13px;font-weight:600;text-align:right;line-height:1.4;color:{{ r.color }}">{{ r.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:24px">
+            <span style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#93806E;font-weight:700">Итого</span>
+            <span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px">{{ total }}</span>
+          </div>
+          <div style="font-size:12px;color:#93806E;margin-top:6px;font-weight:300">{{ totalNote }}</div>
+          <a href="Charva Contact.dc.html" style="display:block;text-align:center;margin-top:22px;background:#33261B;color:#FAF6EF;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:16px;border-radius:999px" style-hover="background:#A9722C;color:#FFF">Отправить заявку</a>
+          <div style="text-align:center;font-size:12px;color:#93806E;margin-top:14px;font-weight:300">Ответим в течение 15 минут</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hotels" style="max-width:1480px;margin:0 auto;padding:110px 60px 0">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:48px">
+      <div>
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A9722C;font-weight:700;margin-bottom:18px">Отели</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:50px;line-height:1.1;margin:0;letter-spacing:-.015em;max-width:560px">От мраморных пятёрок до юрточных лагерей</h2>
+      </div>
+      <a href="Charva Hotels.dc.html" style="flex-shrink:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #DFA059;padding-bottom:6px;color:#33261B" style-hover="color:#A9722C">Все отели — 46 →</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px">
+      <sc-for list="{{ hotels }}" as="h" hint-placeholder-count="4">
+        <a href="Charva Hotels.dc.html" style="display:flex;flex-direction:column;background:#FFF;border:1px solid rgba(90,66,44,.1);border-radius:20px;overflow:hidden;text-decoration:none;transition:box-shadow 300ms" style-hover="box-shadow:0 22px 44px -24px rgba(90,66,44,.32)">
+          <div style="height:190px;position:relative"><image-slot id="{{ h.slot }}" shape="rect" fit="cover" placeholder="{{ h.photo }}"></image-slot></div>
+          <div style="padding:22px 22px 24px;display:flex;flex-direction:column;gap:10px;flex:1">
+            <div style="font-size:13px;letter-spacing:.14em;color:#DFA059">{{ h.stars }}</div>
+            <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:20px;line-height:1.25;color:#33261B">{{ h.name }}</div>
+            <div style="font-size:13px;color:#93806E;font-weight:300;flex:1">{{ h.city }} · {{ h.meta }}</div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid rgba(90,66,44,.11);padding-top:14px"><span style="font-size:12px;color:#93806E">ночь от</span><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:20px">{{ h.price }}</span></div>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+  </div>
+
+  <div id="about" style="max-width:1480px;margin:0 auto;padding:110px 60px 0">
+    <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A9722C;font-weight:700;margin-bottom:18px">Интересное про Туркменистан</div>
+    <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:50px;line-height:1.1;margin:0 0 48px;letter-spacing:-.015em;max-width:620px">Страна, о которой почти ничего не знают</h2>
+    <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:26px">
+      <a href="#" style="position:relative;min-height:470px;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;text-decoration:none">
+        <div style="position:absolute;inset:0;z-index:0"><image-slot id="g-ed-1" shape="rect" fit="cover" placeholder="Крупный кадр: газовый кратер Дарваза, «Врата в ад», ночная съёмка"></image-slot></div>
+        <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(20,14,8,.9),rgba(20,14,8,0) 62%)"></div>
+        <div style="position:relative;z-index:2;padding:38px">
+          <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:14px">Природа · 6 мин чтения</div>
+          <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1.15;color:#FDF9F3;max-width:440px">Дарваза: кратер, который горит с 1971 года</div>
+          <p style="margin:14px 0 0;font-size:15px;line-height:1.6;color:rgba(253,249,243,.72);max-width:420px;font-weight:300">Почему в центре Каракумов уже полвека не гаснет огонь и как туда добраться.</p>
+        </div>
+      </a>
+      <div style="display:grid;grid-template-rows:1fr 1fr;gap:26px">
+        <sc-for list="{{ articles }}" as="a" hint-placeholder-count="2">
+          <a href="#" style="display:grid;grid-template-columns:200px 1fr;background:#FFF;border:1px solid rgba(90,66,44,.1);border-radius:24px;overflow:hidden;text-decoration:none;transition:box-shadow 300ms" style-hover="box-shadow:0 22px 44px -24px rgba(90,66,44,.3)">
+            <div style="position:relative"><image-slot id="{{ a.slot }}" shape="rect" fit="cover" placeholder="{{ a.photo }}"></image-slot></div>
+            <div style="padding:28px;display:flex;flex-direction:column;gap:12px;justify-content:center">
+              <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#A9722C;font-weight:700">{{ a.tag }}</div>
+              <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:24px;line-height:1.2;color:#33261B">{{ a.title }}</div>
+              <p style="margin:0;font-size:14px;line-height:1.6;color:#6E594A;font-weight:300">{{ a.desc }}</p>
+            </div>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div id="gallery" style="max-width:1480px;margin:0 auto;padding:110px 60px 0">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:48px">
+      <div>
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A9722C;font-weight:700;margin-bottom:18px">Галерея</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:50px;line-height:1.1;margin:0;letter-spacing:-.015em">Кадры из наших поездок</h2>
+      </div>
+      <a href="Charva Gallery.dc.html" style="flex-shrink:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #DFA059;padding-bottom:6px;color:#33261B" style-hover="color:#A9722C">Все фото — 248 →</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:210px;gap:16px">
+      <div style="grid-column:span 2;grid-row:span 2;position:relative;border-radius:20px;overflow:hidden"><image-slot id="g-gal-1" shape="rect" fit="cover" placeholder="Ахалтекинский конь, портрет"></image-slot></div>
+      <div style="position:relative;border-radius:20px;overflow:hidden"><image-slot id="g-gal-2" shape="rect" fit="cover" placeholder="Ковровый узор, макро"></image-slot></div>
+      <div style="position:relative;border-radius:20px;overflow:hidden"><image-slot id="g-gal-3" shape="rect" fit="cover" placeholder="Ашхабад, белый мрамор"></image-slot></div>
+      <div style="grid-column:span 2;position:relative;border-radius:20px;overflow:hidden"><image-slot id="g-gal-4" shape="rect" fit="cover" placeholder="Каньон Йангыкала на закате, панорама"></image-slot></div>
+      <div style="position:relative;border-radius:20px;overflow:hidden"><image-slot id="g-gal-5" shape="rect" fit="cover" placeholder="Древний Мерв, руины"></image-slot></div>
+      <div style="position:relative;border-radius:20px;overflow:hidden"><image-slot id="g-gal-6" shape="rect" fit="cover" placeholder="Национальная еда, дограма или плов"></image-slot></div>
+      <div style="grid-column:span 2;position:relative;border-radius:20px;overflow:hidden"><image-slot id="g-gal-7" shape="rect" fit="cover" placeholder="Юрточный лагерь в Каракумах, ночь и звёзды"></image-slot></div>
+      <div style="grid-column:span 2;position:relative;border-radius:20px;overflow:hidden"><image-slot id="g-gal-8" shape="rect" fit="cover" placeholder="Аваза, Каспийское море"></image-slot></div>
+    </div>
+  </div>
+
+  <div id="video" style="margin-top:110px;background:#2C221A;padding:100px 0;color:#FDF9F3">
+    <div style="max-width:1480px;margin:0 auto;padding:0 60px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:48px">
+        <div>
+          <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:18px">Видео</div>
+          <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:50px;line-height:1.1;margin:0;letter-spacing:-.015em;color:#FDF9F3">Смотрите, прежде чем ехать</h2>
+        </div>
+        <a href="Charva Video.dc.html" style="flex-shrink:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #DFA059;padding-bottom:6px;color:#FDF9F3" style-hover="color:#DFA059">Все видео — 18 →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:22px">
+        <div style="position:relative;border-radius:24px;overflow:hidden;min-height:460px">
+          <image-slot id="g-vid-1" shape="rect" fit="cover" placeholder="Обложка видео: тур по Туркменистану, 16:9"></image-slot>
+          <div style="position:absolute;inset:0;z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:center">
+            <span style="width:88px;height:88px;border-radius:50%;background:rgba(223,160,89,.94);color:#201509;display:flex;align-items:center;justify-content:center;font-size:26px;padding-left:6px">▶</span>
+          </div>
+          <div style="position:absolute;bottom:0;left:0;right:0;z-index:2;pointer-events:none;padding:34px;background:linear-gradient(to top,rgba(20,14,8,.9),transparent)">
+            <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:28px;color:#FDF9F3">Туркменистан за 8 дней</div>
+            <div style="font-size:13px;color:rgba(253,249,243,.65);margin-top:8px">14:20 · 26 400 просмотров</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <sc-for list="{{ videos }}" as="v" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:170px 1fr;gap:20px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;cursor:pointer;transition:background 250ms" style-hover="background:rgba(255,255,255,.08)">
+              <div style="position:relative;height:104px;border-radius:12px;overflow:hidden"><image-slot id="{{ v.slot }}" shape="rect" fit="cover" placeholder="{{ v.photo }}"></image-slot></div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font-size:17px;font-weight:700;line-height:1.3;color:#FDF9F3">{{ v.title }}</div>
+                <div style="font-size:12px;color:rgba(253,249,243,.5)">{{ v.meta }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1480px;margin:0 auto;padding:110px 60px 0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px">
+      <div>
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A9722C;font-weight:700;margin-bottom:18px">Информация про Туркменистан</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:44px;line-height:1.12;margin:0 0 34px;letter-spacing:-.015em">Коротко о стране</h2>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ facts }}" as="f" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:190px 1fr;gap:20px;padding:17px 0;border-bottom:1px solid rgba(90,66,44,.13)">
+              <span style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#93806E;font-weight:700">{{ f.k }}</span>
+              <span style="font-size:15px;color:#33261B;line-height:1.5">{{ f.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background:#FFF;border:1px solid rgba(90,66,44,.11);border-radius:26px;padding:44px 40px">
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A9722C;font-weight:700;margin-bottom:18px">Виза</div>
+        <h3 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:32px;line-height:1.15;margin:0 0 10px;font-weight:400">Въезд по визовой поддержке</h3>
+        <p style="margin:0 0 30px;font-size:15px;line-height:1.65;color:#6E594A;font-weight:300">Для большинства стран нужна виза и приглашение от туроператора. Мы оформляем приглашение сами.</p>
+        <div style="display:flex;flex-direction:column;gap:0">
+          <sc-if value="{{ true }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <sc-for list="{{ visa }}" as="v" hint-placeholder-count="4">
+                <div style="display:flex;gap:18px;padding:18px 0;border-top:1px solid rgba(90,66,44,.12)">
+                  <span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:20px;color:#DFA059;flex-shrink:0;width:34px">{{ v.n }}</span>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <span style="font-size:16px;font-weight:700;color:#33261B">{{ v.title }}</span>
+                    <span style="font-size:14px;line-height:1.55;color:#6E594A;font-weight:300">{{ v.desc }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <a href="Charva Contact.dc.html" style="display:inline-flex;margin-top:28px;background:#33261B;color:#FAF6EF;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:16px 28px;border-radius:999px" style-hover="background:#A9722C;color:#FFF">Запросить приглашение</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="reviews" style="max-width:1480px;margin:0 auto;padding:110px 60px 0">
+    <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A9722C;font-weight:700;margin-bottom:18px">Отзывы</div>
+    <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:50px;line-height:1.1;margin:0 0 48px;letter-spacing:-.015em">Что говорят гости</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="3">
+        <div style="background:#FFF;border:1px solid rgba(90,66,44,.1);border-radius:22px;padding:34px 32px;display:flex;flex-direction:column;gap:20px">
+          <div style="font-size:14px;letter-spacing:.16em;color:#DFA059">★★★★★</div>
+          <p style="margin:0;font-size:16px;line-height:1.7;color:#4A382A;font-weight:300;flex:1">{{ r.text }}</p>
+          <div style="display:flex;align-items:center;gap:14px;border-top:1px solid rgba(90,66,44,.11);padding-top:20px">
+            <div style="width:44px;height:44px;flex-shrink:0;border-radius:50%;overflow:hidden;position:relative"><image-slot id="{{ r.slot }}" shape="circle" fit="cover" placeholder="Фото гостя"></image-slot></div>
+            <div style="display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700;color:#33261B">{{ r.name }}</span><span style="font-size:12px;color:#93806E">{{ r.from }}</span></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div id="contact" style="max-width:1480px;margin:110px auto 0;padding:0 60px">
+    <div style="background:#33261B;border-radius:30px;overflow:hidden;display:grid;grid-template-columns:1.1fr 1fr">
+      <div style="min-width:0;padding:64px 56px;color:#FDF9F3">
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:18px">Онлайн-заявка</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:44px;line-height:1.12;margin:0 0 14px;color:#FDF9F3;font-weight:400">Напишите нам — соберём тур вместе</h2>
+        <p style="margin:0 0 34px;font-size:16px;line-height:1.65;color:rgba(253,249,243,.6);font-weight:300;max-width:420px">Оставьте контакты, менеджер свяжется и уточнит детали. Отвечаем на русском, английском и турецком.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <input placeholder="Имя" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:16px 18px;color:#FDF9F3;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+          <input placeholder="+993 12 456 789" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:16px 18px;color:#FDF9F3;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+        </div>
+        <textarea placeholder="Куда хотите поехать?" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:16px 18px;color:#FDF9F3;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none;min-height:110px;resize:vertical"></textarea>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:22px">
+          <a href="#" style="background:#DFA059;color:#201509;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:17px 32px;border-radius:999px" style-hover="background:#F0C48E;color:#201509">Отправить</a>
+          <span style="font-size:13px;color:rgba(253,249,243,.5);font-weight:300">или напишите в WhatsApp: +993 12 456 789</span>
+        </div>
+      </div>
+      <div style="position:relative;min-width:0;overflow:hidden;min-height:480px">
+        <image-slot id="g-contact" shape="rect" fit="cover" placeholder="Фото офиса или гид с группой, вертикальный кадр"></image-slot>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:110px"><dc-import name="Charva Footer" hint-size="100%,460px"></dc-import></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const STEPS = [
+  { id: 'dest', label: 'Направление / города', title: 'Куда хотите поехать?', hint: 'можно выбрать несколько', multi: true, options: [
+    { name: 'Ашхабад', note: 'Белый мрамор, музеи' },
+    { name: 'Дарваза', note: 'Горящий кратер' },
+    { name: 'Мары / Мерв', note: 'Древний Шёлковый путь' },
+    { name: 'Куняургенч', note: 'Наследие ЮНЕСКО' },
+    { name: 'Йангыкала', note: 'Каньоны Каспия' },
+    { name: 'Аваза', note: 'Каспийское море' } ] },
+  { id: 'dates', label: 'Даты и длительность', title: 'Сколько дней в поездке?', hint: 'выберите один вариант', options: [
+    { name: '3 дня', note: 'Короткий визит' },
+    { name: '5 дней', note: 'Классика' },
+    { name: '7 дней', note: 'Города + пустыня' },
+    { name: '10 дней', note: 'Полный круг' },
+    { name: '14 дней', note: 'С Каспием' },
+    { name: 'Свои даты', note: '00.00 — 00.00' } ] },
+  { id: 'hotel', label: 'Отель и звёздность', title: 'Где будете жить?', hint: 'выберите один вариант', options: [
+    { name: '3 ★', note: 'Просто и чисто' },
+    { name: '4 ★', note: 'Комфорт' },
+    { name: '5 ★', note: 'Премиум' },
+    { name: 'Бутик-отель', note: 'Небольшой, с характером' },
+    { name: 'Юрточный лагерь', note: 'Ночь в Каракумах' },
+    { name: 'Смешанно', note: 'По ходу маршрута' } ] },
+  { id: 'food', label: 'Питание', title: 'Что предпочитаете есть?', hint: 'можно выбрать несколько', multi: true, options: [
+    { name: 'Халяль', note: 'Только халяльное' },
+    { name: 'Национальная кухня', note: 'Дограма, плов, чорба' },
+    { name: 'Европейская', note: 'Привычное меню' },
+    { name: 'Вегетарианское', note: 'Без мяса' },
+    { name: 'Без глютена', note: 'Особая диета' },
+    { name: 'Без питания', note: 'Питаюсь сам' } ] },
+  { id: 'transport', label: 'Транспорт', title: 'На чём передвигаемся?', hint: 'выберите один вариант', options: [
+    { name: 'Легковой авто', note: 'До 3 человек' },
+    { name: 'Минивэн', note: 'До 7 человек' },
+    { name: 'Автобус', note: 'Группа' },
+    { name: 'Внедорожник 4×4', note: 'Пустыня и каньоны' },
+    { name: 'Поезд', note: 'Между городами' },
+    { name: 'Внутренний перелёт', note: 'Быстро и дальше' } ] },
+  { id: 'activities', label: 'Активности / экскурсии', title: 'Что хотите посмотреть и сделать?', hint: 'можно выбрать несколько', multi: true, options: [
+    { name: 'Экскурсии по городу', note: 'Гид и памятники' },
+    { name: 'Пустыня и кемпинг', note: 'Ночь под звёздами' },
+    { name: 'Ахалтекинские кони', note: 'Конезавод и катание' },
+    { name: 'Гастротур', note: 'Базары и кухня' },
+    { name: 'Ремёсла и ковры', note: 'Мастерские' },
+    { name: 'Каспий и пляж', note: 'Аваза' } ] },
+  { id: 'people', label: 'Количество человек', title: 'Сколько вас будет?', hint: 'выберите один вариант', options: [
+    { name: '1', note: 'Индивидуально' },
+    { name: '2', note: 'Пара' },
+    { name: '3–5', note: 'Семья' },
+    { name: '6–10', note: 'Небольшая группа' },
+    { name: '10+', note: 'Большая группа' },
+    { name: 'Пока не знаю', note: 'Уточню позже' } ] },
+  { id: 'guide', label: 'Гид и язык гида', title: 'Нужен гид? На каком языке?', hint: 'выберите один вариант', options: [
+    { name: 'Русский', note: 'Rus dilinde' },
+    { name: 'Английский', note: 'English' },
+    { name: 'Турецкий', note: 'Türkçe' },
+    { name: 'Туркменский', note: 'Türkmen dilinde' },
+    { name: 'Несколько языков', note: 'Смешанная группа' },
+    { name: 'Без гида', note: 'Сам разберусь' } ] },
+  { id: 'final', label: 'Цена и онлайн-заявка', title: 'Проверьте тур и оставьте контакты', hint: 'последний шаг', form: true, options: [] }
+];
+
+const SLIDES = [
+  { slot: 'g-hero-1', label: 'Дарваза', photo: 'Газовый кратер Дарваза ночью — широкий кадр 21:9' },
+  { slot: 'g-hero-2', label: 'Йангыкала', photo: 'Каньон Йангыкала на закате — широкий кадр 21:9' },
+  { slot: 'g-hero-3', label: 'Ашхабад', photo: 'Ашхабад, белый мрамор и подсветка ночью — широкий кадр' },
+  { slot: 'g-hero-4', label: 'Мерв', photo: 'Древний Мерв, глинобитные стены на рассвете — широкий кадр' }
+];
+
+class Component extends DCLogic {
+  state = { step: 0, sel: {}, slide: 0, lang: 'RU', langOpen: false };
+
+  componentDidMount() {
+    this.slideTimer = setInterval(() => this.setState(s => ({ slide: (s.slide + 1) % SLIDES.length })), 6500);
+  }
+  componentWillUnmount() { clearInterval(this.slideTimer); }
+
+  pick(stepId, name, multi) {
+    this.setState(s => {
+      const cur = s.sel[stepId];
+      let next;
+      if (multi) {
+        const arr = Array.isArray(cur) ? cur.slice() : [];
+        const i = arr.indexOf(name);
+        if (i >= 0) arr.splice(i, 1); else arr.push(name);
+        next = arr;
+      } else {
+        next = cur === name ? null : name;
+      }
+      return { sel: Object.assign({}, s.sel, { [stepId]: next }) };
+    });
+  }
+
+  isOn(stepId, name) {
+    const v = this.state.sel[stepId];
+    return Array.isArray(v) ? v.indexOf(name) >= 0 : v === name;
+  }
+
+  renderVals() {
+    const i = this.state.step;
+    const st = STEPS[i];
+    const filled = STEPS.filter(s => !s.form).filter(s => {
+      const v = this.state.sel[s.id];
+      return Array.isArray(v) ? v.length > 0 : !!v;
+    }).length;
+
+    const people = this.state.sel.people;
+    const pax = people && /^\d+$/.test(people) ? parseInt(people, 10) : people === '3–5' ? 4 : people === '6–10' ? 8 : people === '10+' ? 12 : 2;
+    const nights = { '3 дня': 3, '5 дней': 5, '7 дней': 7, '10 дней': 10, '14 дней': 14 }[this.state.sel.dates] || 6;
+    const hotelRate = { '3 ★': 46, '4 ★': 78, '5 ★': 145, 'Бутик-отель': 96, 'Юрточный лагерь': 95, 'Смешанно': 88 }[this.state.sel.hotel] || 78;
+    const dests = Array.isArray(this.state.sel.dest) ? this.state.sel.dest.length : 0;
+    const acts = Array.isArray(this.state.sel.activities) ? this.state.sel.activities.length : 0;
+    const perPerson = nights * hotelRate + dests * 60 + acts * 45 + 180;
+    const fmt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' $';
+
+    return {
+      nav: [
+        { href: '#tours', label: 'Туры' },
+        { href: '#builder', label: 'Сборщик туров' },
+        { href: '#hotels', label: 'Отели' },
+        { href: '#about', label: 'Туркменистан' },
+        { href: '#gallery', label: 'Галерея' },
+        { href: '#video', label: 'Видео' },
+        { href: '#reviews', label: 'Отзывы' }
+      ],
+      langOpen: this.state.langOpen,
+      langActive: this.state.lang,
+      langCaret: this.state.langOpen ? 'rotate(180deg)' : 'none',
+      langBtnBg: this.state.langOpen ? 'rgba(223,160,89,.18)' : 'rgba(90,66,44,.05)',
+      langBtnBc: this.state.langOpen ? 'rgba(223,160,89,.5)' : 'rgba(90,66,44,.1)',
+      toggleLang: () => this.setState(s => ({ langOpen: !s.langOpen })),
+      langs: [
+        { code: 'RU', name: 'Русский' },
+        { code: 'EN', name: 'English' },
+        { code: 'TR', name: 'Türkçe' }
+      ].map(l => {
+        const on = this.state.lang === l.code;
+        return {
+          code: l.code, name: l.name,
+          check: on ? '1' : '0',
+          bg: on ? 'rgba(223,160,89,.16)' : 'transparent',
+          fg: on ? '#8A5A22' : '#4A382A',
+          pick: () => this.setState({ lang: l.code, langOpen: false })
+        };
+      }),
+      slides: SLIDES.map((s, n) => {
+        const on = n === this.state.slide;
+        return {
+          slot: s.slot, photo: s.photo, label: s.label,
+          opacity: on ? '1' : '0',
+          labelOpacity: on ? '1' : '.45',
+          dotW: on ? '40px' : '18px',
+          dotBg: on ? '#DFA059' : 'rgba(253,249,243,.4)',
+          dotFg: on ? '#DFA059' : 'rgba(253,249,243,.65)',
+          go: () => this.setState({ slide: n })
+        };
+      }),
+      total: fmt(perPerson * pax),
+      totalNote: 'за ' + pax + ' чел., ' + nights + ' ноч. — включая проживание, транспорт и экскурсии',
+      tours: [
+        { slot: 'g-tour-1', tag: 'Хит', title: 'Классический Туркменистан', desc: 'Ашхабад, Ниса, Мерв и ночь у кратера Дарваза.', days: '8 дней', cities: '5 городов', stars: '4 ★', price: '1 190 $', photo: 'Ашхабад — мраморные здания, широкий кадр' },
+        { slot: 'g-tour-2', tag: 'Пустыня', title: 'Каракумы и Дарваза', desc: 'Внедорожники, юрточный лагерь и горящий кратер.', days: '3 дня', cities: '2 точки', stars: 'Кемп', price: '540 $', photo: 'Кратер Дарваза, огонь в пустыне ночью' },
+        { slot: 'g-tour-3', tag: 'История', title: 'Шёлковый путь: Мерв и Куняургенч', desc: 'Древние города, минареты и мавзолеи ЮНЕСКО.', days: '6 дней', cities: '3 города', stars: '4 ★', price: '870 $', photo: 'Руины Мерва, глинобитные стены' },
+        { slot: 'g-tour-4', tag: 'Природа', title: 'Каньоны Йангыкала', desc: 'Розовые скалы, чинк Устюрта и закат над Каспием.', days: '4 дня', cities: '3 точки', stars: '3 ★', price: '690 $', photo: 'Каньон Йангыкала, розово-оранжевые слои' },
+        { slot: 'g-tour-5', tag: 'Море', title: 'Аваза: Каспий и отдых', desc: 'Пляжи, аквапарки и отели на побережье.', days: '7 дней', cities: '1 город', stars: '5 ★', price: '1 340 $', photo: 'Курорт Аваза, пляж и отели' },
+        { slot: 'g-tour-6', tag: 'Кони', title: 'Ахалтекинские скакуны', desc: 'Конезаводы, выездка и катание по степи.', days: '3 дня', cities: '2 города', stars: '4 ★', price: '620 $', photo: 'Ахалтекинский конь золотистой масти' }
+      ],
+      hotels: [
+        { slot: 'g-hot-1', stars: '★★★★★', name: 'Ýyldyz Hotel', city: 'Ашхабад', meta: 'Центр, бассейн', price: '145 $', photo: 'Лобби мраморного отеля в Ашхабаде' },
+        { slot: 'g-hot-2', stars: '★★★★', name: 'Margush Hotel', city: 'Мары', meta: 'Рядом с Мервом', price: '78 $', photo: 'Номер отеля, современный интерьер' },
+        { slot: 'g-hot-3', stars: '★★★', name: 'Köneürgenç Guest House', city: 'Дашогуз', meta: 'Семейный', price: '46 $', photo: 'Гостевой дом, двор с виноградом' },
+        { slot: 'g-hot-4', stars: 'Юрта', name: 'Garagum Camp', city: 'Каракумы', meta: 'Ночь под звёздами', price: '95 $', photo: 'Юрточный лагерь в пустыне' }
+      ],
+      articles: [
+        { slot: 'g-ed-2', tag: 'Культура', title: 'Ковёр как паспорт страны', desc: 'Как читать туркменские гёли и почему ковёр на флаге.', photo: 'Туркменский ковёр, красный узор' },
+        { slot: 'g-ed-3', tag: 'Кухня', title: 'Что есть в Туркменистане', desc: 'Дограма, чорба, ишлекли и чай в пиалах.', photo: 'Национальные блюда на столе' }
+      ],
+      videos: [
+        { slot: 'g-vid-2', title: 'Ночь у кратера Дарваза', meta: '6:12 · 11 800 просмотров', photo: 'Кадр: огонь кратера' },
+        { slot: 'g-vid-3', title: 'Мерв: город, которого нет', meta: '9:45 · 7 300 просмотров', photo: 'Кадр: древние руины' },
+        { slot: 'g-vid-4', title: 'Кони Ахала', meta: '4:38 · 15 200 просмотров', photo: 'Кадр: конь в движении' }
+      ],
+      facts: [
+        { k: 'Столица', v: 'Ашхабад — город в Книге рекордов по площади белого мрамора' },
+        { k: 'Площадь', v: '491 200 км², около 80% занимают Каракумы' },
+        { k: 'Население', v: 'около 7,1 млн человек' },
+        { k: 'Язык', v: 'туркменский; русский широко распространён' },
+        { k: 'Валюта', v: 'манат (TMT), 1 $ ≈ 3,5 TMT' },
+        { k: 'Лучшее время', v: 'апрель–май и сентябрь–октябрь' },
+        { k: 'Часовой пояс', v: 'UTC+5, без перехода на летнее время' }
+      ],
+      visa: [
+        { n: '01', title: 'Заявка у нас', desc: 'Присылаете скан паспорта и анкету — мы готовим документы.' },
+        { n: '02', title: 'Приглашение', desc: 'Оформляем визовую поддержку, срок 7–10 рабочих дней.' },
+        { n: '03', title: 'Консульство', desc: 'Получаете визу в консульстве или по прилёте в аэропорту.' },
+        { n: '04', title: 'Встреча', desc: 'Встречаем в аэропорту и передаём программу тура.' }
+      ],
+      reviews: [
+        { slot: 'g-rev-1', name: 'Emre Yılmaz', from: 'Стамбул, Турция', text: 'Собрали тур через конструктор за десять минут. Все отели и трансферы совпали с тем, что выбрали на сайте.' },
+        { slot: 'g-rev-2', name: 'Анна Соколова', from: 'Москва, Россия', text: 'Ночь в юрточном лагере у Дарвазы — самое сильное впечатление за последние годы. Гид говорил на русском.' },
+        { slot: 'g-rev-3', name: 'James Whitaker', from: 'Лондон, UK', text: 'Visa support was handled entirely by the team. Merv and Konye-Urgench were worth the whole trip.' }
+      ],
+      stepNum: i + 1,
+      stepTitle: st.title,
+      stepHint: st.hint,
+      showOptions: !st.form,
+      showForm: !!st.form,
+      nextLabel: st.form ? 'Отправить заявку' : 'Далее →',
+      progressText: 'Заполнено ' + filled + ' из 8',
+      prev: () => this.setState(s => ({ step: Math.max(0, s.step - 1) })),
+      next: () => this.setState(s => ({ step: Math.min(STEPS.length - 1, s.step + 1) })),
+      rail: STEPS.map((s, n) => {
+        const active = n === i;
+        const v = this.state.sel[s.id];
+        const done = Array.isArray(v) ? v.length > 0 : !!v;
+        return {
+          num: done && !active ? '✓' : String(n + 1),
+          label: s.label,
+          bg: active ? 'rgba(223,160,89,.16)' : 'transparent',
+          fg: active ? '#FDF9F3' : 'rgba(253,249,243,.6)',
+          dotBg: active ? '#DFA059' : done ? 'rgba(223,160,89,.28)' : 'rgba(255,255,255,.08)',
+          dotFg: active ? '#201509' : done ? '#DFA059' : 'rgba(253,249,243,.55)',
+          go: () => this.setState({ step: n })
+        };
+      }),
+      options: (st.options || []).map(o => {
+        const on = this.isOn(st.id, o.name);
+        return {
+          name: o.name,
+          note: o.note,
+          bc: on ? '#DFA059' : 'rgba(255,255,255,.12)',
+          bg: on ? 'rgba(223,160,89,.16)' : 'rgba(255,255,255,.03)',
+          fg: on ? '#DFA059' : '#FDF9F3',
+          subFg: on ? 'rgba(240,196,142,.8)' : 'rgba(253,249,243,.5)',
+          pick: () => this.pick(st.id, o.name, st.multi)
+        };
+      }),
+      summary: STEPS.filter(s => !s.form).map(s => {
+        const v = this.state.sel[s.id];
+        const val = Array.isArray(v) ? (v.length ? v.join(', ') : null) : v;
+        return {
+          label: s.label.split(' /')[0].split(' и ')[0],
+          value: val || '—',
+          color: val ? '#33261B' : '#B7A695'
+        };
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

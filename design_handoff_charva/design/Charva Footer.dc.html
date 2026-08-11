@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="background:#241C15;color:rgba(253,249,243,.72);padding:76px 0 0;font-family:'Stolzl','Manrope',sans-serif">
+  <div style="max-width:1480px;margin:0 auto;padding:0 60px">
+    <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:50px;padding-bottom:60px;border-bottom:1px solid rgba(255,255,255,.09)">
+      <div style="min-width:0">
+        <img src="assets/logo-mark-sand.png" alt="Charva Travel" style="height:56px;width:auto;margin-bottom:24px" />
+        <p style="margin:0;font-size:14px;line-height:1.7;font-weight:300;max-width:300px;color:rgba(253,249,243,.55)">Charva Travel — туроператор по Туркменистану. Ашхабад, ул. Битарап Туркменистан, 42. Лицензия № TM-1428.</p>
+        <div style="display:flex;gap:10px;margin-top:26px">
+          <sc-for list="{{ socials }}" as="s" hint-placeholder-count="4">
+            <a href="#" style="width:40px;height:40px;border:1px solid rgba(255,255,255,.16);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;text-decoration:none;color:rgba(253,249,243,.7);transition:background 240ms,color 240ms,border-color 240ms" style-hover="background:#DFA059;color:#3A2A18;border-color:#DFA059">{{ s }}</a>
+          </sc-for>
+        </div>
+      </div>
+      <sc-for list="{{ columns }}" as="c" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+          <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#DFA059;font-weight:800;margin-bottom:6px">{{ c.title }}</div>
+          <sc-for list="{{ c.links }}" as="l" hint-placeholder-count="4">
+            <a href="{{ l.href }}" style="font-size:14px;text-decoration:none;color:rgba(253,249,243,.66);transition:color 220ms" style-hover="color:#DFA059">{{ l.label }}</a>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:26px 0 30px;font-size:12px;color:rgba(253,249,243,.4)">
+      <span>© 2026 Charva Travel. Все права защищены.</span>
+      <div style="display:flex;gap:26px">
+        <a href="Charva Choice.dc.html" style="color:rgba(253,249,243,.55);text-decoration:none" style-hover="color:#DFA059">Выбор направления</a>
+        <a href="Charva Umrah.dc.html" style="color:rgba(253,249,243,.55);text-decoration:none" style-hover="color:#DFA059">Charva Umrah →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:460}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      socials: ['IG', 'TG', 'WA', 'YT'],
+      columns: [
+        { title: 'Туры', links: [
+          { label: 'Готовые туры', href: 'Charva Tours.dc.html' },
+          { label: 'Сборщик туров', href: 'Charva Builder.dc.html' },
+          { label: 'Отели', href: 'Charva Hotels.dc.html' },
+          { label: 'Онлайн-заявка', href: 'Charva Contact.dc.html' }
+        ] },
+        { title: 'Туркменистан', links: [
+          { label: 'О стране и виза', href: 'Charva Turkmenistan.dc.html' },
+          { label: 'Галерея', href: 'Charva Gallery.dc.html' },
+          { label: 'Видео', href: 'Charva Video.dc.html' },
+          { label: 'Отзывы', href: 'Charva Reviews.dc.html' }
+        ] },
+        { title: 'Контакты', links: [
+          { label: '+993 12 456 789', href: 'tel:+99312456789' },
+          { label: 'info@charvatravel.com', href: 'mailto:info@charvatravel.com' },
+          { label: 'Пн–Сб, 09:00–18:00', href: 'Charva Contact.dc.html' },
+          { label: 'Ашхабад, Битарап Туркменистан 42', href: 'Charva Contact.dc.html' }
+        ] }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

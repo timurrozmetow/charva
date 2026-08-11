@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #FAF6EF; }
+  a { color: #A9722C; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#FAF6EF;color:#33261B;min-width:1280px">
+  <dc-import name="Charva Nav" active="contact" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#93806E;margin-bottom:26px">
+      <a href="Charva Travel Global.dc.html" style="color:#93806E" style-hover="color:#A9722C">Главная</a>
+      <span>/</span>
+      <span style="color:#4A382A;font-weight:600">Онлайн-заявка</span>
+    </div>
+    <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:64px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:660px;text-wrap:pretty">Напишите нам — соберём тур вместе</h1>
+    <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:#6E594A;font-weight:300;max-width:560px">Отвечаем на русском, английском и турецком в течение 15 минут в рабочее время.</p>
+
+    <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:26px;margin-top:56px">
+      <div style="background:#FFFDFA;border:1px solid rgba(90,66,44,.11);border-radius:28px;padding:46px 44px;min-width:0">
+        <div style="display:flex;gap:8px;margin-bottom:30px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+            <div onClick="{{ t.pick }}" style="cursor:pointer;font-size:13px;font-weight:600;padding:11px 20px;border-radius:999px;transition:all 240ms;border:1px solid {{ t.bc }};background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+            <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93806E;font-weight:700">Имя</span>
+            <input placeholder="Имя и фамилия" style="width:100%;background:#FAF6EF;border:1px solid rgba(90,66,44,.14);border-radius:12px;padding:15px 17px;color:#33261B;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+            <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93806E;font-weight:700">Телефон</span>
+            <input placeholder="+993 12 456 789" style="width:100%;background:#FAF6EF;border:1px solid rgba(90,66,44,.14);border-radius:12px;padding:15px 17px;color:#33261B;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+            <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93806E;font-weight:700">E-mail</span>
+            <input placeholder="you@example.com" style="width:100%;background:#FAF6EF;border:1px solid rgba(90,66,44,.14);border-radius:12px;padding:15px 17px;color:#33261B;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+            <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93806E;font-weight:700">Гостей</span>
+            <input placeholder="2 взрослых" style="width:100%;background:#FAF6EF;border:1px solid rgba(90,66,44,.14);border-radius:12px;padding:15px 17px;color:#33261B;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93806E;font-weight:700">Интересует</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{ topics }}" as="t" hint-placeholder-count="5">
+              <div onClick="{{ t.pick }}" style="cursor:pointer;font-size:13px;font-weight:600;padding:10px 17px;border-radius:999px;transition:all 220ms;border:1px solid {{ t.bc }};background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93806E;font-weight:700">Комментарий</span>
+          <textarea placeholder="Куда хотите поехать, в какие даты и что важно учесть" style="width:100%;background:#FAF6EF;border:1px solid rgba(90,66,44,.14);border-radius:12px;padding:15px 17px;color:#33261B;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none;min-height:130px;resize:vertical"></textarea>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:11px;margin-top:20px;font-size:13px;color:#6E594A;font-weight:300">
+          <span style="width:17px;height:17px;border:1px solid rgba(90,66,44,.28);border-radius:5px;flex-shrink:0"></span>Согласен на обработку персональных данных
+        </div>
+
+        <div style="display:flex;align-items:center;gap:22px;margin-top:26px">
+          <a href="#" style="background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:18px 34px;border-radius:999px;transition:all 260ms" style-hover="background:#33261B;color:#FAF6EF">Отправить заявку</a>
+          <span style="font-size:13px;color:#93806E;font-weight:300">Ответим в течение 15 минут</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:22px;min-width:0">
+        <div style="background:#33261B;border-radius:28px;padding:38px 36px;color:#FDF9F3">
+          <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:800;margin-bottom:24px">Связаться напрямую</div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ contacts }}" as="c" hint-placeholder-count="4">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:15px 0;border-bottom:1px solid rgba(255,255,255,.1)">
+                <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(253,249,243,.5);font-weight:700;flex-shrink:0">{{ c.k }}</span>
+                <span style="font-size:15px;font-weight:500;text-align:right;line-height:1.45;color:#FDF9F3">{{ c.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:26px">
+            <sc-for list="{{ socials }}" as="s" hint-placeholder-count="4">
+              <a href="#" style="width:42px;height:42px;border:1px solid rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:rgba(253,249,243,.75);transition:all 240ms" style-hover="background:#DFA059;color:#3A2A18;border-color:#DFA059">{{ s }}</a>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="position:relative;flex:1;min-height:300px;border-radius:28px;overflow:hidden">
+          <image-slot id="ct-office" shape="rect" fit="cover" placeholder="Фото офиса в Ашхабаде или команда с гостями"></image-slot>
+          <div style="position:absolute;bottom:0;left:0;right:0;z-index:3;pointer-events:none;padding:28px;background:linear-gradient(to top,rgba(38,27,18,.86),transparent)">
+            <div style="font-size:17px;font-weight:600;color:#FDF9F3">Ашхабад, ул. Битарап Туркменистан, 42</div>
+            <div style="font-size:13px;color:rgba(253,249,243,.66);margin-top:6px">Офис работает Пн–Сб, 09:00–18:00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:100px;padding-bottom:110px">
+      <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:40px;line-height:1.14;margin:0 0 40px;letter-spacing:-.015em">Частые вопросы</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <sc-for list="{{ faq }}" as="f" hint-placeholder-count="6">
+          <div onClick="{{ f.toggle }}" style="cursor:pointer;background:#FFFDFA;border:1px solid {{ f.bc }};border-radius:20px;padding:24px 26px;transition:border-color 240ms">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px">
+              <span style="font-size:17px;font-weight:600;color:#33261B;line-height:1.4">{{ f.q }}</span>
+              <span style="font-size:20px;color:#DFA059;flex-shrink:0;line-height:1.1">{{ f.icon }}</span>
+            </div>
+            <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:14px 0 0;font-size:15px;line-height:1.7;color:#6E594A;font-weight:300">{{ f.a }}</p>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <dc-import name="Charva Footer" hint-size="100%,460px"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const TOPICS = ['Готовый тур', 'Свой маршрут', 'Только отель', 'Виза', 'Трансфер'];
+const FAQ = [
+  { q: 'Нужна ли виза в Туркменистан?', a: 'Для большинства стран — да. Мы оформляем визовую поддержку и приглашение, срок 7–10 рабочих дней.' },
+  { q: 'Когда лучше ехать?', a: 'Апрель–май и сентябрь–октябрь: комфортная температура для пустыни и городов.' },
+  { q: 'Можно ли изменить готовый тур?', a: 'Да. Любой маршрут из каталога перестраивается в сборщике — отель, питание, транспорт и даты.' },
+  { q: 'Как оплатить?', a: 'Предоплата 30% для брони отелей, остаток — за 10 дней до заезда. Наличные и банковский перевод.' },
+  { q: 'На каких языках работают гиды?', a: 'Русский, английский, турецкий и туркменский. Язык выбирается в сборщике туров.' },
+  { q: 'Есть ли групповые скидки?', a: 'От 6 человек — скидка на трансфер и гида. Точный расчёт делает менеджер по заявке.' }
+];
+
+class Component extends DCLogic {
+  state = { tab: 'tour', topic: 'Свой маршрут', openFaq: 0 };
+
+  renderVals() {
+    return {
+      tabs: [
+        { key: 'tour', label: 'Заявка на тур' },
+        { key: 'question', label: 'Общий вопрос' }
+      ].map(t => {
+        const on = this.state.tab === t.key;
+        return {
+          label: t.label,
+          bg: on ? '#33261B' : 'transparent',
+          fg: on ? '#FAF6EF' : '#4A382A',
+          bc: on ? '#33261B' : 'rgba(90,66,44,.18)',
+          pick: () => this.setState({ tab: t.key })
+        };
+      }),
+      topics: TOPICS.map(l => {
+        const on = this.state.topic === l;
+        return {
+          label: l,
+          bg: on ? 'rgba(223,160,89,.2)' : 'transparent',
+          fg: on ? '#8A5A22' : '#4A382A',
+          bc: on ? '#DFA059' : 'rgba(90,66,44,.18)',
+          pick: () => this.setState({ topic: l })
+        };
+      }),
+      contacts: [
+        { k: 'Телефон', v: '+993 12 456 789' },
+        { k: 'WhatsApp', v: '+993 65 123 456' },
+        { k: 'E-mail', v: 'info@charvatravel.com' },
+        { k: 'Часы работы', v: 'Пн–Сб, 09:00–18:00' }
+      ],
+      socials: ['IG', 'TG', 'WA', 'YT'],
+      faq: FAQ.map((f, i) => ({
+        q: f.q, a: f.a,
+        open: this.state.openFaq === i,
+        icon: this.state.openFaq === i ? '–' : '+',
+        bc: this.state.openFaq === i ? '#DFA059' : 'rgba(90,66,44,.11)',
+        toggle: () => this.setState(s => ({ openFaq: s.openFaq === i ? -1 : i }))
+      }))
+    };
+  }
+}
+
+</script>
+</body>
+</html>

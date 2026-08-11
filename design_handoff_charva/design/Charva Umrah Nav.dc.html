@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:sticky;top:0;z-index:100;padding:18px 40px 0;display:flex;justify-content:center;font-family:'Stolzl','Manrope',sans-serif">
+  <div style="width:100%;max-width:1440px;display:flex;align-items:center;gap:24px;background:rgba(255,253,250,.88);backdrop-filter:blur(26px) saturate(140%);border:1px solid rgba(34,50,43,.1);box-shadow:0 16px 44px -22px rgba(34,50,43,.3);border-radius:999px;padding:10px 14px 10px 22px">
+    <a href="Charva Umrah.dc.html" style="display:flex;align-items:center;flex-shrink:0;text-decoration:none">
+      <img src="assets/logo-mark-brown.png" alt="Charva Umrah" style="height:36px;width:auto;display:block" />
+    </a>
+    <span style="width:1px;height:26px;background:rgba(34,50,43,.14);flex-shrink:0"></span>
+    <div style="display:flex;align-items:center;justify-content:center;gap:2px;flex:1">
+      <sc-for list="{{ items }}" as="n" hint-placeholder-count="5">
+        <a href="{{ n.href }}" style="font-size:14px;font-weight:{{ n.weight }};padding:10px 15px;border-radius:999px;text-decoration:none;white-space:nowrap;transition:background 240ms,color 240ms;color:{{ n.fg }};background:{{ n.bg }}" style-hover="background:rgba(223,160,89,.18);color:#8A5A22">{{ n.label }}</a>
+      </sc-for>
+    </div>
+    <div style="position:relative;flex-shrink:0">
+      <div onClick="{{ toggleLang }}" style="display:flex;align-items:center;gap:8px;cursor:pointer;background:{{ langBtnBg }};border:1px solid {{ langBtnBc }};border-radius:999px;padding:8px 14px 8px 12px;transition:background 240ms,border-color 240ms">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#55655C" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3c2.6 2.5 2.6 15.5 0 18M12 3c-2.6 2.5-2.6 15.5 0 18"></path></svg>
+        <span style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#2A3A33">{{ langActive }}</span>
+        <span style="font-size:9px;color:#7A8981;transition:transform 300ms cubic-bezier(.3,.9,.2,1);transform:{{ langCaret }}">▾</span>
+      </div>
+      <sc-if value="{{ langOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:calc(100% + 12px);right:0;min-width:188px;background:rgba(255,253,250,.97);backdrop-filter:blur(22px);border:1px solid rgba(34,50,43,.12);box-shadow:0 26px 56px -22px rgba(34,50,43,.4);border-radius:20px;padding:8px;display:flex;flex-direction:column;gap:2px;animation:navdrop 260ms cubic-bezier(.2,.9,.2,1) both">
+          <sc-for list="{{ langs }}" as="l" hint-placeholder-count="2">
+            <div onClick="{{ l.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer;padding:11px 14px;border-radius:13px;transition:background 200ms;background:{{ l.bg }}">
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:13px;font-weight:600;color:{{ l.fg }}">{{ l.name }}</span>
+                <span style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#93A099;font-weight:700">{{ l.code }}</span>
+              </span>
+              <span style="font-size:12px;color:#A8752F;opacity:{{ l.check }}">✓</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+    <a href="Charva Umrah Signup.dc.html" style="flex-shrink:0;display:flex;align-items:center;gap:9px;background:#DFA059;color:#3A2A18;font-size:13px;font-weight:700;letter-spacing:.04em;padding:13px 24px;border-radius:999px;text-decoration:none;white-space:nowrap;box-shadow:0 8px 20px -10px rgba(176,118,43,.7);transition:background 260ms,color 260ms" style-hover="background:#22322B;color:#FFFDFA">Ýazylmak</a>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:120},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;group&quot;,&quot;packages&quot;,&quot;route&quot;,&quot;program&quot;,&quot;media&quot;,&quot;docs&quot;,&quot;signup&quot;],&quot;default&quot;:&quot;group&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const ITEMS = [
+  { key: 'group', label: 'Indiki topar', href: 'Charva Umrah.dc.html' },
+  { key: 'packages', label: 'Paket', href: 'Charva Umrah Packages.dc.html' },
+  { key: 'route', label: 'Ziýarat ýerleri', href: 'Charva Umrah Route.dc.html' },
+  { key: 'program', label: 'Maksatnama', href: 'Charva Umrah Program.dc.html' },
+  { key: 'media', label: 'Suratlar we wideo', href: 'Charva Umrah Media.dc.html' }
+];
+
+class Component extends DCLogic {
+  state = { lang: 'TM', langOpen: false };
+
+  renderVals() {
+    const active = this.props.active;
+    return {
+      items: ITEMS.map(n => {
+        const on = n.key === active;
+        return {
+          label: n.label, href: n.href,
+          weight: on ? '600' : '500',
+          fg: on ? '#8A5A22' : '#2A3A33',
+          bg: on ? 'rgba(223,160,89,.16)' : 'transparent'
+        };
+      }),
+      langOpen: this.state.langOpen,
+      langActive: this.state.lang,
+      langCaret: this.state.langOpen ? 'rotate(180deg)' : 'none',
+      langBtnBg: this.state.langOpen ? 'rgba(223,160,89,.18)' : 'rgba(34,50,43,.05)',
+      langBtnBc: this.state.langOpen ? 'rgba(223,160,89,.5)' : 'rgba(34,50,43,.1)',
+      toggleLang: () => this.setState(s => ({ langOpen: !s.langOpen })),
+      langs: [
+        { code: 'TM', name: 'Türkmen' },
+        { code: 'RU', name: 'Русский' }
+      ].map(l => {
+        const on = this.state.lang === l.code;
+        return {
+          code: l.code, name: l.name,
+          check: on ? '1' : '0',
+          bg: on ? 'rgba(223,160,89,.16)' : 'transparent',
+          fg: on ? '#8A5A22' : '#2A3A33',
+          pick: () => this.setState({ lang: l.code, langOpen: false })
+        };
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

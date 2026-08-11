@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #FAF6EF; }
+  a { color: #A9722C; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#FAF6EF;color:#33261B;min-width:1280px;padding-bottom:110px">
+  <dc-import name="Charva Nav" active="hotels" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#93806E;margin-bottom:26px">
+      <a href="Charva Travel Global.dc.html" style="color:#93806E" style-hover="color:#A9722C">Главная</a>
+      <span>/</span>
+      <span style="color:#4A382A;font-weight:600">Отели</span>
+    </div>
+    <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:64px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:720px;text-wrap:pretty">От мраморных пятёрок до юрточных лагерей</h1>
+    <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:#6E594A;font-weight:300;max-width:560px">46 проверенных вариантов размещения в семи городах и в пустыне. Цены за ночь на двоих.</p>
+
+    <div style="display:flex;align-items:center;gap:9px;margin:52px 0 40px;flex-wrap:wrap;border-top:1px solid rgba(90,66,44,.12);padding-top:30px">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="6">
+        <div onClick="{{ f.pick }}" style="cursor:pointer;font-size:13px;font-weight:600;padding:11px 20px;border-radius:999px;transition:all 240ms;border:1px solid {{ f.bc }};background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</div>
+      </sc-for>
+      <span style="margin-left:auto;font-size:13px;color:#93806E;font-weight:300">Показано {{ shownCount }} из 46</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:26px">
+      <sc-for list="{{ hotels }}" as="h" hint-placeholder-count="9">
+        <a href="#" style="display:flex;flex-direction:column;background:#FFFDFA;border:1px solid rgba(90,66,44,.1);border-radius:22px;overflow:hidden;text-decoration:none;transition:transform 320ms cubic-bezier(.22,.8,.2,1),box-shadow 320ms" style-hover="transform:translateY(-6px);box-shadow:0 26px 50px -26px rgba(90,66,44,.34)">
+          <div style="position:relative;height:220px">
+            <image-slot id="{{ h.slot }}" shape="rect" fit="cover" placeholder="{{ h.photo }}"></image-slot>
+            <div style="position:absolute;top:16px;left:16px;z-index:3;background:rgba(255,253,250,.94);color:#33261B;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 13px;border-radius:999px">{{ h.city }}</div>
+          </div>
+          <div style="padding:24px 26px 26px;display:flex;flex-direction:column;gap:12px;flex:1">
+            <div style="font-size:13px;letter-spacing:.14em;color:#DFA059">{{ h.stars }}</div>
+            <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:22px;line-height:1.22;color:#33261B">{{ h.name }}</div>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#6E594A;font-weight:300;flex:1">{{ h.desc }}</p>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <sc-for list="{{ h.amenities }}" as="a" hint-placeholder-count="3">
+                <span style="font-size:11px;font-weight:600;color:#6E594A;background:rgba(90,66,44,.06);border-radius:999px;padding:6px 12px">{{ a }}</span>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid rgba(90,66,44,.11);padding-top:16px;margin-top:2px">
+              <span style="font-size:12px;color:#93806E">ночь от</span>
+              <span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:24px;color:#33261B">{{ h.price }}</span>
+            </div>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:70px;background:#FFFDFA;border:1px solid rgba(90,66,44,.11);border-radius:30px;padding:50px 52px;display:grid;grid-template-columns:1.2fr auto;gap:50px;align-items:center">
+      <div style="min-width:0">
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1.16;margin:0 0 10px;letter-spacing:-.015em">Отель входит в стоимость тура</h2>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:#6E594A;font-weight:300;max-width:560px">Выберите звёздность в сборщике — мы подберём отель в каждом городе маршрута и пересчитаем цену.</p>
+      </div>
+      <a href="Charva Builder.dc.html" style="flex-shrink:0;display:inline-flex;align-items:center;gap:14px;background:#33261B;color:#FAF6EF;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:19px 34px;border-radius:999px;transition:all 260ms" style-hover="background:#A9722C;color:#FFFDFA;gap:20px">Собрать тур <span>→</span></a>
+    </div>
+  </div>
+
+  <div style="margin-top:110px"><dc-import name="Charva Footer" hint-size="100%,460px"></dc-import></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const HOTELS = [
+  { slot: 'ht-1', stars: '★★★★★', cat: '5 ★', name: 'Ýyldyz Hotel', city: 'Ашхабад', price: '145 $', desc: 'Мраморная высотка с видом на город, спа и панорамный ресторан.', amenities: ['Бассейн', 'Спа', 'Завтрак'], photo: 'Лобби мраморного отеля в Ашхабаде' },
+  { slot: 'ht-2', stars: '★★★★★', cat: '5 ★', name: 'Arkaç Resort', city: 'Аваза', price: '168 $', desc: 'Первая линия Каспия, частный пляж и аквапарк рядом.', amenities: ['Пляж', 'Аквапарк', 'Всё включено'], photo: 'Отель на берегу Каспия, Аваза' },
+  { slot: 'ht-3', stars: '★★★★', cat: '4 ★', name: 'Margush Hotel', city: 'Мары', price: '78 $', desc: 'В 30 минутах от древнего Мерва, тихий двор и своя кухня.', amenities: ['Завтрак', 'Трансфер', 'Wi-Fi'], photo: 'Номер отеля, современный интерьер' },
+  { slot: 'ht-4', stars: '★★★★', cat: '4 ★', name: 'Nusay Hotel', city: 'Ашхабад', price: '92 $', desc: 'Центр, рядом Музей ковра и парк Ынам. Хороший вариант для первой ночи.', amenities: ['Центр', 'Завтрак', 'Паркинг'], photo: 'Фасад отеля в центре Ашхабада' },
+  { slot: 'ht-5', stars: '★★★', cat: '3 ★', name: 'Köneürgenç Guest House', city: 'Дашогуз', price: '46 $', desc: 'Семейный гостевой дом с виноградным двором и домашними завтраками.', amenities: ['Семейный', 'Завтрак'], photo: 'Гостевой дом, двор с виноградом' },
+  { slot: 'ht-6', stars: '★★★', cat: '3 ★', name: 'Balkan Hotel', city: 'Балканабат', price: '52 $', desc: 'Ближайшая база перед выездом в каньоны Йангыкала.', amenities: ['Парковка 4×4', 'Ранний завтрак'], photo: 'Простой отель в Балканабате' },
+  { slot: 'ht-7', stars: 'Юрта', cat: 'Кемп', name: 'Garagum Camp', city: 'Каракумы', price: '95 $', desc: 'Юрты у кратера Дарваза, ужин у костра и полное небо звёзд.', amenities: ['Ужин', 'Костёр', 'Гид'], photo: 'Юрточный лагерь в пустыне' },
+  { slot: 'ht-8', stars: 'Бутик', cat: 'Бутик', name: 'Nisa Boutique', city: 'Геоктепе', price: '96 $', desc: 'Десять номеров в предгорьях Копетдага, авторские интерьеры.', amenities: ['10 номеров', 'Терраса', 'Завтрак'], photo: 'Бутик-отель в предгорьях' },
+  { slot: 'ht-9', stars: '★★★★', cat: '4 ★', name: 'Türkmenbaşy Plaza', city: 'Туркменбаши', price: '84 $', desc: 'Порт и вокзал в шаге, удобно для маршрутов вдоль Каспия.', amenities: ['Порт рядом', 'Wi-Fi', 'Завтрак'], photo: 'Отель у порта Туркменбаши' }
+];
+const CATS = ['Все', '5 ★', '4 ★', '3 ★', 'Бутик', 'Кемп'];
+
+class Component extends DCLogic {
+  state = { cat: 'Все' };
+
+  renderVals() {
+    const list = this.state.cat === 'Все' ? HOTELS : HOTELS.filter(h => h.cat === this.state.cat);
+    return {
+      shownCount: list.length,
+      filters: CATS.map(c => {
+        const on = this.state.cat === c;
+        return {
+          label: c,
+          bg: on ? '#33261B' : 'transparent',
+          fg: on ? '#FAF6EF' : '#4A382A',
+          bc: on ? '#33261B' : 'rgba(90,66,44,.18)',
+          pick: () => this.setState({ cat: c })
+        };
+      }),
+      hotels: list
+    };
+  }
+}
+
+</script>
+</body>
+</html>

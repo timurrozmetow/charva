@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #FAF6EF; }
+  a { color: #A9722C; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#FAF6EF;color:#33261B;min-width:1280px;padding-bottom:110px">
+  <dc-import name="Charva Nav" active="tours" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#93806E;margin-bottom:26px">
+      <a href="Charva Travel Global.dc.html" style="color:#93806E" style-hover="color:#A9722C">Главная</a>
+      <span>/</span>
+      <span style="color:#4A382A;font-weight:600">Туры</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:70px;align-items:end">
+      <div>
+        <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:64px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:660px;text-wrap:pretty">Готовые туры по Туркменистану</h1>
+        <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:#6E594A;font-weight:300;max-width:540px">32 маршрута с фиксированной программой. Любой можно изменить под себя в сборщике туров.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding-bottom:6px">
+        <sc-for list="{{ stats }}" as="s" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1;color:#A9722C">{{ s.v }}</span>
+            <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#93806E;font-weight:700;line-height:1.4">{{ s.l }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:9px;margin:52px 0 40px;flex-wrap:wrap;border-top:1px solid rgba(90,66,44,.12);padding-top:30px">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="7">
+        <div onClick="{{ f.pick }}" style="cursor:pointer;font-size:13px;font-weight:600;letter-spacing:.02em;padding:11px 20px;border-radius:999px;transition:all 240ms;border:1px solid {{ f.bc }};background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</div>
+      </sc-for>
+      <span style="margin-left:auto;font-size:13px;color:#93806E;font-weight:300">Показано {{ shownCount }} из 32</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:26px">
+      <sc-for list="{{ tours }}" as="t" hint-placeholder-count="9">
+        <a href="#" style="display:flex;flex-direction:column;background:#FFFDFA;border:1px solid rgba(90,66,44,.1);border-radius:22px;overflow:hidden;text-decoration:none;transition:transform 320ms cubic-bezier(.22,.8,.2,1),box-shadow 320ms" style-hover="transform:translateY(-6px);box-shadow:0 26px 50px -26px rgba(90,66,44,.34)">
+          <div style="position:relative;height:240px">
+            <image-slot id="{{ t.slot }}" shape="rect" fit="cover" placeholder="{{ t.photo }}"></image-slot>
+            <div style="position:absolute;top:16px;left:16px;z-index:3;background:rgba(255,253,250,.94);color:#33261B;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 13px;border-radius:999px">{{ t.tag }}</div>
+          </div>
+          <div style="padding:26px 26px 28px;display:flex;flex-direction:column;gap:14px;flex:1">
+            <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:23px;line-height:1.25;color:#33261B">{{ t.title }}</div>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#6E594A;font-weight:300;flex:1">{{ t.desc }}</p>
+            <div style="display:flex;gap:14px;font-size:12px;color:#93806E;letter-spacing:.04em">
+              <span>{{ t.days }}</span><span>·</span><span>{{ t.cities }}</span><span>·</span><span>{{ t.stars }}</span>
+            </div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid rgba(90,66,44,.11);padding-top:18px;margin-top:2px">
+              <div><span style="font-size:11px;color:#93806E;letter-spacing:.1em;text-transform:uppercase">от </span><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:26px;color:#33261B">{{ t.price }}</span></div>
+              <span style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#A9722C">Подробнее →</span>
+            </div>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:70px;background:#33261B;border-radius:30px;padding:56px 56px;display:grid;grid-template-columns:1.2fr auto;gap:50px;align-items:center;color:#FDF9F3">
+      <div style="min-width:0">
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:16px">Не нашли нужный маршрут?</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:40px;line-height:1.14;margin:0 0 12px;letter-spacing:-.015em">Соберите тур сами — за 9 шагов</h2>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(253,249,243,.62);font-weight:300;max-width:520px">Города, отель, питание, транспорт и экскурсии на ваш выбор. Цена считается сразу.</p>
+      </div>
+      <a href="Charva Builder.dc.html" style="flex-shrink:0;display:inline-flex;align-items:center;gap:14px;background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:19px 34px;border-radius:999px;transition:all 260ms" style-hover="background:#FDF9F3;gap:20px">Открыть сборщик <span>→</span></a>
+    </div>
+  </div>
+
+  <div style="margin-top:110px"><dc-import name="Charva Footer" hint-size="100%,460px"></dc-import></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const TOURS = [
+  { slot: 'tr-1', tag: 'Хит', cat: 'Классика', title: 'Классический Туркменистан', desc: 'Ашхабад, Ниса, Мерв и ночь у кратера Дарваза.', days: '8 дней', cities: '5 городов', stars: '4 ★', price: '1 190 $', photo: 'Ашхабад — мраморные здания, широкий кадр' },
+  { slot: 'tr-2', tag: 'Пустыня', cat: 'Природа', title: 'Каракумы и Дарваза', desc: 'Внедорожники, юрточный лагерь и горящий кратер.', days: '3 дня', cities: '2 точки', stars: 'Кемп', price: '540 $', photo: 'Кратер Дарваза, огонь в пустыне ночью' },
+  { slot: 'tr-3', tag: 'История', cat: 'История', title: 'Шёлковый путь: Мерв и Куняургенч', desc: 'Древние города, минареты и мавзолеи ЮНЕСКО.', days: '6 дней', cities: '3 города', stars: '4 ★', price: '870 $', photo: 'Руины Мерва, глинобитные стены' },
+  { slot: 'tr-4', tag: 'Природа', cat: 'Природа', title: 'Каньоны Йангыкала', desc: 'Розовые скалы, чинк Устюрта и закат над Каспием.', days: '4 дня', cities: '3 точки', stars: '3 ★', price: '690 $', photo: 'Каньон Йангыкала, розово-оранжевые слои' },
+  { slot: 'tr-5', tag: 'Море', cat: 'Отдых', title: 'Аваза: Каспий и отдых', desc: 'Пляжи, аквапарки и отели на побережье.', days: '7 дней', cities: '1 город', stars: '5 ★', price: '1 340 $', photo: 'Курорт Аваза, пляж и отели' },
+  { slot: 'tr-6', tag: 'Кони', cat: 'Культура', title: 'Ахалтекинские скакуны', desc: 'Конезаводы, выездка и катание по степи.', days: '3 дня', cities: '2 города', stars: '4 ★', price: '620 $', photo: 'Ахалтекинский конь золотистой масти' },
+  { slot: 'tr-7', tag: 'Гастро', cat: 'Культура', title: 'Вкус Туркменистана', desc: 'Базар Толкучка, дограма, ишлекли и чайханы Ашхабада.', days: '4 дня', cities: '2 города', stars: '4 ★', price: '710 $', photo: 'Национальные блюда и базар' },
+  { slot: 'tr-8', tag: 'Ковры', cat: 'Культура', title: 'Ковровые мастерские', desc: 'Музей ковра, мастерские и ткачихи в Геоктепе.', days: '3 дня', cities: '2 города', stars: '4 ★', price: '580 $', photo: 'Туркменский ковёр, красный узор' },
+  { slot: 'tr-9', tag: 'Весь круг', cat: 'Классика', title: 'Большой круг: с севера на юг', desc: 'Куняургенч, Дашогуз, Дарваза, Ашхабад, Мерв и Каспий.', days: '14 дней', cities: '8 городов', stars: '4–5 ★', price: '2 180 $', photo: 'Панорама Каракумов с дороги' }
+];
+const CATS = ['Все', 'Классика', 'Природа', 'История', 'Культура', 'Отдых'];
+
+class Component extends DCLogic {
+  state = { cat: 'Все' };
+
+  renderVals() {
+    const list = this.state.cat === 'Все' ? TOURS : TOURS.filter(t => t.cat === this.state.cat);
+    return {
+      stats: [
+        { v: '32', l: 'Маршрута' },
+        { v: '3–14', l: 'Дней в туре' },
+        { v: '540 $', l: 'Минимальная цена' }
+      ],
+      shownCount: list.length,
+      filters: CATS.map(c => {
+        const on = this.state.cat === c;
+        return {
+          label: c,
+          bg: on ? '#33261B' : 'transparent',
+          fg: on ? '#FAF6EF' : '#4A382A',
+          bc: on ? '#33261B' : 'rgba(90,66,44,.18)',
+          pick: () => this.setState({ cat: c })
+        };
+      }),
+      tours: list
+    };
+  }
+}
+
+</script>
+</body>
+</html>

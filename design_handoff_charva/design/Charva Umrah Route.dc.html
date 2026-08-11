@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #F7F4EE; }
+  a { color: #A8752F; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#F7F4EE;color:#16201C;min-width:1280px">
+  <dc-import name="Charva Umrah Nav" active="route" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#7A8981;margin-bottom:26px">
+      <a href="Charva Umrah.dc.html" style="color:#7A8981" style-hover="color:#A8752F">Baş sahypa</a>
+      <span>/</span>
+      <span style="color:#2A3A33;font-weight:600">Ziýarat ýerleri</span>
+    </div>
+    <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:62px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:680px;text-wrap:pretty">Куда мы пойдём</h1>
+    <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:#55655C;font-weight:300;max-width:600px">Mekge we Medinede ähli esasy ýerlere ziýarat edýäris. Bedir we Uhud — Umra Plus we VIP paketlerinde.</p>
+
+    <div style="display:flex;align-items:center;gap:9px;margin:52px 0 40px;flex-wrap:wrap;border-top:1px solid rgba(34,50,43,.1);padding-top:30px">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+        <div onClick="{{ f.pick }}" style="cursor:pointer;font-size:13px;font-weight:600;padding:11px 20px;border-radius:999px;transition:all 240ms;border:1px solid {{ f.bc }};background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</div>
+      </sc-for>
+      <span style="margin-left:auto;font-size:13px;color:#7A8981;font-weight:300">Görkezildi {{ shownCount }} / 9</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <sc-for list="{{ places }}" as="p" hint-placeholder-count="9">
+        <div style="background:#FFFDFA;border:1px solid rgba(34,50,43,.09);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow 320ms,transform 320ms cubic-bezier(.22,.8,.2,1)" style-hover="box-shadow:0 26px 50px -28px rgba(34,50,43,.34);transform:translateY(-5px)">
+          <div style="height:230px;position:relative">
+            <image-slot id="{{ p.slot }}" shape="rect" fit="cover" placeholder="{{ p.photo }}"></image-slot>
+            <div style="position:absolute;top:16px;left:16px;z-index:3;background:rgba(255,253,250,.94);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 13px;border-radius:999px;color:#16201C">{{ p.city }}</div>
+          </div>
+          <div style="padding:28px 26px 30px;display:flex;flex-direction:column;gap:12px;flex:1">
+            <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:25px;line-height:1.2;color:#16201C">{{ p.name }}</div>
+            <p style="margin:0;font-size:14px;line-height:1.65;color:#55655C;font-weight:300;flex:1">{{ p.desc }}</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(34,50,43,.09);padding-top:16px">
+              <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#A8752F;font-weight:800">{{ p.time }}</span>
+              <span style="font-size:12px;color:#7A8981">{{ p.pack }}</span>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:70px;background:#22322B;border-radius:30px;padding:52px 56px;display:grid;grid-template-columns:1.2fr auto;gap:50px;align-items:center;color:#FCF9F4;margin-bottom:110px">
+      <div style="min-width:0">
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:36px;line-height:1.16;margin:0 0 10px;color:#FCF9F4">Ähli ziýaratlar maksatnamada</h2>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(252,249,244,.62);font-weight:300;max-width:520px">Her günüň takyk tertibini gün-günden maksatnamada görüp bilersiňiz.</p>
+      </div>
+      <a href="Charva Umrah Program.dc.html" style="flex-shrink:0;display:inline-flex;align-items:center;gap:14px;background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:19px 34px;border-radius:999px;transition:all 260ms" style-hover="background:#FCF9F4;gap:20px">Maksatnama <span>→</span></a>
+    </div>
+  </div>
+
+  <dc-import name="Charva Umrah Footer" hint-size="100%,460px"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const PLACES = [
+  { slot: 'ur-1', city: 'Mekge', name: 'Masjid al-Haram', desc: 'Kaba, tawaf we saý. Toparyň esasy ybadat ýeri, ähli günler ýanynda ýaşaýarys.', time: '4 gün', pack: 'Ähli paketde', photo: 'Масджид аль-Харам, Кааба' },
+  { slot: 'ur-2', city: 'Mekge', name: 'Jebel an-Nur · Hira', desc: 'Nur dagy we Hira gowagy — ilkinji wahyýyň gelen ýeri.', time: '3 sagat', pack: 'Ähli paketde', photo: 'Гора Нур, пещера Хира' },
+  { slot: 'ur-3', city: 'Mekge', name: 'Arafat, Mina we Muzdalifa', desc: 'Haj maksatnamasynyň esasy ýerlerine tanyşdyryş gezelenji.', time: '4 sagat', pack: 'Ähli paketde', photo: 'Гора Арафат и Мина' },
+  { slot: 'ur-4', city: 'Medine', name: 'Masjid an-Nabawi', desc: 'Pygamberimiziň metjidi, Rowda we Bakyy gonamçylygyna ziýarat.', time: '3 gün', pack: 'Ähli paketde', photo: 'Масджид ан-Набави, зелёный купол' },
+  { slot: 'ur-5', city: 'Medine', name: 'Uhud dagy', desc: 'Uhud söweşiniň ýeri we şehitler gonamçylygy, taryhy düşündiriş bilen.', time: '3 sagat', pack: 'Plus we VIP', photo: 'Гора Ухуд и кладбище шахидов' },
+  { slot: 'ur-6', city: 'Bedir', name: 'Bedir söweş meýdany', desc: 'Bedir şäherine ýörite gezelenç, söweş meýdany we metjit.', time: '4 sagat', pack: 'Plus we VIP', photo: 'Бадр — поле битвы и мечеть' },
+  { slot: 'ur-7', city: 'Medine', name: 'Kuba metjidi', desc: 'Yslamda ilkinji metjit. Ýörite iki rekagat namaz üçin barýarys.', time: '2 sagat', pack: 'Ähli paketde', photo: 'Мечеть Куба' },
+  { slot: 'ur-8', city: 'Medine', name: 'Kyblateýn metjidi', desc: 'Kybla üýtgän metjit — Medinäniň merkezine ýakyn.', time: '1 sagat', pack: 'Ähli paketde', photo: 'Мечеть Кыблатайн' },
+  { slot: 'ur-9', city: 'Jidda', name: 'Jidda — deňiz kenary', desc: 'Uçuşdan öň erkin wagt: köne şäher Al-Balad we kenar.', time: '3 sagat', pack: 'VIP', photo: 'Джидда, старый город Аль-Балад' }
+];
+const CATS = ['Ählisi', 'Mekge', 'Medine', 'Bedir'];
+
+class Component extends DCLogic {
+  state = { cat: 'Ählisi' };
+
+  renderVals() {
+    const list = this.state.cat === 'Ählisi' ? PLACES : PLACES.filter(p => p.city === this.state.cat);
+    return {
+      shownCount: list.length,
+      filters: CATS.map(c => {
+        const on = this.state.cat === c;
+        return {
+          label: c,
+          bg: on ? '#22322B' : 'transparent',
+          fg: on ? '#F7F4EE' : '#2A3A33',
+          bc: on ? '#22322B' : 'rgba(34,50,43,.18)',
+          pick: () => this.setState({ cat: c })
+        };
+      }),
+      places: list
+    };
+  }
+}
+
+</script>
+</body>
+</html>

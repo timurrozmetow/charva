@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #FAF6EF; }
+  a { color: #A9722C; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#FAF6EF;color:#33261B;min-width:1280px">
+  <dc-import name="Charva Nav" active="reviews" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#93806E;margin-bottom:26px">
+      <a href="Charva Travel Global.dc.html" style="color:#93806E" style-hover="color:#A9722C">Главная</a>
+      <span>/</span>
+      <span style="color:#4A382A;font-weight:600">Отзывы</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:70px;align-items:end">
+      <div>
+        <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:64px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:620px;text-wrap:pretty">Что говорят гости</h1>
+        <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:#6E594A;font-weight:300;max-width:520px">Отзывы после туров 2024–2026 годов. Мы публикуем всё, включая замечания.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding-bottom:6px">
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1;color:#A9722C">4,8</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#93806E;font-weight:700">Средняя оценка</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1;color:#A9722C">214</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#93806E;font-weight:700">Отзывов</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1;color:#A9722C">92%</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#93806E;font-weight:700">Советуют друзьям</span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:9px;margin:52px 0 40px;flex-wrap:wrap;border-top:1px solid rgba(90,66,44,.12);padding-top:30px">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+        <div onClick="{{ f.pick }}" style="cursor:pointer;font-size:13px;font-weight:600;padding:11px 20px;border-radius:999px;transition:all 240ms;border:1px solid {{ f.bc }};background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</div>
+      </sc-for>
+      <span style="margin-left:auto;font-size:13px;color:#93806E;font-weight:300">Показано {{ shownCount }} из 214</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="9">
+        <div style="background:#FFFDFA;border:1px solid rgba(90,66,44,.1);border-radius:22px;padding:32px 30px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:14px;letter-spacing:.16em;color:#DFA059">{{ r.stars }}</span>
+            <span style="font-size:12px;color:#93806E">{{ r.date }}</span>
+          </div>
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A9722C;font-weight:700">{{ r.tour }}</span>
+          <p style="margin:0;font-size:15px;line-height:1.7;color:#4A382A;font-weight:300;flex:1">{{ r.text }}</p>
+          <div style="display:flex;align-items:center;gap:14px;border-top:1px solid rgba(90,66,44,.11);padding-top:18px">
+            <div style="width:44px;height:44px;flex-shrink:0;border-radius:50%;overflow:hidden;position:relative"><image-slot id="{{ r.slot }}" shape="circle" fit="cover" placeholder="Фото гостя"></image-slot></div>
+            <div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:15px;font-weight:600;color:#33261B">{{ r.name }}</span><span style="font-size:12px;color:#93806E">{{ r.from }}</span></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:70px;background:#33261B;border-radius:30px;padding:52px 56px;display:grid;grid-template-columns:1.2fr auto;gap:50px;align-items:center;color:#FDF9F3;margin-bottom:110px">
+      <div style="min-width:0">
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:36px;line-height:1.16;margin:0 0 10px">Были с нами в туре?</h2>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(253,249,243,.62);font-weight:300;max-width:520px">Оставьте отзыв — он помогает следующим гостям выбрать маршрут.</p>
+      </div>
+      <a href="Charva Contact.dc.html" style="flex-shrink:0;display:inline-flex;align-items:center;gap:14px;background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:19px 34px;border-radius:999px;transition:all 260ms" style-hover="background:#FDF9F3;gap:20px">Написать отзыв <span>→</span></a>
+    </div>
+  </div>
+
+  <dc-import name="Charva Footer" hint-size="100%,460px"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const REVIEWS = [
+  { slot: 'rv-1', stars: '★★★★★', rate: 5, date: 'Май 2026', tour: 'Классический Туркменистан', name: 'Emre Yılmaz', from: 'Стамбул, Турция', text: 'Собрали тур через конструктор за десять минут. Все отели и трансферы совпали с тем, что выбрали на сайте.' },
+  { slot: 'rv-2', stars: '★★★★★', rate: 5, date: 'Апрель 2026', tour: 'Каракумы и Дарваза', name: 'Анна Соколова', from: 'Москва, Россия', text: 'Ночь в юрточном лагере у Дарвазы — самое сильное впечатление за последние годы. Гид говорил на русском и знал всё про кратер.' },
+  { slot: 'rv-3', stars: '★★★★★', rate: 5, date: 'Март 2026', tour: 'Шёлковый путь', name: 'James Whitaker', from: 'Лондон, Великобритания', text: 'Visa support was handled entirely by the team. Merv and Konye-Urgench were worth the whole trip.' },
+  { slot: 'rv-4', stars: '★★★★★', rate: 5, date: 'Октябрь 2025', tour: 'Каньоны Йангыкала', name: 'Мурад Аннаев', from: 'Ашхабад, Туркменистан', text: 'Ездил с семьёй на выходные. Внедорожник, вода, обед в дороге — всё продумано. Закат в каньонах невероятный.' },
+  { slot: 'rv-5', stars: '★★★★☆', rate: 4, date: 'Сентябрь 2025', tour: 'Аваза: Каспий и отдых', name: 'Ayşe Demir', from: 'Анкара, Турция', text: 'Отель отличный, пляж чистый. Единственное — трансфер из аэропорта задержался на час, но менеджер сразу предупредил.' },
+  { slot: 'rv-6', stars: '★★★★★', rate: 5, date: 'Сентябрь 2025', tour: 'Ахалтекинские скакуны', name: 'Дмитрий Орлов', from: 'Алматы, Казахстан', text: 'Ехал ради коней и не пожалел. Конезавод, катание, разговоры с тренерами — программа плотная, но не утомительная.' },
+  { slot: 'rv-7', stars: '★★★★★', rate: 5, date: 'Июнь 2025', tour: 'Вкус Туркменистана', name: 'Sofia Marino', from: 'Милан, Италия', text: 'The food tour was a discovery. Dogroma, ishlekli, and green tea in the chaikhana — I still think about it.' },
+  { slot: 'rv-8', stars: '★★★★☆', rate: 4, date: 'Май 2025', tour: 'Большой круг', name: 'Оксана Ким', from: 'Ташкент, Узбекистан', text: 'Четырнадцать дней — насыщенно. Хотелось бы один свободный день в середине, в остальном организация на высоте.' },
+  { slot: 'rv-9', stars: '★★★★★', rate: 5, date: 'Апрель 2025', tour: 'Ковровые мастерские', name: 'Merve Kaya', from: 'Измир, Турция', text: 'Музей ковра и мастерские в Геоктепе — то, за чем стоит ехать. Гид объяснила значение каждого гёля.' }
+];
+const CATS = [
+  { key: 'all', label: 'Все отзывы' },
+  { key: '5', label: 'Только 5 звёзд' },
+  { key: '4', label: '4 звезды' },
+  { key: 'new', label: 'Сначала новые' }
+];
+
+class Component extends DCLogic {
+  state = { cat: 'all' };
+
+  renderVals() {
+    let list = REVIEWS.slice();
+    if (this.state.cat === '5') list = list.filter(r => r.rate === 5);
+    if (this.state.cat === '4') list = list.filter(r => r.rate === 4);
+    return {
+      shownCount: list.length,
+      filters: CATS.map(c => {
+        const on = this.state.cat === c.key;
+        return {
+          label: c.label,
+          bg: on ? '#33261B' : 'transparent',
+          fg: on ? '#FAF6EF' : '#4A382A',
+          bc: on ? '#33261B' : 'rgba(90,66,44,.18)',
+          pick: () => this.setState({ cat: c.key })
+        };
+      }),
+      reviews: list
+    };
+  }
+}
+
+</script>
+</body>
+</html>

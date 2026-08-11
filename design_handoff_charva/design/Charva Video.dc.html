@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #2C221A; }
+  a { color: #DFA059; text-decoration: none; }
+  a:hover { color: #F0C48E; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#2C221A;color:#FDF9F3;min-width:1280px">
+  <dc-import name="Charva Nav" active="video" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(253,249,243,.5);margin-bottom:26px">
+      <a href="Charva Travel Global.dc.html" style="color:rgba(253,249,243,.5)" style-hover="color:#DFA059">Главная</a>
+      <span>/</span>
+      <span style="color:#FDF9F3;font-weight:600">Видео</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:60px">
+      <div>
+        <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:64px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:640px;color:#FDF9F3;text-wrap:pretty">Смотрите, прежде чем ехать</h1>
+        <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:rgba(253,249,243,.62);font-weight:300;max-width:520px">18 видео из туров: маршруты, отели, кухня и дорога через Каракумы.</p>
+      </div>
+      <span style="flex-shrink:0;font-size:13px;color:rgba(253,249,243,.5);font-weight:300;padding-bottom:8px">Всего 18 видео</span>
+    </div>
+
+    <div style="margin-top:52px;position:relative;border-radius:26px;overflow:hidden;height:560px">
+      <image-slot id="vd-hero" shape="rect" fit="cover" placeholder="Обложка главного видео: тур по Туркменистану, 16:9"></image-slot>
+      <div style="position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(20,14,8,.9) 0%,rgba(20,14,8,.15) 60%)"></div>
+      <div style="position:absolute;inset:0;z-index:3;pointer-events:none;display:flex;align-items:center;justify-content:center">
+        <span style="width:96px;height:96px;border-radius:50%;background:rgba(223,160,89,.94);color:#3A2A18;display:flex;align-items:center;justify-content:center;font-size:28px;padding-left:6px">▶</span>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;z-index:4;pointer-events:none;padding:44px">
+        <div style="font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#DFA059;font-weight:800;margin-bottom:12px">Смотреть первым</div>
+        <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:38px;color:#FDF9F3;line-height:1.15;max-width:660px">Туркменистан за 8 дней</div>
+        <div style="font-size:13px;color:rgba(253,249,243,.65);margin-top:10px">14:20 · 26 400 просмотров</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:24px">
+      <sc-for list="{{ videos }}" as="v" hint-placeholder-count="6">
+        <div style="cursor:pointer;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:22px;overflow:hidden;transition:background 260ms,transform 320ms cubic-bezier(.22,.8,.2,1)" style-hover="background:rgba(255,255,255,.08);transform:translateY(-5px)">
+          <div style="position:relative;height:210px">
+            <image-slot id="{{ v.slot }}" shape="rect" fit="cover" placeholder="{{ v.photo }}"></image-slot>
+            <div style="position:absolute;inset:0;z-index:3;pointer-events:none;display:flex;align-items:center;justify-content:center">
+              <span style="width:56px;height:56px;border-radius:50%;background:rgba(223,160,89,.92);color:#3A2A18;display:flex;align-items:center;justify-content:center;font-size:17px;padding-left:4px">▶</span>
+            </div>
+            <div style="position:absolute;bottom:12px;right:12px;z-index:3;background:rgba(20,14,8,.8);color:#FDF9F3;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px">{{ v.dur }}</div>
+          </div>
+          <div style="padding:22px 24px 24px;display:flex;flex-direction:column;gap:9px">
+            <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#DFA059;font-weight:700">{{ v.tag }}</div>
+            <div style="font-size:19px;font-weight:600;line-height:1.28;color:#FDF9F3">{{ v.title }}</div>
+            <div style="font-size:12px;color:rgba(253,249,243,.5)">{{ v.views }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:70px;padding:52px 0 0;border-top:1px solid rgba(255,255,255,.1);display:grid;grid-template-columns:1.2fr auto;gap:50px;align-items:center;padding-bottom:100px">
+      <div style="min-width:0">
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:36px;line-height:1.16;margin:0 0 10px;color:#FDF9F3">Хотите так же?</h2>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(253,249,243,.6);font-weight:300;max-width:520px">Соберите маршрут из тех мест, что увидели в видео — цена посчитается сразу.</p>
+      </div>
+      <a href="Charva Builder.dc.html" style="flex-shrink:0;display:inline-flex;align-items:center;gap:14px;background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:19px 34px;border-radius:999px;transition:all 260ms" style-hover="background:#FDF9F3;gap:20px">Собрать тур <span>→</span></a>
+    </div>
+  </div>
+
+  <dc-import name="Charva Footer" hint-size="100%,460px"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      videos: [
+        { slot: 'vd-1', tag: 'Пустыня', title: 'Ночь у кратера Дарваза', dur: '6:12', views: '11 800 просмотров', photo: 'Кадр: огонь кратера в пустыне' },
+        { slot: 'vd-2', tag: 'История', title: 'Мерв: город, которого нет', dur: '9:45', views: '7 300 просмотров', photo: 'Кадр: древние руины Мерва' },
+        { slot: 'vd-3', tag: 'Кони', title: 'Кони Ахала', dur: '4:38', views: '15 200 просмотров', photo: 'Кадр: ахалтекинский конь в движении' },
+        { slot: 'vd-4', tag: 'Города', title: 'Ашхабад: город из мрамора', dur: '7:04', views: '9 100 просмотров', photo: 'Кадр: панорама Ашхабада' },
+        { slot: 'vd-5', tag: 'Природа', title: 'Дорога на Йангыкала', dur: '11:20', views: '5 600 просмотров', photo: 'Кадр: внедорожник в каньонах' },
+        { slot: 'vd-6', tag: 'Кухня', title: 'Дограма и чайхана', dur: '5:47', views: '6 400 просмотров', photo: 'Кадр: приготовление дограмы' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

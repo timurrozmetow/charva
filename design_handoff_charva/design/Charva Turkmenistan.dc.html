@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #FAF6EF; }
+  a { color: #A9722C; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#FAF6EF;color:#33261B;min-width:1280px">
+  <dc-import name="Charva Nav" active="about" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#93806E;margin-bottom:26px">
+      <a href="Charva Travel Global.dc.html" style="color:#93806E" style-hover="color:#A9722C">Главная</a>
+      <span>/</span>
+      <span style="color:#4A382A;font-weight:600">Туркменистан</span>
+    </div>
+    <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:64px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:700px;text-wrap:pretty">Страна, о которой почти ничего не знают</h1>
+    <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:#6E594A;font-weight:300;max-width:580px">Восемьдесят процентов территории — пустыня Каракумы, два объекта ЮНЕСКО, свои кони, ковры и кухня.</p>
+
+    <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:26px;margin-top:56px">
+      <a href="#" style="position:relative;min-height:470px;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;text-decoration:none">
+        <div style="position:absolute;inset:0;z-index:0"><image-slot id="tk-ed-1" shape="rect" fit="cover" placeholder="Крупный кадр: газовый кратер Дарваза, «Врата в ад», ночная съёмка"></image-slot></div>
+        <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(38,27,18,.92),rgba(38,27,18,0) 62%)"></div>
+        <div style="position:relative;z-index:2;padding:38px">
+          <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:14px">Природа · 6 мин чтения</div>
+          <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1.15;color:#FDF9F3;max-width:440px">Дарваза: кратер, который горит с 1971 года</div>
+          <p style="margin:14px 0 0;font-size:15px;line-height:1.6;color:rgba(253,249,243,.72);max-width:420px;font-weight:300">Почему в центре Каракумов уже полвека не гаснет огонь и как туда добраться.</p>
+        </div>
+      </a>
+      <div style="display:grid;grid-template-rows:1fr 1fr;gap:26px">
+        <sc-for list="{{ articles }}" as="a" hint-placeholder-count="2">
+          <a href="#" style="display:grid;grid-template-columns:200px 1fr;background:#FFFDFA;border:1px solid rgba(90,66,44,.1);border-radius:24px;overflow:hidden;text-decoration:none;transition:box-shadow 300ms" style-hover="box-shadow:0 22px 44px -24px rgba(90,66,44,.3)">
+            <div style="position:relative;min-width:0"><image-slot id="{{ a.slot }}" shape="rect" fit="cover" placeholder="{{ a.photo }}"></image-slot></div>
+            <div style="padding:28px;display:flex;flex-direction:column;gap:12px;justify-content:center;min-width:0">
+              <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#A9722C;font-weight:700">{{ a.tag }}</div>
+              <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:24px;line-height:1.2;color:#33261B">{{ a.title }}</div>
+              <p style="margin:0;font-size:14px;line-height:1.6;color:#6E594A;font-weight:300">{{ a.desc }}</p>
+            </div>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:100px">
+      <div>
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A9722C;font-weight:700;margin-bottom:18px">Информация</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:44px;line-height:1.12;margin:0 0 34px;letter-spacing:-.015em">Коротко о стране</h2>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ facts }}" as="f" hint-placeholder-count="7">
+            <div style="display:grid;grid-template-columns:190px 1fr;gap:20px;padding:17px 0;border-bottom:1px solid rgba(90,66,44,.13)">
+              <span style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#93806E;font-weight:700">{{ f.k }}</span>
+              <span style="font-size:15px;color:#33261B;line-height:1.5">{{ f.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background:#FFFDFA;border:1px solid rgba(90,66,44,.11);border-radius:26px;padding:44px 40px;height:fit-content">
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A9722C;font-weight:700;margin-bottom:18px">Виза</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:32px;line-height:1.15;margin:0 0 10px">Въезд по визовой поддержке</h2>
+        <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#6E594A;font-weight:300">Для большинства стран нужна виза и приглашение от туроператора. Приглашение оформляем мы.</p>
+        <sc-for list="{{ visa }}" as="v" hint-placeholder-count="4">
+          <div style="display:flex;gap:18px;padding:18px 0;border-top:1px solid rgba(90,66,44,.12)">
+            <span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:20px;color:#DFA059;flex-shrink:0;width:34px">{{ v.n }}</span>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:16px;font-weight:600;color:#33261B">{{ v.title }}</span>
+              <span style="font-size:14px;line-height:1.55;color:#6E594A;font-weight:300">{{ v.desc }}</span>
+            </div>
+          </div>
+        </sc-for>
+        <a href="Charva Contact.dc.html" style="display:inline-flex;margin-top:28px;background:#33261B;color:#FAF6EF;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:16px 28px;border-radius:999px" style-hover="background:#A9722C;color:#FFFDFA">Запросить приглашение</a>
+      </div>
+    </div>
+
+    <div style="margin-top:100px">
+      <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:44px;line-height:1.12;margin:0 0 40px;letter-spacing:-.015em">Что стоит увидеть</h2>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+        <sc-for list="{{ places }}" as="p" hint-placeholder-count="6">
+          <div style="background:#FFFDFA;border:1px solid rgba(90,66,44,.1);border-radius:22px;overflow:hidden;display:flex;flex-direction:column">
+            <div style="height:200px;position:relative"><image-slot id="{{ p.slot }}" shape="rect" fit="cover" placeholder="{{ p.photo }}"></image-slot></div>
+            <div style="padding:26px;display:flex;flex-direction:column;gap:10px;flex:1">
+              <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#A9722C;font-weight:700">{{ p.region }}</div>
+              <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:22px;line-height:1.22;color:#33261B">{{ p.name }}</div>
+              <p style="margin:0;font-size:14px;line-height:1.6;color:#6E594A;font-weight:300;flex:1">{{ p.desc }}</p>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:110px"><dc-import name="Charva Footer" hint-size="100%,460px"></dc-import></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      articles: [
+        { slot: 'tk-ed-2', tag: 'Культура', title: 'Ковёр как паспорт страны', desc: 'Как читать туркменские гёли и почему ковёр на флаге.', photo: 'Туркменский ковёр, красный узор' },
+        { slot: 'tk-ed-3', tag: 'Кухня', title: 'Что есть в Туркменистане', desc: 'Дограма, чорба, ишлекли и чай в пиалах.', photo: 'Национальные блюда на столе' }
+      ],
+      facts: [
+        { k: 'Столица', v: 'Ашхабад — город в Книге рекордов по площади белого мрамора' },
+        { k: 'Площадь', v: '491 200 км², около 80% занимают Каракумы' },
+        { k: 'Население', v: 'около 7,1 млн человек' },
+        { k: 'Язык', v: 'туркменский; русский широко распространён' },
+        { k: 'Валюта', v: 'манат (TMT), 1 $ ≈ 3,5 TMT' },
+        { k: 'Лучшее время', v: 'апрель–май и сентябрь–октябрь' },
+        { k: 'Часовой пояс', v: 'UTC+5, без перехода на летнее время' },
+        { k: 'Наследие ЮНЕСКО', v: 'Мерв, Куняургенч и Ниса' }
+      ],
+      visa: [
+        { n: '01', title: 'Заявка у нас', desc: 'Присылаете скан паспорта и анкету — мы готовим документы.' },
+        { n: '02', title: 'Приглашение', desc: 'Оформляем визовую поддержку, срок 7–10 рабочих дней.' },
+        { n: '03', title: 'Консульство', desc: 'Получаете визу в консульстве или по прилёте в аэропорту.' },
+        { n: '04', title: 'Встреча', desc: 'Встречаем в аэропорту и передаём программу тура.' }
+      ],
+      places: [
+        { slot: 'tk-p1', region: 'Ахал', name: 'Ашхабад', desc: 'Белый мрамор, фонтаны и Музей ковра. Отсюда начинается любой маршрут.', photo: 'Ашхабад, мраморные здания днём' },
+        { slot: 'tk-p2', region: 'Каракумы', name: 'Кратер Дарваза', desc: 'Горящая воронка в песках, ночёвка в юрточном лагере рядом.', photo: 'Кратер Дарваза ночью' },
+        { slot: 'tk-p3', region: 'Мары', name: 'Древний Мерв', desc: 'Один из крупнейших городов Шёлкового пути, наследие ЮНЕСКО.', photo: 'Руины Мерва' },
+        { slot: 'tk-p4', region: 'Дашогуз', name: 'Куняургенч', desc: 'Минарет Кутлуг-Тимура и мавзолеи XII–XIV веков.', photo: 'Минарет Куняургенча' },
+        { slot: 'tk-p5', region: 'Балкан', name: 'Каньоны Йангыкала', desc: 'Розово-оранжевые слои древнего моря на закате.', photo: 'Каньон Йангыкала' },
+        { slot: 'tk-p6', region: 'Каспий', name: 'Аваза', desc: 'Курортная зона на Каспии: пляжи, отели и аквапарки.', photo: 'Курорт Аваза' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

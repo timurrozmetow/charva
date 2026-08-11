@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #F7F4EE; }
+  a { color: #A8752F; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes upulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#F7F4EE;color:#16201C;min-width:1280px">
+  <dc-import name="Charva Umrah Nav" active="group" hint-size="100%,96px"></dc-import>
+
+  <div style="position:relative;margin:-78px 0 0;min-height:100vh;display:flex;align-items:center;overflow:hidden;background:#0E1714">
+    <sc-for list="{{ slides }}" as="s" hint-placeholder-count="1">
+      <div style="position:absolute;inset:0;z-index:0;transition:opacity 1200ms cubic-bezier(.4,0,.2,1);opacity:{{ s.opacity }}">
+        <image-slot id="{{ s.slot }}" shape="rect" fit="cover" placeholder="{{ s.photo }}"></image-slot>
+      </div>
+    </sc-for>
+    <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(105deg,rgba(14,23,20,.96) 0%,rgba(14,23,20,.84) 46%,rgba(14,23,20,.42) 100%)"></div>
+
+    <div style="position:relative;z-index:2;width:100%;max-width:1480px;margin:0 auto;padding:130px 60px 80px;display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center">
+      <div style="min-width:0">
+        <div style="display:inline-flex;align-items:center;gap:10px;background:rgba(223,160,89,.14);border:1px solid rgba(223,160,89,.4);border-radius:999px;padding:9px 18px;margin-bottom:30px">
+          <span style="width:7px;height:7px;border-radius:50%;background:#DFA059;animation:upulse 2s ease-in-out infinite"></span>
+          <span style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#DFA059;font-weight:800">Indiki topar · {{ departDate }}</span>
+        </div>
+        <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:72px;line-height:1.02;letter-spacing:-.02em;color:#FCF9F4;margin:0;max-width:640px;text-wrap:pretty">Umra ziýaraty — türkmen topary bilen</h1>
+        <p style="margin:26px 0 0;font-size:19px;line-height:1.65;color:rgba(252,249,244,.72);max-width:520px;font-weight:300">Tejribeli ýolbaşçy, türkmen dilinde düşündiriş, Mekge we Medine, Bedir we Uhud ziýaratlary. Ähli resminamalary biz taýýarlaýarys.</p>
+        <div style="display:flex;gap:16px;margin-top:40px">
+          <a href="Charva Umrah Signup.dc.html" style="background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:18px 32px;border-radius:999px;transition:all 260ms" style-hover="background:#FCF9F4;color:#3A2A18">Topara ýazylmak</a>
+          <a href="Charva Umrah Packages.dc.html" style="border:1px solid rgba(252,249,244,.28);color:#FCF9F4;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:18px 32px;border-radius:999px;transition:all 260ms" style-hover="background:rgba(252,249,244,.12);color:#FCF9F4">Paketi görmek</a>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:38px">
+          <sc-for list="{{ slides }}" as="s" hint-placeholder-count="3">
+            <div onClick="{{ s.go }}" style="cursor:pointer;display:flex;align-items:center;gap:9px">
+              <span style="width:{{ s.dotW }};height:3px;border-radius:999px;transition:all 500ms cubic-bezier(.4,0,.2,1);background:{{ s.dotBg }}"></span>
+              <span style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:{{ s.dotFg }}">{{ s.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:rgba(252,249,244,.06);border:1px solid rgba(252,249,244,.14);backdrop-filter:blur(20px);border-radius:28px;padding:38px 36px 34px;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:26px">
+          <span style="font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#DFA059;font-weight:800">Ugramaga galdy</span>
+          <span style="font-size:12px;color:rgba(252,249,244,.55)">{{ departDate }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <sc-for list="{{ clock }}" as="c" hint-placeholder-count="4">
+            <div style="background:rgba(252,249,244,.05);border:1px solid rgba(252,249,244,.1);border-radius:18px;padding:18px 10px;text-align:center">
+              <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:42px;line-height:1;color:#FCF9F4;letter-spacing:-.02em">{{ c.v }}</div>
+              <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(252,249,244,.5);margin-top:10px;font-weight:700">{{ c.l }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:30px;padding-top:28px;border-top:1px solid rgba(252,249,244,.12)">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+            <span style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(252,249,244,.6);font-weight:700">Topar doldy</span>
+            <span style="font-size:14px;color:#FCF9F4;font-weight:700">33 / 45 adam</span>
+          </div>
+          <div style="height:9px;border-radius:999px;background:rgba(252,249,244,.12);overflow:hidden">
+            <div style="height:100%;width:73%;border-radius:999px;background:linear-gradient(90deg,#DFA059,#F0C48E)"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px">
+            <span style="font-size:13px;color:rgba(252,249,244,.6);font-weight:300">Boş ýer: <span style="color:#DFA059;font-weight:700">12</span></span>
+            <span style="font-size:13px;color:rgba(252,249,244,.6);font-weight:300">Otel: <span style="color:#FCF9F4;font-weight:600">4 ★, Haremden 400 m</span></span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-top:26px;background:rgba(223,160,89,.1);border:1px solid rgba(223,160,89,.28);border-radius:16px;padding:14px 16px">
+          <span style="font-size:13px;color:rgba(252,249,244,.78);line-height:1.5;font-weight:300">Öňki topar <b style="color:#DFA059;font-weight:700">42</b> adam bilen <b style="color:#DFA059;font-weight:700">14.03.2026</b> ugrady</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#22322B;color:rgba(252,249,244,.75);padding:34px 0">
+    <div style="max-width:1480px;margin:0 auto;padding:0 60px;display:grid;grid-template-columns:repeat(4,1fr);gap:40px">
+      <sc-for list="{{ strip }}" as="s" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:28px;color:#DFA059">{{ s.v }}</span>
+          <span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:rgba(252,249,244,.55)">{{ s.l }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="max-width:1480px;margin:0 auto;padding:100px 60px 0">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:44px">
+      <div>
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A8752F;font-weight:700;margin-bottom:18px">Paket</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:46px;line-height:1.1;margin:0;letter-spacing:-.015em;max-width:560px">Uçar, wiza, ýaşaýyş we ýolbaşçy — ählisi içinde</h2>
+      </div>
+      <a href="Charva Umrah Packages.dc.html" style="flex-shrink:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #DFA059;padding-bottom:6px;color:#16201C" style-hover="color:#A8752F">Paket barada →</a>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1.05fr;gap:26px;align-items:stretch">
+      <div style="background:#22322B;border:1px solid #DFA059;border-radius:28px;padding:42px 40px 36px;display:flex;flex-direction:column;gap:22px;color:#FCF9F4">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:#DFA059">Umra topary</span>
+          <span style="font-size:12px;letter-spacing:.14em;color:rgba(252,249,244,.55)">10 gün</span>
+        </div>
+        <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1.14">Umra ziýaraty · 18.09.2026</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px 22px;flex:1">
+          <sc-for list="{{ packItems }}" as="it" hint-placeholder-count="8">
+            <div style="display:flex;gap:11px;align-items:flex-start">
+              <span style="color:#DFA059;font-size:13px;line-height:1.5;flex-shrink:0">✦</span>
+              <span style="font-size:14px;line-height:1.55;color:rgba(252,249,244,.74);font-weight:300">{{ it }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:6px">
+          <a href="Charva Umrah Signup.dc.html" style="flex:1;text-align:center;background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:16px;border-radius:999px;transition:all 250ms" style-hover="background:#FCF9F4;color:#3A2A18">Ýazylmak</a>
+          <a href="Charva Umrah Packages.dc.html" style="flex:1;text-align:center;border:1px solid rgba(252,249,244,.28);color:#FCF9F4;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:15px;border-radius:999px;transition:all 250ms" style-hover="background:rgba(252,249,244,.12);color:#FCF9F4">Jikme-jik</a>
+        </div>
+      </div>
+
+      <div style="position:relative;border-radius:28px;overflow:hidden;min-height:440px">
+        <sc-for list="{{ packSlides }}" as="s" hint-placeholder-count="1">
+          <div style="position:absolute;inset:0;z-index:0;transition:opacity 1000ms cubic-bezier(.4,0,.2,1);opacity:{{ s.opacity }}">
+            <image-slot id="{{ s.slot }}" shape="rect" fit="cover" placeholder="{{ s.photo }}"></image-slot>
+          </div>
+        </sc-for>
+        <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(14,23,20,.82),rgba(14,23,20,0) 58%)"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;z-index:2;padding:32px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px">
+          <div style="font-size:18px;font-weight:600;color:#FCF9F4;line-height:1.35;max-width:320px">{{ packCaption }}</div>
+          <div style="display:flex;gap:9px;flex-shrink:0">
+            <sc-for list="{{ packSlides }}" as="s" hint-placeholder-count="4">
+              <span onClick="{{ s.go }}" style="cursor:pointer;width:{{ s.dotW }};height:4px;border-radius:999px;transition:all 500ms cubic-bezier(.4,0,.2,1);background:{{ s.dotBg }}"></span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1480px;margin:0 auto;padding:100px 60px 0">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:44px">
+      <div>
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A8752F;font-weight:700;margin-bottom:18px">Ziýarat ýerleri</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:46px;line-height:1.1;margin:0;letter-spacing:-.015em;max-width:520px">Куда мы пойдём</h2>
+      </div>
+      <a href="Charva Umrah Route.dc.html" style="flex-shrink:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #DFA059;padding-bottom:6px;color:#16201C" style-hover="color:#A8752F">Ähli ýerler — 9 →</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <sc-for list="{{ places }}" as="p" hint-placeholder-count="3">
+        <a href="Charva Umrah Route.dc.html" style="text-decoration:none;background:#FFFDFA;border:1px solid rgba(34,50,43,.09);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow 320ms,transform 320ms cubic-bezier(.22,.8,.2,1)" style-hover="box-shadow:0 26px 50px -28px rgba(34,50,43,.34);transform:translateY(-5px)">
+          <div style="height:230px;position:relative">
+            <image-slot id="{{ p.slot }}" shape="rect" fit="cover" placeholder="{{ p.photo }}"></image-slot>
+            <div style="position:absolute;top:16px;left:16px;z-index:3;background:rgba(255,253,250,.94);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 13px;border-radius:999px;color:#16201C">{{ p.city }}</div>
+          </div>
+          <div style="padding:26px;display:flex;flex-direction:column;gap:11px;flex:1">
+            <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:24px;line-height:1.2;color:#16201C">{{ p.name }}</div>
+            <p style="margin:0;font-size:14px;line-height:1.65;color:#55655C;font-weight:300;flex:1">{{ p.desc }}</p>
+            <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#A8752F;font-weight:800;border-top:1px solid rgba(34,50,43,.09);padding-top:15px">{{ p.time }}</div>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="max-width:1480px;margin:0 auto;padding:100px 60px 0">
+    <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:26px">
+      <a href="Charva Umrah Program.dc.html" style="text-decoration:none;background:#22322B;border-radius:28px;padding:48px 46px;color:#FCF9F4;display:flex;flex-direction:column;justify-content:space-between;min-height:340px">
+        <div>
+          <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:16px">Gün-günden maksatnama</div>
+          <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:38px;line-height:1.14;margin:0 0 12px;color:#FCF9F4">7 gün — ädim-ädim</h2>
+          <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(252,249,244,.6);font-weight:300;max-width:440px">Uçuşdan başlap, Mekgede umra ybadaty, Bedir we Medine ziýaraty — her günüň maksatnamasy taýyn.</p>
+        </div>
+        <span style="display:inline-flex;align-items:center;gap:12px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#DFA059;margin-top:28px">Maksatnamany görmek <span>→</span></span>
+      </a>
+      <a href="Charva Umrah Media.dc.html" style="text-decoration:none;position:relative;border-radius:28px;overflow:hidden;min-height:340px;display:flex;flex-direction:column;justify-content:flex-end">
+        <div style="position:absolute;inset:0;z-index:0"><image-slot id="u-prev-media" shape="rect" fit="cover" placeholder="Групповое фото прошлой группы у Масджид ан-Набави"></image-slot></div>
+        <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(14,23,20,.9),rgba(14,23,20,.1) 65%)"></div>
+        <div style="position:relative;z-index:2;padding:40px">
+          <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:14px">Öňki toparlar</div>
+          <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:32px;line-height:1.16;color:#FCF9F4;max-width:380px">248 surat we 18 wideo</div>
+          <span style="display:inline-flex;align-items:center;gap:12px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#DFA059;margin-top:20px">Galereýa <span>→</span></span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div style="max-width:1480px;margin:100px auto 0;padding:0 60px">
+    <div style="background:#0E1714;border-radius:30px;overflow:hidden;display:grid;grid-template-columns:1.1fr 1fr">
+      <div style="min-width:0;padding:60px 54px;color:#FCF9F4">
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:700;margin-bottom:18px">Onlaýn ýazylmak</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:42px;line-height:1.12;margin:0 0 14px;color:#FCF9F4">Topara ýazylyň</h2>
+        <p style="margin:0 0 32px;font-size:16px;line-height:1.65;color:rgba(252,249,244,.6);font-weight:300;max-width:440px">Formy dolduryň — ýolbaşçy jaň edip resminamalar we töleg barada düşündirer. Заполните форму, с вами свяжется сопровождающий.</p>
+        <div style="display:flex;flex-direction:column;gap:14px;max-width:460px">
+          <sc-for list="{{ signupRows }}" as="r" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.1)">
+              <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(252,249,244,.5);font-weight:700">{{ r.k }}</span>
+              <span style="font-size:15px;font-weight:500;color:#FCF9F4;text-align:right">{{ r.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <a href="Charva Umrah Signup.dc.html" style="display:inline-flex;align-items:center;gap:14px;margin-top:30px;background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:18px 32px;border-radius:999px;transition:all 260ms" style-hover="background:#FCF9F4;gap:20px">Ýazylmak <span>→</span></a>
+      </div>
+      <div style="position:relative;min-width:0;overflow:hidden;min-height:480px">
+        <image-slot id="u-cta" shape="rect" fit="cover" placeholder="Фото: группа паломников перед вылетом, вертикальный кадр"></image-slot>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:110px"><dc-import name="Charva Umrah Footer" hint-size="100%,460px"></dc-import></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const TARGET = new Date('2026-09-18T06:00:00Z').getTime();
+const pad = n => String(Math.max(0, n)).padStart(2, '0');
+const SLIDES = [
+  { slot: 'u-hero-1', label: 'Mekge', photo: 'Масджид аль-Харам и Кааба — широкий кадр' },
+  { slot: 'u-hero-2', label: 'Medine', photo: 'Масджид ан-Набави, зелёный купол — широкий кадр' },
+  { slot: 'u-hero-3', label: 'Topar', photo: 'Группа паломников в ихраме — широкий кадр' }
+];
+
+const PACK_SLIDES = [
+  { slot: 'u-pk-1', caption: 'Otel Haremden 400 metr, 2–3 adamlyk otag', photo: 'Отель рядом с Харамом, номер или фасад' },
+  { slot: 'u-pk-2', caption: 'Gündelik 3 wagt nahar, türkmen tagamlary hem bar', photo: 'Питание группы, накрытый стол' },
+  { slot: 'u-pk-3', caption: 'Awtobus we transfer — Mekge, Bedir, Medine', photo: 'Автобус группы в Саудовской Арабии' },
+  { slot: 'u-pk-4', caption: 'Türkmen dilli ýolbaşçy 24/7 topar bilen', photo: 'Сопровождающий с группой паломников' }
+];
+
+class Component extends DCLogic {
+  state = { now: Date.now(), slide: 0, pslide: 0 };
+
+  componentDidMount() {
+    this.t = setInterval(() => this.setState({ now: Date.now() }), 1000);
+    this.s = setInterval(() => this.setState(st => ({ slide: (st.slide + 1) % SLIDES.length })), 6500);
+    this.p = setInterval(() => this.setState(st => ({ pslide: (st.pslide + 1) % PACK_SLIDES.length })), 5000);
+  }
+  componentWillUnmount() { clearInterval(this.t); clearInterval(this.s); clearInterval(this.p); }
+
+  renderVals() {
+    const ms = Math.max(0, TARGET - this.state.now);
+    return {
+      departDate: '18.09.2026',
+      clock: [
+        { v: pad(Math.floor(ms / 86400000)), l: 'gün / дней' },
+        { v: pad(Math.floor(ms / 3600000) % 24), l: 'sagat / часов' },
+        { v: pad(Math.floor(ms / 60000) % 60), l: 'minut / минут' },
+        { v: pad(Math.floor(ms / 1000) % 60), l: 'sekunt / секунд' }
+      ],
+      slides: SLIDES.map((s, n) => {
+        const on = n === this.state.slide;
+        return {
+          slot: s.slot, photo: s.photo, label: s.label,
+          opacity: on ? '1' : '0',
+          dotW: on ? '34px' : '14px',
+          dotBg: on ? '#DFA059' : 'rgba(252,249,244,.4)',
+          dotFg: on ? '#DFA059' : 'rgba(252,249,244,.55)',
+          go: () => this.setState({ slide: n })
+        };
+      }),
+      strip: [
+        { v: '68', l: 'Ugradylan topar' },
+        { v: '2 840', l: 'Zyýaratçy' },
+        { v: '12', l: 'Ýyl tejribe' },
+        { v: '7–12', l: 'Gün maksatnama' }
+      ],
+      packItems: [
+        'Uçar bileti Aşgabat — Jidda', 'Umra wizasy we resminamalar',
+        'Otel 4 ★, Haremden 400 m', '2–3 adamlyk otag',
+        'Gündelik 3 wagt nahar', 'Bedir we Uhud ziýarat',
+        'Awtobus we ähli transfer', 'Türkmen dilli ýolbaşçy 24/7'
+      ],
+      packCaption: PACK_SLIDES[this.state.pslide].caption,
+      packSlides: PACK_SLIDES.map((s, n) => {
+        const on = n === this.state.pslide;
+        return {
+          slot: s.slot, photo: s.photo,
+          opacity: on ? '1' : '0',
+          dotW: on ? '30px' : '10px',
+          dotBg: on ? '#DFA059' : 'rgba(252,249,244,.45)',
+          go: () => this.setState({ pslide: n })
+        };
+      }),
+      packagesUnused: [
+        { tag: 'Standart', days: '7 gün', name: 'Adaty umra', price: '', bg: '#FFFDFA', bc: 'rgba(34,50,43,.09)', fg: '#16201C', subFg: '#7A8981', itemFg: '#3E4C46', tagFg: '#A8752F', btnBg: '#22322B', btnFg: '#F7F4EE',
+          items: ['Uçar bileti Aşgabat — Jidda', 'Wiza we resminamalar', 'Otel 3 ★, 4 adamlyk otag', 'Türkmen dilli ýolbaşçy'] },
+        { tag: 'Iň köp saýlanýan', days: '10 gün', name: 'Umra Plus', price: '8 575 TMT', bg: '#22322B', bc: '#DFA059', fg: '#FCF9F4', subFg: 'rgba(252,249,244,.55)', itemFg: 'rgba(252,249,244,.72)', tagFg: '#DFA059', btnBg: '#DFA059', btnFg: '#3A2A18',
+          items: ['Otel 4 ★, Haremden 400 m', '2–3 adamlyk otag', 'Bedir we Uhud ziýarat', 'Ýolbaşçy 24/7'] },
+        { tag: 'Premium', days: '12 gün', name: 'Umra VIP', price: '', bg: '#FFFDFA', bc: 'rgba(34,50,43,.09)', fg: '#16201C', subFg: '#7A8981', itemFg: '#3E4C46', tagFg: '#A8752F', btnBg: '#22322B', btnFg: '#F7F4EE',
+          items: ['Uçar bileti — biznes', 'Otel 5 ★, Harem görnüşi', '1–2 adamlyk otag', 'Şahsy ýolbaşçy we awtoulag'] }
+      ],
+      places: [
+        { slot: 'u-p1', city: 'Mekge', name: 'Masjid al-Haram', desc: 'Kaba, tawaf we saý. Toparyň esasy ybadat ýeri, ähli günler ýanynda ýaşaýarys.', time: '4 gün', photo: 'Масджид аль-Харам, Кааба' },
+        { slot: 'u-p2', city: 'Medine', name: 'Masjid an-Nabawi', desc: 'Pygamberimiziň metjidi, Rowda we Bakyy gonamçylygyna ziýarat.', time: '3 gün', photo: 'Масджид ан-Набави, зелёный купол' },
+        { slot: 'u-p4', city: 'Bedir', name: 'Bedir söweş meýdany', desc: 'Bedir şäherine ýörite gezelenç, söweş meýdany we metjit.', time: '4 sagat', photo: 'Бадр — поле битвы и мечеть' }
+      ],
+      signupRows: [
+        { k: 'Ugramak', v: '18.09.2026' },
+        { k: 'Dolanmak', v: '28.09.2026' },
+        { k: 'Otel', v: '4 ★, Haremden 400 m' },
+        { k: 'Ýolbaşçy', v: 'Türkmen dilinde, 24/7' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

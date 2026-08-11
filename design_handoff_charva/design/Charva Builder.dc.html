@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #FAF6EF; }
+  a { color: #A9722C; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#FAF6EF;color:#33261B;min-width:1280px">
+  <dc-import name="Charva Nav" active="builder" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#93806E;margin-bottom:26px">
+      <a href="Charva Travel Global.dc.html" style="color:#93806E" style-hover="color:#A9722C">Главная</a>
+      <span>/</span>
+      <span style="color:#4A382A;font-weight:600">Сборщик туров</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:70px;align-items:end;margin-bottom:54px">
+      <div>
+        <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:64px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:640px;text-wrap:pretty">Соберите свой тур за 9 шагов</h1>
+        <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:#6E594A;font-weight:300;max-width:520px">Города, даты, звёздность отеля, питание, транспорт, экскурсии и гид. Цена пересчитывается на каждом шаге.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding-bottom:6px">
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1;color:#A9722C">9</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#93806E;font-weight:700">Шагов</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1;color:#A9722C">15 мин</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#93806E;font-weight:700">Ответ менеджера</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px;line-height:1;color:#A9722C">0 $</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#93806E;font-weight:700">Стоимость расчёта</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#33261B;padding:70px 0 90px;color:#FDF9F3">
+    <div style="max-width:1480px;margin:0 auto;padding:0 60px">
+      <div style="display:grid;grid-template-columns:250px 1fr 320px;gap:30px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:14px">
+          <sc-for list="{{ rail }}" as="s" hint-placeholder-count="9">
+            <div onClick="{{ s.go }}" style="display:flex;align-items:center;gap:13px;padding:12px 13px;border-radius:12px;cursor:pointer;transition:background 200ms;background:{{ s.bg }}">
+              <span style="width:25px;height:25px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:{{ s.dotBg }};color:{{ s.dotFg }}">{{ s.num }}</span>
+              <span style="font-size:13px;font-weight:600;line-height:1.3;color:{{ s.fg }}">{{ s.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:24px;padding:36px 36px 30px;min-height:540px;display:flex;flex-direction:column;min-width:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#DFA059;font-weight:700">Шаг {{ stepNum }} из 9</span>
+            <span style="font-size:12px;color:rgba(253,249,243,.5)">{{ stepHint }}</span>
+          </div>
+          <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:33px;margin:6px 0 26px;color:#FDF9F3">{{ stepTitle }}</h2>
+
+          <sc-if value="{{ showOptions }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1;align-content:start">
+              <sc-for list="{{ options }}" as="o" hint-placeholder-count="6">
+                <div onClick="{{ o.pick }}" style="cursor:pointer;border-radius:16px;padding:20px 18px;transition:all 220ms;display:flex;flex-direction:column;gap:8px;border:1px solid {{ o.bc }};background:{{ o.bg }}">
+                  <span style="font-size:16px;font-weight:700;line-height:1.3;color:{{ o.fg }}">{{ o.name }}</span>
+                  <span style="font-size:12px;line-height:1.5;color:{{ o.subFg }};font-weight:300">{{ o.note }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showForm }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;gap:16px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div style="display:flex;flex-direction:column;gap:8px;min-width:0"><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(253,249,243,.5);font-weight:700">Имя</span><input placeholder="Имя и фамилия" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px 16px;color:#FDF9F3;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" /></div>
+                <div style="display:flex;flex-direction:column;gap:8px;min-width:0"><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(253,249,243,.5);font-weight:700">Телефон</span><input placeholder="+993 12 456 789" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px 16px;color:#FDF9F3;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" /></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(253,249,243,.5);font-weight:700">Комментарий</span><textarea placeholder="Пожелания по маршруту" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px 16px;color:#FDF9F3;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none;min-height:104px;resize:vertical"></textarea></div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(253,249,243,.55);font-weight:300"><span style="width:16px;height:16px;border:1px solid rgba(255,255,255,.3);border-radius:4px;flex-shrink:0"></span>Согласен на обработку данных</div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,.1)">
+            <div onClick="{{ prev }}" style="cursor:pointer;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(253,249,243,.55)" style-hover="color:#FDF9F3">← Назад</div>
+            <div style="display:flex;align-items:center;gap:22px">
+              <span style="font-size:13px;color:rgba(253,249,243,.5)">{{ progressText }}</span>
+              <div onClick="{{ next }}" style="cursor:pointer;background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:16px 30px;border-radius:999px;transition:all 250ms" style-hover="background:#F0C48E">{{ nextLabel }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#FAF6EF;border-radius:24px;padding:30px 28px;color:#33261B;position:sticky;top:110px">
+          <div style="font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#A9722C;font-weight:800;margin-bottom:22px">Ваш тур</div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ summary }}" as="r" hint-placeholder-count="8">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid rgba(90,66,44,.11)">
+                <span style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#93806E;font-weight:700;flex-shrink:0">{{ r.label }}</span>
+                <span style="font-size:13px;font-weight:600;text-align:right;line-height:1.4;color:{{ r.color }}">{{ r.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:24px">
+            <span style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#93806E;font-weight:700">Итого</span>
+            <span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:34px">{{ total }}</span>
+          </div>
+          <div style="font-size:12px;color:#93806E;margin-top:6px;font-weight:300">{{ totalNote }}</div>
+          <a href="Charva Contact.dc.html" style="display:block;text-align:center;margin-top:22px;background:#33261B;color:#FAF6EF;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:16px;border-radius:999px" style-hover="background:#A9722C;color:#FFFDFA">Отправить заявку</a>
+          <div style="text-align:center;font-size:12px;color:#93806E;margin-top:14px;font-weight:300">Ответим в течение 15 минут</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1480px;margin:0 auto;padding:100px 60px 0">
+    <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:40px;line-height:1.14;margin:0 0 40px;letter-spacing:-.015em">Как это работает</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px">
+      <sc-for list="{{ how }}" as="h" hint-placeholder-count="4">
+        <div style="background:#FFFDFA;border:1px solid rgba(90,66,44,.11);border-radius:22px;padding:30px 28px;display:flex;flex-direction:column;gap:12px">
+          <span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:26px;color:#DFA059">{{ h.n }}</span>
+          <span style="font-size:18px;font-weight:600;color:#33261B;line-height:1.3">{{ h.title }}</span>
+          <span style="font-size:14px;line-height:1.6;color:#6E594A;font-weight:300">{{ h.desc }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="margin-top:110px"><dc-import name="Charva Footer" hint-size="100%,460px"></dc-import></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const STEPS = [
+  { id: 'dest', label: 'Направление / города', title: 'Куда хотите поехать?', hint: 'можно выбрать несколько', multi: true, options: [
+    { name: 'Ашхабад', note: 'Белый мрамор, музеи' },
+    { name: 'Дарваза', note: 'Горящий кратер' },
+    { name: 'Мары / Мерв', note: 'Древний Шёлковый путь' },
+    { name: 'Куняургенч', note: 'Наследие ЮНЕСКО' },
+    { name: 'Йангыкала', note: 'Каньоны Каспия' },
+    { name: 'Аваза', note: 'Каспийское море' } ] },
+  { id: 'dates', label: 'Даты и длительность', title: 'Сколько дней в поездке?', hint: 'выберите один вариант', options: [
+    { name: '3 дня', note: 'Короткий визит' },
+    { name: '5 дней', note: 'Классика' },
+    { name: '7 дней', note: 'Города + пустыня' },
+    { name: '10 дней', note: 'Полный круг' },
+    { name: '14 дней', note: 'С Каспием' },
+    { name: 'Свои даты', note: 'Уточним в заявке' } ] },
+  { id: 'hotel', label: 'Отель и звёздность', title: 'Где будете жить?', hint: 'выберите один вариант', options: [
+    { name: '3 ★', note: 'Просто и чисто' },
+    { name: '4 ★', note: 'Комфорт' },
+    { name: '5 ★', note: 'Премиум' },
+    { name: 'Бутик-отель', note: 'Небольшой, с характером' },
+    { name: 'Юрточный лагерь', note: 'Ночь в Каракумах' },
+    { name: 'Смешанно', note: 'По ходу маршрута' } ] },
+  { id: 'food', label: 'Питание', title: 'Что предпочитаете есть?', hint: 'можно выбрать несколько', multi: true, options: [
+    { name: 'Халяль', note: 'Только халяльное' },
+    { name: 'Национальная кухня', note: 'Дограма, плов, чорба' },
+    { name: 'Европейская', note: 'Привычное меню' },
+    { name: 'Вегетарианское', note: 'Без мяса' },
+    { name: 'Без глютена', note: 'Особая диета' },
+    { name: 'Без питания', note: 'Питаюсь сам' } ] },
+  { id: 'transport', label: 'Транспорт', title: 'На чём передвигаемся?', hint: 'выберите один вариант', options: [
+    { name: 'Легковой авто', note: 'До 3 человек' },
+    { name: 'Минивэн', note: 'До 7 человек' },
+    { name: 'Автобус', note: 'Группа' },
+    { name: 'Внедорожник 4×4', note: 'Пустыня и каньоны' },
+    { name: 'Поезд', note: 'Между городами' },
+    { name: 'Внутренний перелёт', note: 'Быстро и дальше' } ] },
+  { id: 'activities', label: 'Активности / экскурсии', title: 'Что хотите посмотреть и сделать?', hint: 'можно выбрать несколько', multi: true, options: [
+    { name: 'Экскурсии по городу', note: 'Гид и памятники' },
+    { name: 'Пустыня и кемпинг', note: 'Ночь под звёздами' },
+    { name: 'Ахалтекинские кони', note: 'Конезавод и катание' },
+    { name: 'Гастротур', note: 'Базары и кухня' },
+    { name: 'Ремёсла и ковры', note: 'Мастерские' },
+    { name: 'Каспий и пляж', note: 'Аваза' } ] },
+  { id: 'people', label: 'Количество человек', title: 'Сколько вас будет?', hint: 'выберите один вариант', options: [
+    { name: '1', note: 'Индивидуально' },
+    { name: '2', note: 'Пара' },
+    { name: '3–5', note: 'Семья' },
+    { name: '6–10', note: 'Небольшая группа' },
+    { name: '10+', note: 'Большая группа' },
+    { name: 'Пока не знаю', note: 'Уточню позже' } ] },
+  { id: 'guide', label: 'Гид и язык гида', title: 'Нужен гид? На каком языке?', hint: 'выберите один вариант', options: [
+    { name: 'Русский', note: 'Rus dilinde' },
+    { name: 'Английский', note: 'English' },
+    { name: 'Турецкий', note: 'Türkçe' },
+    { name: 'Туркменский', note: 'Türkmen dilinde' },
+    { name: 'Несколько языков', note: 'Смешанная группа' },
+    { name: 'Без гида', note: 'Сам разберусь' } ] },
+  { id: 'final', label: 'Цена и онлайн-заявка', title: 'Проверьте тур и оставьте контакты', hint: 'последний шаг', form: true, options: [] }
+];
+
+class Component extends DCLogic {
+  state = { step: 0, sel: {} };
+
+  pick(stepId, name, multi) {
+    this.setState(s => {
+      const cur = s.sel[stepId];
+      let next;
+      if (multi) {
+        const arr = Array.isArray(cur) ? cur.slice() : [];
+        const i = arr.indexOf(name);
+        if (i >= 0) arr.splice(i, 1); else arr.push(name);
+        next = arr;
+      } else {
+        next = cur === name ? null : name;
+      }
+      return { sel: Object.assign({}, s.sel, { [stepId]: next }) };
+    });
+  }
+
+  isOn(stepId, name) {
+    const v = this.state.sel[stepId];
+    return Array.isArray(v) ? v.indexOf(name) >= 0 : v === name;
+  }
+
+  renderVals() {
+    const i = this.state.step;
+    const st = STEPS[i];
+    const filled = STEPS.filter(s => !s.form).filter(s => {
+      const v = this.state.sel[s.id];
+      return Array.isArray(v) ? v.length > 0 : !!v;
+    }).length;
+
+    const people = this.state.sel.people;
+    const pax = people && /^\d+$/.test(people) ? parseInt(people, 10) : people === '3–5' ? 4 : people === '6–10' ? 8 : people === '10+' ? 12 : 2;
+    const nights = { '3 дня': 3, '5 дней': 5, '7 дней': 7, '10 дней': 10, '14 дней': 14 }[this.state.sel.dates] || 6;
+    const hotelRate = { '3 ★': 46, '4 ★': 78, '5 ★': 145, 'Бутик-отель': 96, 'Юрточный лагерь': 95, 'Смешанно': 88 }[this.state.sel.hotel] || 78;
+    const dests = Array.isArray(this.state.sel.dest) ? this.state.sel.dest.length : 0;
+    const acts = Array.isArray(this.state.sel.activities) ? this.state.sel.activities.length : 0;
+    const perPerson = nights * hotelRate + dests * 60 + acts * 45 + 180;
+    const fmt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' $';
+
+    return {
+      total: fmt(perPerson * pax),
+      totalNote: 'за ' + pax + ' чел., ' + nights + ' ноч. — включая проживание, транспорт и экскурсии',
+      stepNum: i + 1,
+      stepTitle: st.title,
+      stepHint: st.hint,
+      showOptions: !st.form,
+      showForm: !!st.form,
+      nextLabel: st.form ? 'Отправить заявку' : 'Далее →',
+      progressText: 'Заполнено ' + filled + ' из 8',
+      prev: () => this.setState(s => ({ step: Math.max(0, s.step - 1) })),
+      next: () => this.setState(s => ({ step: Math.min(STEPS.length - 1, s.step + 1) })),
+      how: [
+        { n: '01', title: 'Выбираете параметры', desc: 'Девять шагов — от городов до языка гида.' },
+        { n: '02', title: 'Видите цену сразу', desc: 'Смета пересчитывается на каждом выборе.' },
+        { n: '03', title: 'Отправляете заявку', desc: 'Менеджер проверяет наличие мест и отелей.' },
+        { n: '04', title: 'Получаете программу', desc: 'Готовый маршрут с датами, отелями и трансферами.' }
+      ],
+      rail: STEPS.map((s, n) => {
+        const active = n === i;
+        const v = this.state.sel[s.id];
+        const done = Array.isArray(v) ? v.length > 0 : !!v;
+        return {
+          num: done && !active ? '✓' : String(n + 1),
+          label: s.label,
+          bg: active ? 'rgba(223,160,89,.16)' : 'transparent',
+          fg: active ? '#FDF9F3' : 'rgba(253,249,243,.6)',
+          dotBg: active ? '#DFA059' : done ? 'rgba(223,160,89,.28)' : 'rgba(255,255,255,.08)',
+          dotFg: active ? '#3A2A18' : done ? '#DFA059' : 'rgba(253,249,243,.55)',
+          go: () => this.setState({ step: n })
+        };
+      }),
+      options: (st.options || []).map(o => {
+        const on = this.isOn(st.id, o.name);
+        return {
+          name: o.name,
+          note: o.note,
+          bc: on ? '#DFA059' : 'rgba(255,255,255,.12)',
+          bg: on ? 'rgba(223,160,89,.16)' : 'rgba(255,255,255,.03)',
+          fg: on ? '#DFA059' : '#FDF9F3',
+          subFg: on ? 'rgba(240,196,142,.8)' : 'rgba(253,249,243,.5)',
+          pick: () => this.pick(st.id, o.name, st.multi)
+        };
+      }),
+      summary: STEPS.filter(s => !s.form).map(s => {
+        const v = this.state.sel[s.id];
+        const val = Array.isArray(v) ? (v.length ? v.join(', ') : null) : v;
+        return {
+          label: s.label.split(' /')[0].split(' и ')[0],
+          value: val || '—',
+          color: val ? '#33261B' : '#B7A695'
+        };
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

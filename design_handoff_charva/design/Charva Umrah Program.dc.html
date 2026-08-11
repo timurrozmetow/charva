@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #22322B; }
+  a { color: #DFA059; text-decoration: none; }
+  a:hover { color: #F0C48E; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#22322B;color:#FCF9F4;min-width:1280px">
+  <dc-import name="Charva Umrah Nav" active="program" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(252,249,244,.5);margin-bottom:26px">
+      <a href="Charva Umrah.dc.html" style="color:rgba(252,249,244,.5)" style-hover="color:#DFA059">Baş sahypa</a>
+      <span>/</span>
+      <span style="color:#FCF9F4;font-weight:600">Maksatnama</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:70px;align-items:end">
+      <div>
+        <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:62px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:620px;color:#FCF9F4;text-wrap:pretty">Gün-günden maksatnama</h1>
+        <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:rgba(252,249,244,.62);font-weight:300;max-width:520px">Umra Plus paketi, 10 gün. Adaty paketde 7 gün, VIP-de 12 gün — tertip meňzeş, wagt uzalýar.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding-bottom:6px">
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:32px;color:#DFA059">10</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(252,249,244,.5);font-weight:700">Gün</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:32px;color:#DFA059">9</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(252,249,244,.5);font-weight:700">Ziýarat ýeri</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:32px;color:#DFA059">45</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(252,249,244,.5);font-weight:700">Adam topar</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:56px;display:flex;flex-direction:column">
+      <sc-for list="{{ program }}" as="d" hint-placeholder-count="10">
+        <div onClick="{{ d.toggle }}" style="cursor:pointer;display:grid;grid-template-columns:110px 300px 1fr auto;gap:34px;padding:26px 0;border-top:1px solid rgba(252,249,244,.12);align-items:baseline;transition:background 220ms;background:{{ d.bg }}">
+          <span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:32px;color:#DFA059">{{ d.day }}</span>
+          <span style="font-size:19px;font-weight:600;color:#FCF9F4;line-height:1.35">{{ d.title }}</span>
+          <span style="font-size:15px;line-height:1.7;color:rgba(252,249,244,.62);font-weight:300">{{ d.desc }}</span>
+          <span style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#DFA059;font-weight:800;white-space:nowrap">{{ d.city }}</span>
+        </div>
+      </sc-for>
+      <div style="border-top:1px solid rgba(252,249,244,.12)"></div>
+    </div>
+
+    <div style="margin-top:70px;display:grid;grid-template-columns:1fr 1fr;gap:26px;padding-bottom:110px">
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:26px;padding:38px 36px">
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:28px;line-height:1.2;margin:0 0 20px;color:#FCF9F4">Gündelik tertip</h2>
+        <sc-for list="{{ daily }}" as="d" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:96px 1fr;gap:20px;padding:14px 0;border-top:1px solid rgba(255,255,255,.09)">
+            <span style="font-size:14px;font-weight:700;color:#DFA059">{{ d.t }}</span>
+            <span style="font-size:15px;line-height:1.6;color:rgba(252,249,244,.72);font-weight:300">{{ d.v }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="position:relative;border-radius:26px;overflow:hidden;min-height:340px">
+        <image-slot id="up-photo" shape="rect" fit="cover" placeholder="Фото: группа в Медине с сопровождающим"></image-slot>
+        <div style="position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(14,23,20,.86),transparent 60%)"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;z-index:3;pointer-events:none;padding:32px">
+          <div style="font-size:19px;font-weight:600;color:#FCF9F4;line-height:1.35">Ýolbaşçy hemişe topar bilen</div>
+          <div style="font-size:14px;color:rgba(252,249,244,.66);margin-top:8px;font-weight:300">Türkmen we rus dilinde düşündiriş, 24/7 aragatnaşyk</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <dc-import name="Charva Umrah Footer" hint-size="100%,460px"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const PROGRAM = [
+  { day: '01', city: 'Aşgabat → Jidda', title: 'Ýygnanyşyk we uçuş', desc: 'Aeroportda ýygnanyşyk, resminamalaryň barlagy, uçuş. Jiddada garşy alyş we awtobus bilen Mekgä geçiş.' },
+  { day: '02', city: 'Mekge', title: 'Umra ybadaty', desc: 'Ihram, tawaf, saý we saç kesmek. Ýolbaşçy ähli ädimi türkmen dilinde düşündirýär.' },
+  { day: '03', city: 'Mekge', title: 'Harem we erkin ybadat', desc: 'Bäş wagt namaz Haremde, goşmaça tawaf, Zemzem suwy.' },
+  { day: '04', city: 'Mekge', title: 'Taryhy ýerler', desc: 'Jebel an-Nur, Hira gowagy, Arafat, Mina we Muzdalifa boýunça gezelenç.' },
+  { day: '05', city: 'Mekge', title: 'Erkin gün', desc: 'Şahsy ybadat, bazar we sowgatlyk. Isleýänler üçin goşmaça umra.' },
+  { day: '06', city: 'Mekge → Bedir', title: 'Bedir ziýaraty', desc: 'Awtobus bilen ýola düşmek, Bedir söweş meýdany we metjit, soň Medinä geçiş.' },
+  { day: '07', city: 'Medine', title: 'Masjid an-Nabawi', desc: 'Rowda, Bakyy gonamçylygy we metjitde ybadat. Agşam erkin wagt.' },
+  { day: '08', city: 'Medine', title: 'Uhud, Kuba, Kyblateýn', desc: 'Uhud dagy we şehitler gonamçylygy, Kuba metjidinde iki rekagat namaz.' },
+  { day: '09', city: 'Medine', title: 'Soňky erkin gün', desc: 'Şahsy ybadat, hoşlaşyk namazy, ýük ýygnamak.' },
+  { day: '10', city: 'Medine → Aşgabat', title: 'Dolanmak', desc: 'Aeroporta transfer, uçuş we Aşgabatda garşy alyş.' }
+];
+
+class Component extends DCLogic {
+  state = { open: -1 };
+
+  renderVals() {
+    return {
+      program: PROGRAM.map((d, i) => ({
+        day: d.day, title: d.title, desc: d.desc, city: d.city,
+        bg: this.state.open === i ? 'rgba(223,160,89,.08)' : 'transparent',
+        toggle: () => this.setState(s => ({ open: s.open === i ? -1 : i }))
+      })),
+      daily: [
+        { t: '04:30', v: 'Fejr namazy Haremde, topar bilen' },
+        { t: '08:00', v: 'Ertirlik naharyň otelde' },
+        { t: '10:00', v: 'Ziýarat ýa-da erkin ybadat' },
+        { t: '13:00', v: 'Günortanlyk we dynç alyş' },
+        { t: '19:30', v: 'Agşam nahary, soň ýatsy namazy' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

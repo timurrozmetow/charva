@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #F7F4EE; }
+  a { color: #A8752F; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#F7F4EE;color:#16201C;min-width:1280px">
+  <dc-import name="Charva Umrah Nav" active="media" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#7A8981;margin-bottom:26px">
+      <a href="Charva Umrah.dc.html" style="color:#7A8981" style-hover="color:#A8752F">Baş sahypa</a>
+      <span>/</span>
+      <span style="color:#2A3A33;font-weight:600">Suratlar we wideo</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:60px">
+      <div>
+        <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:62px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:660px;text-wrap:pretty">Öňki toparlarymyz</h1>
+        <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:#55655C;font-weight:300;max-width:560px">Her toparyň suratlary we wideolary aýratyn ýygnalan. Materiallar admin panelden ýüklenýär.</p>
+      </div>
+      <div style="flex-shrink:0;display:flex;gap:34px;padding-bottom:8px">
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:32px;color:#A8752F">68</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7A8981;font-weight:700">Topar</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:32px;color:#A8752F">2 840</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7A8981;font-weight:700">Zyýaratçy</span></div>
+      </div>
+    </div>
+
+    <div style="margin:52px 0 0;border-top:1px solid rgba(34,50,43,.1);padding-top:26px">
+      <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#7A8981;font-weight:800;margin-bottom:16px">Topary saýlaň</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <sc-for list="{{ groupTabs }}" as="g" hint-placeholder-count="6">
+          <div onClick="{{ g.pick }}" style="cursor:pointer;display:flex;flex-direction:column;gap:5px;padding:15px 22px;border-radius:18px;transition:all 240ms;border:1px solid {{ g.bc }};background:{{ g.bg }}">
+            <span style="font-size:15px;font-weight:600;color:{{ g.fg }};white-space:nowrap">{{ g.label }}</span>
+            <span style="font-size:12px;color:{{ g.subFg }}">{{ g.meta }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="margin-top:44px;display:flex;align-items:flex-end;justify-content:space-between;gap:40px">
+      <div>
+        <div style="font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#A8752F;font-weight:800;margin-bottom:14px">{{ activeBadge }}</div>
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:42px;line-height:1.1;margin:0;letter-spacing:-.015em">{{ activeTitle }}</h2>
+        <p style="margin:14px 0 0;font-size:16px;line-height:1.6;color:#55655C;font-weight:300;max-width:600px">{{ activeDesc }}</p>
+      </div>
+      <span style="flex-shrink:0;font-size:13px;color:#7A8981;font-weight:300;padding-bottom:8px">{{ activeCount }}</span>
+    </div>
+
+    <div style="margin-top:32px;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:220px;gap:16px">
+      <sc-for list="{{ photos }}" as="p" hint-placeholder-count="8">
+        <div style="position:relative;border-radius:20px;overflow:hidden;grid-column:{{ p.col }};grid-row:{{ p.row }}">
+          <image-slot id="{{ p.slot }}" shape="rect" fit="cover" placeholder="{{ p.photo }}"></image-slot>
+          <div style="position:absolute;bottom:0;left:0;right:0;z-index:3;pointer-events:none;padding:18px;background:linear-gradient(to top,rgba(14,23,20,.8),transparent)">
+            <div style="font-size:12px;font-weight:600;color:#FCF9F4">{{ p.caption }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:34px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+      <sc-for list="{{ videos }}" as="v" hint-placeholder-count="3">
+        <div style="position:relative;height:260px;border-radius:22px;overflow:hidden;cursor:pointer">
+          <image-slot id="{{ v.slot }}" shape="rect" fit="cover" placeholder="{{ v.photo }}"></image-slot>
+          <div style="position:absolute;inset:0;z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:center;background:linear-gradient(to top,rgba(14,23,20,.86),rgba(14,23,20,.08) 62%)">
+            <span style="width:60px;height:60px;border-radius:50%;background:rgba(223,160,89,.94);color:#3A2A18;display:flex;align-items:center;justify-content:center;font-size:18px;padding-left:4px">▶</span>
+          </div>
+          <div style="position:absolute;bottom:0;left:0;right:0;z-index:3;pointer-events:none;padding:24px">
+            <div style="font-size:18px;font-weight:600;color:#FCF9F4;line-height:1.3">{{ v.title }}</div>
+            <div style="font-size:12px;color:rgba(252,249,244,.62);margin-top:6px">{{ v.dur }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top:90px">
+      <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:40px;line-height:1.14;margin:0 0 30px;letter-spacing:-.015em">Ähli toparlaryň arhiwi</h2>
+      <div style="background:#FFFDFA;border:1px solid rgba(34,50,43,.09);border-radius:24px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr auto;gap:24px;padding:18px 32px;background:rgba(34,50,43,.04)">
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:800">Topar</span>
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:800">Ugralan wagty</span>
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:800">Zyýaratçy</span>
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:800">Material</span>
+          <span></span>
+        </div>
+        <sc-for list="{{ archive }}" as="a" hint-placeholder-count="8">
+          <div onClick="{{ a.pick }}" style="cursor:pointer;display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr auto;gap:24px;padding:18px 32px;border-top:1px solid rgba(34,50,43,.08);align-items:center;transition:background 220ms;background:{{ a.bg }}">
+            <span style="font-size:15px;font-weight:600;color:#16201C">{{ a.name }}</span>
+            <span style="font-size:14px;color:#55655C;font-weight:300">{{ a.date }}</span>
+            <span style="font-size:14px;color:#55655C;font-weight:300">{{ a.people }}</span>
+            <span style="font-size:14px;color:#55655C;font-weight:300">{{ a.media }}</span>
+            <span style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#A8752F">Görmek →</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="margin-top:70px;background:#22322B;border-radius:30px;padding:52px 56px;display:grid;grid-template-columns:1.2fr auto;gap:50px;align-items:center;color:#FCF9F4;margin-bottom:110px">
+      <div style="min-width:0">
+        <h2 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:36px;line-height:1.16;margin:0 0 10px;color:#FCF9F4">Indiki topara goşulyň</h2>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(252,249,244,.62);font-weight:300;max-width:520px">18.09.2026 — boş ýer 12. Suratlarda görýän ähli ziýaratlar maksatnamada bar.</p>
+      </div>
+      <a href="Charva Umrah Signup.dc.html" style="flex-shrink:0;display:inline-flex;align-items:center;gap:14px;background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:19px 34px;border-radius:999px;transition:all 260ms" style-hover="background:#FCF9F4;gap:20px">Ýazylmak <span>→</span></a>
+    </div>
+  </div>
+
+  <dc-import name="Charva Umrah Footer" hint-size="100%,460px"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const LAYOUT = [
+  { col: 'span 2', row: 'span 2' }, { col: 'span 1', row: 'span 1' }, { col: 'span 1', row: 'span 1' },
+  { col: 'span 2', row: 'span 1' }, { col: 'span 1', row: 'span 1' }, { col: 'span 1', row: 'span 1' },
+  { col: 'span 2', row: 'span 1' }, { col: 'span 2', row: 'span 1' }
+];
+
+const GROUPS = [
+  { id: 'iyun26', label: 'Iýun aýyndaky toparymyz', short: 'Iýun 2026', date: '12.06.2026', people: '44 adam', photos: 38, videos: 4,
+    desc: 'Iýun toparymyz Mekgede 5, Medinede 4 gün boldy. Bedir we Uhud ziýaraty maksatnama girdi.',
+    caps: ['Harem, ilkinji tawaf', 'Ihramda toparymyz', 'Medinede Rowda', 'Uhud dagynda', 'Bedir metjidi', 'Otelde ertirlik', 'Awtobusda ýola düşmek', 'Aşgabat aeroportunda'],
+    vids: [
+      { title: 'Iýun topary — ugramak', dur: '5:24' },
+      { title: 'Umra ybadaty', dur: '11:02' },
+      { title: 'Bedir we Uhud', dur: '6:47' }
+    ] },
+  { id: 'mart26', label: 'Mart aýyndaky toparymyz', short: 'Mart 2026', date: '14.03.2026', people: '42 adam', photos: 41, videos: 3,
+    desc: 'Mart toparymyz 10 gün ziýaratda boldy. Iň uly topar — 42 zyýaratçy.',
+    caps: ['Masjid an-Nabawi', 'Kuba metjidinde', 'Harem agşam namazy', 'Zemzem suwy', 'Toparyň umumy suraty', 'Nahar wagty', 'Jidda aeroporty', 'Medinede bazar'],
+    vids: [
+      { title: 'Mart topary — Medine', dur: '8:10' },
+      { title: 'Ýolbaşçynyň düşündirişi', dur: '9:36' },
+      { title: 'Zyýaratçylaryň sözi', dur: '7:18' }
+    ] },
+  { id: 'yanwar26', label: 'Ýanwar aýyndaky toparymyz', short: 'Ýanwar 2026', date: '18.01.2026', people: '39 adam', photos: 33, videos: 3,
+    desc: 'Gyş möwsümi — howa maýyl, Haremde adam az. Toparymyz goşmaça umra hem etdi.',
+    caps: ['Kabanyň ýanynda', 'Saý ýoly', 'Hira gowagyna barýan ýol', 'Arafat daglary', 'Medinede agşam', 'Otagda toparymyz', 'Bedirde ekskursiýa', 'Hoşlaşyk namazy'],
+    vids: [
+      { title: 'Ýanwar topary — Mekge', dur: '10:14' },
+      { title: 'Hira gowagy', dur: '5:52' },
+      { title: 'Otel we nahar şertleri', dur: '4:05' }
+    ] },
+  { id: 'oktyabr25', label: 'Oktýabr aýyndaky toparymyz', short: 'Oktýabr 2025', date: '05.10.2025', people: '45 adam', photos: 36, videos: 4,
+    desc: 'Doly topar — 45 adam. Medinede Kuba we Kyblateýn metjitlerine ziýarat edildi.',
+    caps: ['Harem, günortan namazy', 'Toparyň suraty', 'Kyblateýn metjidi', 'Uhud şehitleri', 'Awtobus we ýol', 'Bazarda sowgatlyk', 'Jiddada garşy alyş', 'Aşgabada dolanmak'],
+    vids: [
+      { title: 'Oktýabr topary — hasabat', dur: '12:32' },
+      { title: 'Medine ziýaraty', dur: '7:44' },
+      { title: 'Toparyň hoşlaşygy', dur: '3:58' }
+    ] },
+  { id: 'iyul25', label: 'Iýul aýyndaky toparymyz', short: 'Iýul 2025', date: '22.07.2025', people: '38 adam', photos: 29, videos: 2,
+    desc: 'Tomus möwsümi. Ýolbaşçy suw we dynç alyş tertibini aýratyn gözegçilikde tutdy.',
+    caps: ['Ertir Haremde', 'Ihram geýmek', 'Medinede kölege', 'Uhud dagy', 'Nahar wagty', 'Toparyň suraty', 'Ýolda dynç', 'Aeroportda'],
+    vids: [
+      { title: 'Iýul topary — Mekge', dur: '9:20' },
+      { title: 'Tomusda umra — maslahatlar', dur: '6:03' },
+      { title: 'Medinede agşam', dur: '5:11' }
+    ] },
+  { id: 'aprel25', label: 'Aprel aýyndaky toparymyz', short: 'Aprel 2025', date: '09.04.2025', people: '40 adam', photos: 31, videos: 3,
+    desc: 'Remezan aýyndan soňky ilkinji topar. Haremde agşam ybadatlary aýratyn ýatda galdy.',
+    caps: ['Harem, agşam', 'Tawaf', 'Rowda nobaty', 'Kuba metjidi', 'Bedir meýdany', 'Toparyň nahary', 'Awtobusda', 'Dolanyş güni'],
+    vids: [
+      { title: 'Aprel topary — ugramak', dur: '4:48' },
+      { title: 'Harem gijesi', dur: '8:26' },
+      { title: 'Zyýaratçylaryň sözi', dur: '6:34' }
+    ] }
+];
+
+class Component extends DCLogic {
+  state = { group: 'iyun26' };
+
+  renderVals() {
+    const g = GROUPS.find(x => x.id === this.state.group) || GROUPS[0];
+    return {
+      groupTabs: GROUPS.map(x => {
+        const on = x.id === this.state.group;
+        return {
+          label: x.short,
+          meta: x.people + ' · ' + x.photos + ' surat',
+          bg: on ? '#22322B' : 'transparent',
+          bc: on ? '#22322B' : 'rgba(34,50,43,.16)',
+          fg: on ? '#FCF9F4' : '#16201C',
+          subFg: on ? 'rgba(252,249,244,.6)' : '#7A8981',
+          pick: () => this.setState({ group: x.id })
+        };
+      }),
+      activeBadge: 'Zyýaratçy · ' + g.date,
+      activeTitle: g.label,
+      activeDesc: g.desc,
+      activeCount: g.photos + ' surat · ' + g.videos + ' wideo',
+      photos: g.caps.map((c, i) => ({
+        slot: 'um-' + g.id + '-' + (i + 1),
+        caption: c,
+        photo: c + ' — ' + g.short + ' topary',
+        col: LAYOUT[i].col,
+        row: LAYOUT[i].row
+      })),
+      videos: g.vids.map((v, i) => ({
+        slot: 'uv-' + g.id + '-' + (i + 1),
+        title: v.title,
+        dur: v.dur,
+        photo: 'Обложка видео: ' + v.title
+      })),
+      archive: GROUPS.map(x => {
+        const on = x.id === this.state.group;
+        return {
+          name: x.label,
+          date: x.date,
+          people: x.people,
+          media: x.photos + ' surat · ' + x.videos + ' wideo',
+          bg: on ? 'rgba(223,160,89,.1)' : 'transparent',
+          pick: () => this.setState({ group: x.id })
+        };
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  * { box-sizing: border-box; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_medium.otf') format('opentype'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'Stolzl'; src: url('assets/stolzl_bold.otf') format('opentype'); font-weight: 800; font-display: swap; }
+  html, body { margin: 0; padding: 0; background: #F7F4EE; }
+  a { color: #A8752F; text-decoration: none; }
+  a:hover { color: #DFA059; }
+  ::selection { background: #DFA059; color: #3A2A18; }
+  @keyframes navdrop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes upulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Stolzl','Manrope',sans-serif;background:#F7F4EE;color:#16201C;min-width:1280px">
+  <dc-import name="Charva Umrah Nav" active="signup" hint-size="100%,96px"></dc-import>
+
+  <div style="max-width:1480px;margin:0 auto;padding:56px 60px 0">
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#7A8981;margin-bottom:26px">
+      <a href="Charva Umrah.dc.html" style="color:#7A8981" style-hover="color:#A8752F">Baş sahypa</a>
+      <span>/</span>
+      <span style="color:#2A3A33;font-weight:600">Onlaýn ýazylmak</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:60px">
+      <div>
+        <h1 style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:62px;line-height:1.04;letter-spacing:-.02em;margin:0;max-width:640px;text-wrap:pretty">Topara ýazylmak</h1>
+        <p style="margin:24px 0 0;font-size:18px;line-height:1.65;color:#55655C;font-weight:300;max-width:560px">Formy dolduryň — ýolbaşçy 15 minudyň içinde jaň edip resminamalar we töleg barada düşündirer.</p>
+      </div>
+      <div style="flex-shrink:0;display:inline-flex;align-items:center;gap:11px;background:rgba(223,160,89,.16);border:1px solid rgba(223,160,89,.45);border-radius:999px;padding:12px 20px;margin-bottom:8px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#DFA059;animation:upulse 2s ease-in-out infinite"></span>
+        <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8A5A22;font-weight:800">Boş ýer: 12 · {{ daysLeft }} gün galdy</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:26px;margin-top:52px">
+      <div style="background:#FFFDFA;border:1px solid rgba(34,50,43,.09);border-radius:28px;padding:46px 44px;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(223,160,89,.12);border:1px solid rgba(223,160,89,.4);border-radius:18px;padding:18px 22px;margin-bottom:24px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8A5A22;font-weight:800">Umra topary · 10 gün</span>
+            <span style="font-size:15px;font-weight:600;color:#16201C">Ugramak 18.09.2026 · otel 4 ★ · 45 adam</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+            <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:700">Ady we familiýasy</span>
+            <input placeholder="Meret Aýdogdyýew" style="width:100%;background:#F7F4EE;border:1px solid rgba(34,50,43,.14);border-radius:12px;padding:15px 17px;color:#16201C;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+            <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:700">Telefon</span>
+            <input placeholder="+993 65 123 456" style="width:100%;background:#F7F4EE;border:1px solid rgba(34,50,43,.14);border-radius:12px;padding:15px 17px;color:#16201C;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+            <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:700">Passport belgisi</span>
+            <input placeholder="I-AB 1234567" style="width:100%;background:#F7F4EE;border:1px solid rgba(34,50,43,.14);border-radius:12px;padding:15px 17px;color:#16201C;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+            <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:700">Adam sany</span>
+            <input placeholder="2 adam" style="width:100%;background:#F7F4EE;border:1px solid rgba(34,50,43,.14);border-radius:12px;padding:15px 17px;color:#16201C;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none" />
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:700">Otag görnüşi</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{ rooms }}" as="r" hint-placeholder-count="4">
+              <div onClick="{{ r.pick }}" style="cursor:pointer;font-size:13px;font-weight:600;padding:10px 17px;border-radius:999px;transition:all 220ms;border:1px solid {{ r.bc }};background:{{ r.bg }};color:{{ r.fg }}">{{ r.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8981;font-weight:700">Bellik / Комментарий</span>
+          <textarea placeholder="Mahram, saglyk aýratynlyklary ýa-da başga soraglar" style="width:100%;background:#F7F4EE;border:1px solid rgba(34,50,43,.14);border-radius:12px;padding:15px 17px;color:#16201C;font-family:'Stolzl','Manrope',sans-serif;font-size:15px;outline:none;min-height:120px;resize:vertical"></textarea>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:11px;margin-top:20px;font-size:13px;color:#55655C;font-weight:300">
+          <span style="width:17px;height:17px;border:1px solid rgba(34,50,43,.28);border-radius:5px;flex-shrink:0"></span>Şertler bilen ylalaşýaryn
+        </div>
+
+        <div style="display:flex;align-items:center;gap:22px;margin-top:26px">
+          <a href="#" style="background:#DFA059;color:#3A2A18;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:18px 34px;border-radius:999px;transition:all 260ms" style-hover="background:#22322B;color:#F7F4EE">Arzany ibermek</a>
+          <span style="font-size:13px;color:#7A8981;font-weight:300">WhatsApp: +993 65 123 456</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:22px;min-width:0">
+        <div style="background:#0E1714;border-radius:28px;padding:38px 36px;color:#FCF9F4">
+          <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#DFA059;font-weight:800;margin-bottom:22px">Saýlanan paket</div>
+          <div style="font-family:'Stolzl',sans-serif;font-weight:500;font-size:30px;line-height:1.15;margin-bottom:20px">{{ selName }}</div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ summary }}" as="s" hint-placeholder-count="5">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:14px 0;border-top:1px solid rgba(255,255,255,.1)">
+                <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(252,249,244,.5);font-weight:700">{{ s.k }}</span>
+                <span style="font-size:15px;font-weight:500;color:#FCF9F4;text-align:right">{{ s.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14);font-size:13px;line-height:1.6;color:rgba(252,249,244,.6);font-weight:300">Baha we töleg şertleri barada ýolbaşçy jaň edip düşündirer.</div>
+        </div>
+
+        <div style="background:#FFFDFA;border:1px solid rgba(34,50,43,.09);border-radius:28px;padding:34px 32px">
+          <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#A8752F;font-weight:800;margin-bottom:18px">Habarlaşmak</div>
+          <sc-for list="{{ contacts }}" as="c" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 0;border-top:1px solid rgba(34,50,43,.08)">
+              <span style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#7A8981;font-weight:700">{{ c.k }}</span>
+              <span style="font-size:15px;font-weight:500;color:#16201C">{{ c.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="position:relative;flex:1;min-height:240px;border-radius:28px;overflow:hidden">
+          <image-slot id="us-photo" shape="rect" fit="cover" placeholder="Фото: группа паломников перед вылетом"></image-slot>
+          <div style="position:absolute;bottom:0;left:0;right:0;z-index:3;pointer-events:none;padding:26px;background:linear-gradient(to top,rgba(14,23,20,.86),transparent)">
+            <div style="font-size:17px;font-weight:600;color:#FCF9F4">68 topar ugradyldy</div>
+            <div style="font-size:13px;color:rgba(252,249,244,.66);margin-top:6px;font-weight:300">2 840 zyýaratçy · 12 ýyl tejribe</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:110px"></div>
+  </div>
+
+  <dc-import name="Charva Umrah Footer" hint-size="100%,460px"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const TARGET = new Date('2026-09-18T06:00:00Z').getTime();
+const PACK = { name: 'Umra ziýaraty · 18.09.2026', price: '8 575 TMT', num: 8575, days: '10 gün', hotel: '4 ★', back: '28.09.2026' };
+const ROOMS = ['1 adamlyk', '2 adamlyk', '3 adamlyk', '4 adamlyk'];
+
+class Component extends DCLogic {
+  state = { room: '2 adamlyk' };
+
+  renderVals() {
+    const sel = PACK;
+    const days = Math.max(0, Math.ceil((TARGET - Date.now()) / 86400000));
+    const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' TMT';
+    return {
+      daysLeft: days,
+      selName: sel.name,
+      total: sel.price,
+      totalNote: 'bir adam üçin · öňünden töleg 30% — ' + fmt(Math.round(sel.num * 0.3)),
+      rooms: ROOMS.map(r => {
+        const on = this.state.room === r;
+        return {
+          label: r,
+          bg: on ? 'rgba(223,160,89,.2)' : 'transparent',
+          bc: on ? '#DFA059' : 'rgba(34,50,43,.16)',
+          fg: on ? '#8A5A22' : '#2A3A33',
+          pick: () => this.setState({ room: r })
+        };
+      }),
+      summary: [
+        { k: 'Ugramak', v: '18.09.2026' },
+        { k: 'Dolanmak', v: sel.back },
+        { k: 'Dowamlylygy', v: sel.days },
+        { k: 'Otel', v: sel.hotel },
+        { k: 'Otag', v: this.state.room }
+      ],
+      contacts: [
+        { k: 'Telefon', v: '+993 12 456 789' },
+        { k: 'WhatsApp', v: '+993 65 123 456' },
+        { k: 'E-mail', v: 'umrah@charva.com' },
+        { k: 'Iş wagty', v: 'Du–Şe, 09:00–18:00' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>
