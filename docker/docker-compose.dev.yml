@@ -1,0 +1,53 @@
+# Development services for Charva Travel.
+#
+# The development machine has no Docker, no WSL and no administrator rights, so locally these
+# same services run as portable binaries under .services/ via scripts/dev-setup.ps1. This file
+# is what CI uses and what production parity is measured against — ports, credentials, versions
+# and sql_mode are identical between the two on purpose. Keep them in step.
+#
+# No Redis and no MinIO: caching and rate limiting live in the API process (decision D-7) and
+# media lives on local disk (decision D-8).
+
+name: charva-dev
+
+services:
+  mysql:
+    image: mysql:8.0.42
+    container_name: charva-mysql
+    restart: unless-stopped
+    # 3308, not 3306 or 3307: XAMPP's MariaDB owns 3306 on the dev machine and the silkgrain
+    # project owns 3307. Production runs MySQL 8.0.x too, so there is no dialect drift.
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: charva_dev_only
+      MYSQL_DATABASE: charva
+    command:
+      - --sql-mode=STRICT_TRANS_TABLES,ONLY_FULL_GROUP_BY,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+00:00
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pcharva_dev_only"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: charva-mailpit
+    restart: unless-stopped
+    # 1026 and 8026 rather than the defaults, so a Mailpit from another project can coexist.
+    ports:
+      - "1026:1025"
+      - "8026:8025"
+    environment:
+      MP_MAX_MESSAGES: "500"
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+
+volumes:
+  mysql-data:
