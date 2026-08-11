@@ -1,4 +1,12 @@
-import { alphaBase, choicePalette, globalPalette, sand, umrahPalette } from './tokens';
+import {
+  alphaBase,
+  choicePalette,
+  globalPalette,
+  heroScale,
+  onDarkAlpha,
+  sand,
+  umrahPalette,
+} from './tokens';
 
 /**
  * The theme layer.
@@ -46,8 +54,16 @@ interface ThemeRoles {
   darkAlt: string;
   /** Text on any dark surface. */
   onDark: string;
-  /** rgba base for borders and fills on light. */
+  /** rgba base for shadows. Always the dark brand ink, even on a dark surface — see below. */
   inkRgb: string;
+  /**
+   * rgba base for borders, rules and tint fills.
+   *
+   * Separate from `inkRgb` for one reason: on a dark surface a border has to become light
+   * while a shadow must stay dark. One variable would force a cream-coloured drop shadow,
+   * which reads as a glow.
+   */
+  borderRgb: string;
   /** rgba base for text and borders on dark. */
   creamRgb: string;
   /** rgba base for photo scrims. */
@@ -56,7 +72,42 @@ interface ThemeRoles {
   cardRadius: string;
   /** Card hover lift. They differ here too. */
   cardLift: string;
+  /** The hero headline: 82px on Global, 72px on Umrah, 64px on Choice. */
+  heroSize: string;
+  heroLeading: string;
+  heroTracking: string;
 }
+
+/**
+ * The roles a dark surface redefines.
+ *
+ * A dark section is not a different theme — it is the same brand on a different backdrop — so
+ * it overrides a handful of roles rather than the whole set. `<Section tone="dark">` puts
+ * `data-surface="dark"` on its element and everything inside picks these up: headings become
+ * cream, borders become light, the eyebrow's link colour switches from the muted sand to the
+ * bright one. The alternative is a `tone` prop threaded through every primitive, which is the
+ * same mistake as a `theme` prop and this file exists to avoid.
+ *
+ * Every value here points at another variable rather than at a literal, so one block serves
+ * all three themes: `--c-on-dark` already means the Global cream on Global and the Umrah cream
+ * on Umrah. No theme-scoped duplicate, no specificity ordering to get wrong.
+ */
+const darkSurface: Vars = {
+  // A sensible default for anything asking for "the page background" inside a dark section.
+  // The section paints its own backdrop with `bg-dark` or `bg-dark-alt`; this is for children.
+  '--c-bg': 'var(--c-dark-alt)',
+  // A panel on a dark section is a barely-lifted tint, not a light card.
+  '--c-surface': 'rgba(var(--c-cream-rgb), 0.05)',
+  '--c-ink': 'var(--c-on-dark)',
+  '--c-body': `rgba(var(--c-cream-rgb), ${String(onDarkAlpha.body)})`,
+  '--c-muted': `rgba(var(--c-cream-rgb), ${String(onDarkAlpha.muted)})`,
+  '--c-nav': `rgba(var(--c-cream-rgb), ${String(onDarkAlpha.body)})`,
+  // The muted sand is a link colour on light and unreadable on dark; the bright one is both.
+  '--c-accent-text': 'var(--c-accent)',
+  '--c-accent-active': 'var(--c-accent-hover)',
+  // Borders flip to light. Shadows do not — `--c-ink-rgb` is untouched on purpose.
+  '--c-border-rgb': 'var(--c-cream-rgb)',
+};
 
 const globalTheme: ThemeRoles = {
   bg: globalPalette.bg,
@@ -74,10 +125,14 @@ const globalTheme: ThemeRoles = {
   darkAlt: globalPalette.brown900,
   onDark: globalPalette.cream,
   inkRgb: alphaBase.globalInk,
+  borderRgb: alphaBase.globalInk,
   creamRgb: alphaBase.globalCream,
   scrimRgb: alphaBase.globalScrim,
   cardRadius: '22px',
   cardLift: '-6px',
+  heroSize: heroScale.global.size,
+  heroLeading: heroScale.global.leading,
+  heroTracking: heroScale.global.tracking,
 };
 
 const umrahTheme: ThemeRoles = {
@@ -96,10 +151,14 @@ const umrahTheme: ThemeRoles = {
   darkAlt: umrahPalette.green800,
   onDark: umrahPalette.cream,
   inkRgb: alphaBase.umrahInk,
+  borderRgb: alphaBase.umrahInk,
   creamRgb: alphaBase.umrahCream,
   scrimRgb: alphaBase.umrahScrim,
   cardRadius: '24px',
   cardLift: '-5px',
+  heroSize: heroScale.umrah.size,
+  heroLeading: heroScale.umrah.leading,
+  heroTracking: heroScale.umrah.tracking,
 };
 
 /**
@@ -123,10 +182,15 @@ const choiceTheme: ThemeRoles = {
   darkAlt: choicePalette.bg,
   onDark: choicePalette.cream,
   inkRgb: alphaBase.choiceGlass,
+  // Choice has no light surfaces, so its borders are light from the start.
+  borderRgb: alphaBase.white,
   creamRgb: alphaBase.globalCream,
   scrimRgb: alphaBase.choiceGlass,
   cardRadius: '22px',
   cardLift: '-5px',
+  heroSize: heroScale.choice.size,
+  heroLeading: heroScale.choice.leading,
+  heroTracking: heroScale.choice.tracking,
 };
 
 /** camelCase role -> `--c-kebab-case` custom property. */
@@ -146,6 +210,9 @@ export const themes = {
 } as const;
 
 export type ThemeName = keyof typeof themes;
+
+/** Exported for `theme.test.ts`, which checks every override points at a role that exists. */
+export { darkSurface };
 
 function block(selector: string, vars: Vars): string {
   const body = Object.entries(vars)
@@ -169,6 +236,7 @@ export function buildThemeCss(): string {
     block(':root, [data-theme="global"]', themes.global),
     block('[data-theme="umrah"]', themes.umrah),
     block('[data-theme="choice"]', themes.choice),
+    block('[data-surface="dark"]', darkSurface),
   ];
 
   return `${header}${blocks.join('\n\n')}\n`;

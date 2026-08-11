@@ -78,6 +78,22 @@ export const charvaPreset = {
         alt: themed('dark-alt'),
         on: themed('on-dark'),
       },
+
+      /**
+       * Hairlines, rules and tint fills.
+       *
+       * The prototypes write these as forty rgba literals at seven opacities over two bases.
+       * Naming the seven and deriving the base from `--c-border-rgb` means a dark section
+       * flips every border in it to light without a single component knowing.
+       */
+      line: {
+        DEFAULT: 'rgba(var(--c-border-rgb), 0.1)',
+        soft: 'rgba(var(--c-border-rgb), 0.06)',
+        rule: 'rgba(var(--c-border-rgb), 0.12)',
+        field: 'rgba(var(--c-border-rgb), 0.14)',
+        chip: 'rgba(var(--c-border-rgb), 0.18)',
+        strong: 'rgba(var(--c-border-rgb), 0.22)',
+      },
     },
 
     fontFamily: {
@@ -93,7 +109,17 @@ export const charvaPreset = {
       black: String(fontWeight.black),
     },
 
-    fontSize: buildFontSizes(),
+    fontSize: {
+      ...buildFontSizes(),
+      /**
+       * The hero headline reads its size from the theme, because 82 / 72 / 64 is the one place
+       * the three sites genuinely disagree and it is the largest element on each homepage.
+       */
+      hero: [
+        'var(--c-hero-size)',
+        { lineHeight: 'var(--c-hero-leading)', letterSpacing: 'var(--c-hero-tracking)' },
+      ],
+    },
 
     borderRadius: {
       none: '0',
@@ -110,6 +136,11 @@ export const charvaPreset = {
     },
 
     extend: {
+      /** Overriding `colors` wholesale leaves Tailwind's default border grey unresolvable. */
+      borderColor: {
+        DEFAULT: 'rgba(var(--c-border-rgb), 0.1)',
+      },
+
       spacing: {
         gutter: px(layout.containerPadding),
         section: px(layout.sectionGap),

@@ -54,17 +54,16 @@ export function CountdownTimer({ target, labels, passed, className }: CountdownT
           key={cell.label}
           // The seconds cell changes every second; announcing it is noise, not information.
           aria-hidden={index === 3 || undefined}
-          className={cn(
-            'rounded-sm border px-[10px] py-[18px] text-center',
-            'border-[rgba(var(--c-cream-rgb),0.1)] bg-[rgba(var(--c-cream-rgb),0.05)]',
-          )}
+          // The clock only ever sits on a dark card, so these read from `--c-border-rgb`,
+          // which a dark surface flips to the brand cream. Written as arbitrary rgba values
+          // they compiled to nothing at all: Tailwind cannot infer the type of an arbitrary
+          // value containing `var()`, and it fails silently.
+          className="rounded-sm border border-line bg-line-soft px-[10px] py-[18px] text-center"
         >
           <div className="font-medium text-countdown text-dark-on tabular-nums">
             {cell.pad ? pad(cell.value) : String(cell.value)}
           </div>
-          <div className="mt-[10px] font-bold text-label uppercase text-[rgba(var(--c-cream-rgb),0.5)]">
-            {cell.label}
-          </div>
+          <div className="mt-[10px] font-bold text-label uppercase text-muted">{cell.label}</div>
         </div>
       ))}
 

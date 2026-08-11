@@ -1,4 +1,4 @@
-import { type Hex } from './color';
+import { blendOver, type Hex } from './color';
 
 /**
  * Design tokens for all three Charva front-ends.
@@ -219,6 +219,8 @@ export const type = {
   heroUmrah: [72, 1.02, '-0.02em'],
   heroChoice: [64, 1.02, '-0.015em'],
   h1: [63, 1.04, '-0.02em'],
+  /** The homepage section headings. The band is 36–50 and this is its top. */
+  h2Lg: [50, 1.1, '-0.015em'],
   h2: [44, 1.12, '-0.015em'],
   h2Sm: [36, 1.14, '-0.015em'],
   h3: [33, 1.15, 'normal'],
@@ -234,6 +236,42 @@ export const type = {
   /** Countdown digits. Zero-padded to two, but a day count over 99 renders three. */
   countdown: [42, 1, '-0.02em'],
 } as const satisfies Record<string, readonly [number, number, string]>;
+
+/**
+ * The hero headline, which is the one type role where the three sites genuinely disagree:
+ * 82px on Global, 72px on Umrah, 64px on Choice, each with its own leading and tracking.
+ *
+ * Rather than a `site` prop on the most prominent element of every homepage, these become
+ * theme variables — `--c-hero-size` and friends — so `<Heading size="hero">` renders the right
+ * one by virtue of which document it is in.
+ *
+ * The value is a `clamp()` because the prototypes are fixed-width at 1280 and an 82px headline
+ * on a 375px phone overflows on the second word. The upper bound is pinned above ~1170px, so
+ * at every width the design was drawn for the number is exactly the one in the mockup, and
+ * below that it scales rather than wraps into six lines.
+ */
+export const heroScale = {
+  global: { size: 'clamp(38px, 7vw, 82px)', leading: '1', tracking: '-0.02em' },
+  umrah: { size: 'clamp(34px, 6.2vw, 72px)', leading: '1.02', tracking: '-0.02em' },
+  choice: { size: 'clamp(32px, 5.5vw, 64px)', leading: '1.02', tracking: '-0.015em' },
+} as const;
+
+/**
+ * Text opacities on a dark surface.
+ *
+ * The prototypes use ten of them between 1 and .4. Three carry text, and only those three are
+ * named here; everything fainter is decoration — rules, disabled states, scrim edges — and is
+ * written inline where it is used. `tokens.test.ts` flattens these against every dark surface
+ * in the system and holds them to the same AA bar as the opaque pairs.
+ */
+export const onDarkAlpha = {
+  /** Body copy on a dark section. */
+  body: 0.72,
+  /** Meta, captions, footer links. */
+  muted: 0.55,
+  /** Decoration only — this one does not clear AA and must never carry text. */
+  faint: 0.4,
+} as const;
 
 // ======================================================================================
 // Motion
@@ -378,6 +416,28 @@ export interface ContrastPair {
   where: string;
 }
 
+/** Every dark surface in the system, with the cream its brand puts on top. */
+export const DARK_SURFACES: readonly { bg: Hex; cream: Hex; where: string }[] = [
+  { bg: globalPalette.brown950, cream: globalPalette.cream, where: 'the Global footer' },
+  { bg: globalPalette.brown900, cream: globalPalette.cream, where: 'Global dark sections' },
+  { bg: globalPalette.brown800, cream: globalPalette.cream, where: 'the Global video page' },
+  { bg: umrahPalette.green950, cream: umrahPalette.cream, where: 'the Umrah footer' },
+  { bg: umrahPalette.green900, cream: umrahPalette.cream, where: 'the Umrah hero' },
+  { bg: umrahPalette.green800, cream: umrahPalette.cream, where: 'Umrah dark sections' },
+  { bg: choicePalette.bg, cream: choicePalette.cream, where: 'Choice' },
+];
+
+/**
+ * The translucent creams, flattened.
+ *
+ * Generated rather than typed out: fourteen pairs written by hand would be fourteen chances to
+ * paste the wrong backdrop, and the whole point is that the number is measured.
+ */
+const onDarkPairs: ContrastPair[] = DARK_SURFACES.flatMap(({ bg, cream, where }) => [
+  { fg: blendOver(cream, bg, onDarkAlpha.body), bg, size: 15, where: `body text on ${where}` },
+  { fg: blendOver(cream, bg, onDarkAlpha.muted), bg, size: 12, where: `meta on ${where}` },
+]);
+
 export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   // --- Global on light ---
   { fg: globalPalette.brown900, bg: globalPalette.bg, size: 15, where: 'headings and body' },
@@ -422,6 +482,9 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   { fg: choicePalette.creamWarm, bg: choicePalette.bg, size: 13, bold: true, where: 'outline CTA' },
   { fg: sand.DEFAULT, bg: choicePalette.bg, size: 29, where: 'stat values' },
   { fg: choicePalette.btnText, bg: sand.DEFAULT, size: 13, bold: true, where: 'sand CTA' },
+
+  // --- The translucent creams, resolved against each dark surface ---
+  ...onDarkPairs,
 ];
 
 /**

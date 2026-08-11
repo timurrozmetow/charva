@@ -32,6 +32,27 @@ export function contrastRatio(a: Hex, b: Hex): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+/** Two hex digits, lowercase-free, for `blendOver`. */
+function toHexPair(value: number): string {
+  return Math.round(value).toString(16).toUpperCase().padStart(2, '0');
+}
+
+/**
+ * Flattens a translucent colour against an opaque backdrop.
+ *
+ * The design expresses every secondary text colour on a dark section as the brand cream at
+ * some opacity — `rgba(253,249,243,.55)` and friends, forty literals across the package. A
+ * ratio cannot be measured against a colour that is partly transparent, so the pair has to be
+ * resolved first. `tokens.test.ts` uses this to hold those alphas to the same AA bar as every
+ * opaque pair, which is a check the handoff never made.
+ */
+export function blendOver(fg: Hex, bg: Hex, alpha: number): Hex {
+  const [fr, fg_, fb] = hexToRgb(fg);
+  const [br, bg_, bb] = hexToRgb(bg);
+  const mix = (f: number, b: number): string => toHexPair(f * alpha + b * (1 - alpha));
+  return `#${mix(fr, br)}${mix(fg_, bg_)}${mix(fb, bb)}`;
+}
+
 /**
  * The minimum WCAG AA demands for a given text size.
  *

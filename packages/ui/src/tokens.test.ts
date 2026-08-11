@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { contrastRatio, requiredRatio, type Hex } from './color';
+import { blendOver, contrastRatio, requiredRatio, type Hex } from './color';
 import {
   choicePalette,
   CONTRAST_CORRECTIONS,
   CONTRAST_PAIRS,
+  DARK_SURFACES,
   FILL_ONLY_ON_LIGHT,
   globalPalette,
+  onDarkAlpha,
   umrahPalette,
 } from './tokens';
 
@@ -46,6 +48,18 @@ describe('the accent never carries text on a light surface', () => {
         expect(contrastRatio(accent, surface)).toBeLessThan(4.5);
       });
     }
+  }
+});
+
+describe('the faintest cream stays decoration', () => {
+  for (const { bg, cream, where } of DARK_SURFACES) {
+    it(`${String(onDarkAlpha.faint)} cream on ${where} is below AA`, () => {
+      // Asserting the failure on purpose, as with the accent on light. The design reaches for
+      // this opacity constantly — rules, disabled controls, the faded edge of a scrim — and
+      // the moment someone puts a sentence in it the page has unreadable text on it.
+      const flattened = blendOver(cream, bg, onDarkAlpha.faint);
+      expect(contrastRatio(flattened, bg)).toBeLessThan(4.5);
+    });
   }
 });
 
