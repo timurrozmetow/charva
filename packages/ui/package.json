@@ -10,10 +10,15 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./styles.css": "./src/styles.css"
+    "./styles.css": "./src/styles.css",
+    "./theme.css": "./dist/theme.css",
+    "./tailwind-preset": {
+      "types": "./dist/tailwind-preset.d.ts",
+      "default": "./dist/tailwind-preset.js"
+    }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/emit-css.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
@@ -29,11 +34,14 @@
   },
   "devDependencies": {
     "@charva/config": "workspace:*",
+    "@types/fontkit": "^2.0.9",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "fontkit": "^2.0.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rimraf": "^6.0.1",
+    "tailwindcss": "^3.4.19",
     "tsup": "^8.3.5",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"
