@@ -95,6 +95,26 @@ export const umrahPalette = {
   btnText: sand.contrast,
 } as const satisfies Record<string, Hex>;
 
+/**
+ * The one colour that is not in the handoff.
+ *
+ * There is no error state anywhere in the package — no invalid field, no failed submission,
+ * no required-field message — because there is not a single working form in it: the checkboxes
+ * are styled `<span>`s and the submit buttons are `<a href="#">`. A colour for "this went
+ * wrong" has to be invented, so it is invented once, here, measured, and kept warm enough to
+ * belong beside both palettes rather than dropped in from a framework.
+ *
+ * Two values because one cannot serve both surfaces: a red dark enough to read on cream is
+ * invisible on `#33261B`. The dark section swaps them through `--c-danger`, so no component
+ * chooses between them.
+ */
+export const danger = {
+  /** On any light surface. 6.6:1 on the Global page, 6.4:1 on the Umrah page. */
+  DEFAULT: '#A32E20',
+  /** On any dark surface. */
+  onDark: '#F2A399',
+} as const satisfies Record<string, Hex>;
+
 export const choicePalette = {
   sand: sand.DEFAULT,
   sandLight: sand.light,
@@ -482,6 +502,15 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   { fg: choicePalette.creamWarm, bg: choicePalette.bg, size: 13, bold: true, where: 'outline CTA' },
   { fg: sand.DEFAULT, bg: choicePalette.bg, size: 29, where: 'stat values' },
   { fg: choicePalette.btnText, bg: sand.DEFAULT, size: 13, bold: true, where: 'sand CTA' },
+
+  // --- The error colour, on every surface a form appears on ---
+  { fg: danger.DEFAULT, bg: globalPalette.bg, size: 13, where: 'field errors, Global' },
+  { fg: danger.DEFAULT, bg: globalPalette.surface, size: 13, where: 'field errors on a card' },
+  { fg: danger.DEFAULT, bg: umrahPalette.bg, size: 13, where: 'field errors, Umrah' },
+  { fg: danger.DEFAULT, bg: umrahPalette.surface, size: 13, where: 'field errors on a card' },
+  { fg: danger.onDark, bg: globalPalette.brown900, size: 13, where: 'field errors on dark' },
+  { fg: danger.onDark, bg: umrahPalette.green900, size: 13, where: 'signup errors on dark' },
+  { fg: danger.onDark, bg: umrahPalette.green800, size: 13, where: 'field errors on dark' },
 
   // --- The translucent creams, resolved against each dark surface ---
   ...onDarkPairs,

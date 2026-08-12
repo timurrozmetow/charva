@@ -62,6 +62,8 @@ export const charvaPreset = {
       // Theme roles. The same class means different pixels on different sites.
       bg: themed('bg'),
       surface: themed('surface'),
+      /** Inputs and textareas: the page colour on light, a faint cream tint on dark. */
+      field: themed('field'),
       ink: themed('ink'),
       body: themed('body'),
       muted: themed('muted'),
@@ -93,6 +95,18 @@ export const charvaPreset = {
         field: 'rgba(var(--c-border-rgb), 0.14)',
         chip: 'rgba(var(--c-border-rgb), 0.18)',
         strong: 'rgba(var(--c-border-rgb), 0.22)',
+        /** The box of a checkbox or radio, which has to read as a control at 17px. */
+        control: 'rgba(var(--c-border-rgb), 0.28)',
+      },
+
+      /** The one colour the handoff does not contain — see `danger` in tokens.ts. */
+      danger: themed('danger'),
+
+      /** The accent as a tint: the selected topic chip and the passed step of the builder. */
+      tint: {
+        DEFAULT: 'rgba(223, 160, 89, 0.2)',
+        soft: 'rgba(223, 160, 89, 0.1)',
+        strong: 'rgba(223, 160, 89, 0.16)',
       },
     },
 

@@ -1,8 +1,17 @@
 {
   "extends": "@charva/config/tsconfig/react.json",
   "compilerOptions": {
-    "types": []
+    // `@testing-library/jest-dom/vitest` augments Vitest's `Assertion` interface. Without it
+    // here, `toBeInTheDocument` and every other DOM matcher is an unresolved property and the
+    // typed lint rules report each one as an unsafe call.
+    "types": ["@testing-library/jest-dom/vitest"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "tsup.config.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tsup.config.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

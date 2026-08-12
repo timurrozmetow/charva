@@ -1,6 +1,7 @@
 import {
   alphaBase,
   choicePalette,
+  danger,
   globalPalette,
   heroScale,
   onDarkAlpha,
@@ -28,8 +29,16 @@ type Vars = Record<string, string>;
 interface ThemeRoles {
   /** Page background. */
   bg: string;
-  /** Card and panel background. */
+  /** Card and panel background — the raised surface. */
   surface: string;
+  /**
+   * The recessed surface: input and textarea backgrounds.
+   *
+   * On light this is the page colour, because the design puts `#FAF6EF` fields inside a
+   * `#FFFDFA` card. On dark it is a faint cream tint, which is a different relationship to the
+   * page background, so it cannot just be `--c-bg`.
+   */
+  field: string;
   /** Headings and primary text on light. */
   ink: string;
   /** Body text on light. */
@@ -54,6 +63,10 @@ interface ThemeRoles {
   darkAlt: string;
   /** Text on any dark surface. */
   onDark: string;
+  /** Invalid fields and failed submissions, on whichever surface the form is on. */
+  danger: string;
+  /** The same, for a dark surface. Swapped in by `darkSurface` rather than chosen in code. */
+  dangerOnDark: string;
   /** rgba base for shadows. Always the dark brand ink, even on a dark surface — see below. */
   inkRgb: string;
   /**
@@ -98,6 +111,7 @@ const darkSurface: Vars = {
   '--c-bg': 'var(--c-dark-alt)',
   // A panel on a dark section is a barely-lifted tint, not a light card.
   '--c-surface': 'rgba(var(--c-cream-rgb), 0.05)',
+  '--c-field': 'rgba(var(--c-cream-rgb), 0.06)',
   '--c-ink': 'var(--c-on-dark)',
   '--c-body': `rgba(var(--c-cream-rgb), ${String(onDarkAlpha.body)})`,
   '--c-muted': `rgba(var(--c-cream-rgb), ${String(onDarkAlpha.muted)})`,
@@ -105,6 +119,7 @@ const darkSurface: Vars = {
   // The muted sand is a link colour on light and unreadable on dark; the bright one is both.
   '--c-accent-text': 'var(--c-accent)',
   '--c-accent-active': 'var(--c-accent-hover)',
+  '--c-danger': 'var(--c-danger-on-dark)',
   // Borders flip to light. Shadows do not — `--c-ink-rgb` is untouched on purpose.
   '--c-border-rgb': 'var(--c-cream-rgb)',
 };
@@ -112,6 +127,7 @@ const darkSurface: Vars = {
 const globalTheme: ThemeRoles = {
   bg: globalPalette.bg,
   surface: globalPalette.surface,
+  field: globalPalette.bg,
   ink: globalPalette.brown900,
   body: globalPalette.brown500,
   muted: globalPalette.brown400,
@@ -124,6 +140,8 @@ const globalTheme: ThemeRoles = {
   dark: globalPalette.brown950,
   darkAlt: globalPalette.brown900,
   onDark: globalPalette.cream,
+  danger: danger.DEFAULT,
+  dangerOnDark: danger.onDark,
   inkRgb: alphaBase.globalInk,
   borderRgb: alphaBase.globalInk,
   creamRgb: alphaBase.globalCream,
@@ -138,6 +156,7 @@ const globalTheme: ThemeRoles = {
 const umrahTheme: ThemeRoles = {
   bg: umrahPalette.bg,
   surface: umrahPalette.surface,
+  field: umrahPalette.bg,
   ink: umrahPalette.ink,
   body: umrahPalette.green500,
   muted: umrahPalette.green400,
@@ -150,6 +169,8 @@ const umrahTheme: ThemeRoles = {
   dark: umrahPalette.green950,
   darkAlt: umrahPalette.green800,
   onDark: umrahPalette.cream,
+  danger: danger.DEFAULT,
+  dangerOnDark: danger.onDark,
   inkRgb: alphaBase.umrahInk,
   borderRgb: alphaBase.umrahInk,
   creamRgb: alphaBase.umrahCream,
@@ -169,6 +190,7 @@ const umrahTheme: ThemeRoles = {
 const choiceTheme: ThemeRoles = {
   bg: choicePalette.bg,
   surface: choicePalette.bg,
+  field: `rgba(${alphaBase.globalCream}, 0.07)`,
   ink: choicePalette.cream,
   body: choicePalette.cream,
   muted: choicePalette.creamWarm,
@@ -181,6 +203,9 @@ const choiceTheme: ThemeRoles = {
   dark: choicePalette.bg,
   darkAlt: choicePalette.bg,
   onDark: choicePalette.cream,
+  // Choice is dark everywhere, so its only error colour is the light one.
+  danger: danger.onDark,
+  dangerOnDark: danger.onDark,
   inkRgb: alphaBase.choiceGlass,
   // Choice has no light surfaces, so its borders are light from the start.
   borderRgb: alphaBase.white,

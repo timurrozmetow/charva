@@ -28,6 +28,7 @@ const OWNED_PREFIXES = [
   'text-',
   'bg-',
   'border-',
+  'outline-',
   'ring-',
   'fill-',
   'stroke-',
