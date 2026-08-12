@@ -12,7 +12,8 @@
     "clean": "rimraf dist .turbo",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:reset": "tsx src/db/reset.ts"
+    "db:reset": "tsx src/db/reset.ts",
+    "db:seed": "tsx src/db/seed/index.ts"
   },
   "dependencies": {
     "@charva/contracts": "workspace:*",
