@@ -81,8 +81,18 @@ interface ThemeRoles {
   creamRgb: string;
   /** rgba base for photo scrims. */
   scrimRgb: string;
+  /**
+   * Opacity of a hairline on this brand's surfaces.
+   *
+   * Global draws card borders at .1 and Umrah at .09. It looks like noise and it is in the
+   * design; recording it costs one variable and stops a tidying commit from silently changing
+   * both sites.
+   */
+  lineAlpha: string;
   /** Card corner radius. Global and Umrah genuinely differ. */
   cardRadius: string;
+  /** The hover shadow. Global spreads it at -26px, Umrah at -28px. Also real. */
+  cardShadow: string;
   /** Card hover lift. They differ here too. */
   cardLift: string;
   /** The hero headline: 82px on Global, 72px on Umrah, 64px on Choice. */
@@ -122,6 +132,8 @@ const darkSurface: Vars = {
   '--c-danger': 'var(--c-danger-on-dark)',
   // Borders flip to light. Shadows do not — `--c-ink-rgb` is untouched on purpose.
   '--c-border-rgb': 'var(--c-cream-rgb)',
+  // A .09 cream hairline on a dark section is not there at all.
+  '--c-line-alpha': '0.14',
 };
 
 const globalTheme: ThemeRoles = {
@@ -146,7 +158,9 @@ const globalTheme: ThemeRoles = {
   borderRgb: alphaBase.globalInk,
   creamRgb: alphaBase.globalCream,
   scrimRgb: alphaBase.globalScrim,
+  lineAlpha: '0.1',
   cardRadius: '22px',
+  cardShadow: '0 26px 50px -26px rgba(var(--c-ink-rgb), 0.34)',
   cardLift: '-6px',
   heroSize: heroScale.global.size,
   heroLeading: heroScale.global.leading,
@@ -175,7 +189,9 @@ const umrahTheme: ThemeRoles = {
   borderRgb: alphaBase.umrahInk,
   creamRgb: alphaBase.umrahCream,
   scrimRgb: alphaBase.umrahScrim,
+  lineAlpha: '0.09',
   cardRadius: '24px',
+  cardShadow: '0 26px 50px -28px rgba(var(--c-ink-rgb), 0.34)',
   cardLift: '-5px',
   heroSize: heroScale.umrah.size,
   heroLeading: heroScale.umrah.leading,
@@ -211,7 +227,10 @@ const choiceTheme: ThemeRoles = {
   borderRgb: alphaBase.white,
   creamRgb: alphaBase.globalCream,
   scrimRgb: alphaBase.choiceGlass,
+  // Choice draws on near-black, where a .1 hairline is invisible.
+  lineAlpha: '0.16',
   cardRadius: '22px',
+  cardShadow: '0 18px 50px -24px rgba(0, 0, 0, 0.7)',
   cardLift: '-5px',
   heroSize: heroScale.choice.size,
   heroLeading: heroScale.choice.leading,

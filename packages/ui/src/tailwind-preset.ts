@@ -89,7 +89,8 @@ export const charvaPreset = {
        * flips every border in it to light without a single component knowing.
        */
       line: {
-        DEFAULT: 'rgba(var(--c-border-rgb), 0.1)',
+        /** The card hairline: .1 on Global, .09 on Umrah, .14 on any dark surface. */
+        DEFAULT: 'rgba(var(--c-border-rgb), var(--c-line-alpha))',
         soft: 'rgba(var(--c-border-rgb), 0.06)',
         rule: 'rgba(var(--c-border-rgb), 0.12)',
         field: 'rgba(var(--c-border-rgb), 0.14)',
@@ -170,7 +171,7 @@ export const charvaPreset = {
     extend: {
       /** Overriding `colors` wholesale leaves Tailwind's default border grey unresolvable. */
       borderColor: {
-        DEFAULT: 'rgba(var(--c-border-rgb), 0.1)',
+        DEFAULT: 'rgba(var(--c-border-rgb), var(--c-line-alpha))',
       },
 
       spacing: {
@@ -215,8 +216,12 @@ export const charvaPreset = {
         island: '0 16px 44px -22px rgba(var(--c-ink-rgb), 0.3)',
         /** The language dropdown. */
         drop: '0 26px 56px -22px rgba(var(--c-ink-rgb), 0.4)',
-        /** A card at rest is flat; this is the hover state. */
-        card: '0 26px 50px -26px rgba(var(--c-ink-rgb), 0.34)',
+        /**
+         * A card at rest is flat; this is the hover state. From the theme, because Global
+         * spreads it at -26px and Umrah at -28px — two pixels that are in the design and would
+         * not survive a cleanup commit written against one site.
+         */
+        card: 'var(--c-card-shadow)',
         /** Softer, used on article cards. */
         'card-soft': '0 22px 44px -24px rgba(var(--c-ink-rgb), 0.3)',
         /** The sand CTA in the navbar. */
