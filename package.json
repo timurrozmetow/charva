@@ -16,10 +16,12 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
+    "design:extract": "node scripts/extract-design-data.mjs",
+    "design:check": "node scripts/extract-design-data.mjs --check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "turbo run clean && rimraf node_modules .turbo",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "verify": "pnpm format:check && pnpm design:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "setup:services": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1",
     "prepare": "husky"
   },

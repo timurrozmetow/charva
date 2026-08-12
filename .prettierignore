@@ -11,3 +11,7 @@ pnpm-lock.yaml
 
 # The design handoff is read-only source material — never reformat it.
 design_handoff_charva/
+
+# Generated from the prototypes by scripts/extract-design-data.mjs. Prettier reformats it,
+# which makes the --check that guards against drift fail on every run.
+docs/design/content.json
