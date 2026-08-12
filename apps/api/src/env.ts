@@ -16,9 +16,24 @@ loadDotenv({ path: new URL('../../../.env', import.meta.url), quiet: true });
 
 const PLACEHOLDER = /replace[-_]me/i;
 
+/**
+ * Development stand-ins for the three secrets.
+ *
+ * They exist so that nothing has to be configured to clone the repository and run it, and they
+ * are named here rather than inline so the production guard can recognise them: a value equal
+ * to one of these is a value nobody chose.
+ */
+const DEV_SECRETS = {
+  FORM_TOKEN_SECRET: 'charva-dev-only-form-token-secret',
+  IP_HASH_SECRET: 'charva-dev-only-ip-hash-secret',
+  PASSPORT_ENCRYPTION_KEY: '00'.repeat(32),
+} as const;
+
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  // `silent` is what the test suite uses: an API test that prints a request log per assertion
+  // buries the one line that matters when something fails.
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
   API_HOST: z.string().min(1).default('0.0.0.0'),
   // 3002, not the usual 3001: the silkgrain project on this machine owns 3001. See CLAUDE.md.
@@ -52,9 +67,76 @@ const schema = z.object({
   DATABASE_NAME_PREFIX: z.string().min(1).default('charva'),
 
   DATABASE_POOL_SIZE: z.coerce.number().int().positive().max(50).default(10),
+
+  /**
+   * Where uploaded media lives on disk.
+   *
+   * A directory rather than a bucket — decision D-8. `media.storage_key` holds a key relative
+   * to this, so moving to object storage later replaces one adapter instead of rewriting every
+   * row that ever referenced a file.
+   */
+  UPLOADS_DIR: z.string().min(1).default('uploads'),
+
+  /**
+   * The origin `/img` URLs are built against.
+   *
+   * Empty means "same origin as the API", which is what development wants. In production it is
+   * the API host, so a URL survives being copied out of a response into an OG tag.
+   */
+  PUBLIC_MEDIA_BASE_URL: z.string().default(''),
+
+  /** How long a public GET stays in the in-process cache. Sixty seconds — decision D-7. */
+  CACHE_TTL_SECONDS: z.coerce.number().int().min(0).max(3600).default(60),
+
+  /**
+   * Anti-spam, first layer: how many form submissions one address may make, and over what
+   * window. Five per ten minutes — a form that receives single digits of genuine traffic a day.
+   */
+  LEAD_RATE_LIMIT_MAX: z.coerce.number().int().positive().max(1000).default(5),
+  LEAD_RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().int().positive().max(1440).default(10),
+
+  /** The ceiling on ordinary reads. Generous: it exists to stop a scraper, not a visitor. */
+  READ_RATE_LIMIT_MAX: z.coerce.number().int().positive().max(100_000).default(300),
+
+  /**
+   * Signs the form token that carries the moment a form was rendered — anti-spam layer three.
+   *
+   * The signature is the whole mechanism: it lets the server trust a timestamp it did not
+   * store, so the time trap needs neither a session, a cookie nor a table. See `form-token.ts`.
+   */
+  FORM_TOKEN_SECRET: z.string().min(16).default(DEV_SECRETS.FORM_TOKEN_SECRET),
+
+  /**
+   * Pepper for hashed IP addresses.
+   *
+   * A bare SHA-256 of an IPv4 address is not anonymisation: there are four billion of them and
+   * a rainbow table takes minutes to build. With a secret pepper the digest is useful for
+   * counting and useless for identifying.
+   */
+  IP_HASH_SECRET: z.string().min(16).default(DEV_SECRETS.IP_HASH_SECRET),
+
+  /**
+   * AES-256-GCM key for passport numbers — decision D-18, 32 bytes as 64 hex characters.
+   *
+   * The most sensitive column in the system. The default below is development-only and refused
+   * in production by the check at the bottom of this file.
+   */
+  PASSPORT_ENCRYPTION_KEY: z
+    .string()
+    .regex(/^[0-9a-fA-F]{64}$/, 'must be 32 bytes as 64 hex characters')
+    .default(DEV_SECRETS.PASSPORT_ENCRYPTION_KEY),
 });
 
 export type Env = z.infer<typeof schema>;
+
+/**
+ * Secrets that must be chosen rather than inherited.
+ *
+ * Each has a development default so nothing has to be configured to run the project locally,
+ * and each is refused in production, because a default secret in a public deploy is the same
+ * as no secret at all.
+ */
+const PRODUCTION_SECRETS = Object.keys(DEV_SECRETS) as (keyof typeof DEV_SECRETS)[];
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const parsed = schema.safeParse(source);
@@ -76,6 +158,19 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     if (unset.length > 0) {
       throw new Error(
         `Refusing to start in production with .env.example placeholders still in place: ${unset.join(', ')}`,
+      );
+    }
+
+    // A default secret is not a secret. Absent from `source` means the schema default applied.
+    const defaulted = PRODUCTION_SECRETS.filter((key) => {
+      const value = source[key];
+      return value === undefined || value.trim() === '' || value === DEV_SECRETS[key];
+    });
+
+    if (defaulted.length > 0) {
+      throw new Error(
+        `Refusing to start in production without these secrets set: ${defaulted.join(', ')}\n` +
+          'Generate each with:  node -e "console.log(crypto.randomBytes(32).toString(\'hex\'))"',
       );
     }
   }

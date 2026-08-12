@@ -2,9 +2,15 @@ import { buildApp } from './app';
 import { loadEnv } from './env';
 
 const env = loadEnv();
-const app = buildApp(env);
+const app = await buildApp(env);
 
-/** SIGTERM is what PM2 and systemd send; without this, in-flight requests are cut off. */
+/**
+ * SIGTERM is what PM2 and systemd send.
+ *
+ * Without this, a deploy cuts off whatever was in flight — including a lead somebody was in the
+ * middle of submitting. `app.close()` stops accepting, drains what is open and closes the pool
+ * through the `onClose` hook.
+ */
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => {
     app.log.info({ signal }, 'shutting down');
