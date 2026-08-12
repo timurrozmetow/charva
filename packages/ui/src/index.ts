@@ -20,6 +20,8 @@ export * from './components/FilterChipRow';
 export * from './components/FormError';
 export * from './components/Heading';
 export * from './components/Icon';
+export * from './components/ImageSlot';
+export * from './components/Img';
 export * from './components/Input';
 export * from './components/Lightbox';
 export * from './components/LinkArrow';
