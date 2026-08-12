@@ -1,9 +1,16 @@
+import { IMAGE_WIDTHS } from '@charva/contracts';
 import { type ImgHTMLAttributes, useCallback, useState } from 'react';
 
 import { cn } from '../cn';
 
-/** Widths the API is willing to resize to. Anything else is rejected, so the list is shared. */
-export const IMAGE_WIDTHS = [320, 480, 640, 960, 1280, 1600, 2048] as const;
+/**
+ * Widths the API is willing to resize to.
+ *
+ * Declared in `@charva/contracts` and re-exported here, so the list `srcSet` asks for and the
+ * list `/img` will produce are one list. Two copies would drift the day somebody adds a
+ * breakpoint, and the symptom is a 400 on one image size at one viewport width.
+ */
+export { IMAGE_WIDTHS };
 
 const RESIZABLE = /\.(webp|jpe?g|png|avif)$/i;
 

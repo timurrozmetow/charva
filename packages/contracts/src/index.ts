@@ -1,3 +1,4 @@
+export * from './api';
 export * from './builder';
 export * from './constants';
 export * from './errors';
