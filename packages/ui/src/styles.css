@@ -1,11 +1,81 @@
 /*
- * Global stylesheet for every Charva front-end.
+ * Base stylesheet for every Charva front-end.
  *
- * Phase 1 fills this with the font face declarations, the `data-theme` custom-property blocks
- * and the Tailwind layers. For now it carries only what the design prototypes' `<helmet>`
- * blocks establish and every page needs: box sizing, and a reset of the two margins the
- * prototypes clear by hand.
+ * Import order matters — the theme variables must land before anything reads them:
+ *
+ *   import '@charva/ui/theme.css';   generated from tokens.ts, defines --c-*
+ *   import '@charva/ui/styles.css';  this file
+ *
+ * Everything here is either a font declaration or a rule the design prototypes set globally
+ * in their <helmet> block. Nothing else is global: components carry their own styles.
  */
+
+/*
+ * The Tailwind layers live here rather than in each app's own stylesheet, so all four apps
+ * cannot drift in layer order. Each app's PostCSS runs over this file with its own
+ * tailwind.config.ts, so the utilities generated are the ones that app actually uses.
+ *
+ * `base` first so preflight lands before the rules below override it; `utilities` last so a
+ * utility class always beats a component style.
+ */
+@tailwind base;
+@tailwind components;
+
+/* ======================================================================================
+ * Stolzl
+ *
+ * Three files, five CSS weights: 500 and 600 both resolve to Medium, 700 and 800 both to
+ * Bold. That is how the prototypes declare it, and it is why a heading asking for 600 does
+ * not get a synthesised weight.
+ *
+ * The fonts cover Latin, Cyrillic and Turkmen completely. They are missing the Turkish
+ * G-breve and dotted capital I — see fonts.test.ts and QUESTIONS.md Q-17 — so Turkish text
+ * falls back for those three letters until the foundry supplies a fuller cut.
+ * ====================================================================================== */
+
+@font-face {
+  font-family: 'Stolzl';
+  src: url('../assets/fonts/stolzl-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Stolzl';
+  src: url('../assets/fonts/stolzl-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Stolzl';
+  src: url('../assets/fonts/stolzl-medium.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Stolzl';
+  src: url('../assets/fonts/stolzl-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Stolzl';
+  src: url('../assets/fonts/stolzl-bold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ======================================================================================
+ * Base
+ * ====================================================================================== */
 
 *,
 *::before,
@@ -13,8 +83,95 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
 }
+
+body {
+  background: var(--c-bg);
+  color: var(--c-body);
+  font-family: 'Stolzl', 'Manrope', sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* The prototypes style bare anchors globally; the accent is theme-scoped. */
+a {
+  color: var(--c-accent-text);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--c-accent);
+}
+
+::selection {
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+}
+
+/* Media never overflows its column; the prototypes rely on fixed widths that we do not. */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Inherit the interface font instead of the browser's default form font. */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* ======================================================================================
+ * Focus
+ *
+ * The prototypes set `outline: none` on every input and put nothing back. Keyboard users get
+ * a visible ring here, and only when the keyboard is what moved the focus.
+ * ====================================================================================== */
+
+/*
+ * No `border-radius` here. Setting one would reshape the focused element itself — a pill
+ * button would square off the moment it took focus. Browsers already follow the element's own
+ * radius when drawing the outline.
+ */
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* ======================================================================================
+ * Reduced motion
+ *
+ * The design carries two auto-rotating sliders, an infinite pulsing dot and a hover lift on
+ * every card, and handles none of this. Components additionally stop their own timers — a
+ * carousel that keeps advancing while its transition is suppressed still moves the page under
+ * the reader.
+ * ====================================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Utilities last: a utility class must beat a component style. */
+@tailwind utilities;

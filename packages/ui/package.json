@@ -10,14 +10,21 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./styles.css": "./src/styles.css"
+    "./styles.css": "./src/styles.css",
+    "./theme.css": "./dist/theme.css",
+    "./tailwind-preset": {
+      "types": "./dist/tailwind-preset.d.ts",
+      "default": "./dist/tailwind-preset.js"
+    }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/emit-css.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "clean": "rimraf dist storybook-static .turbo"
+    "clean": "rimraf dist storybook-static .turbo",
+    "storybook": "node scripts/emit-css.mjs && storybook dev -p 6180 --no-open",
+    "build:storybook": "node scripts/emit-css.mjs && storybook build"
   },
   "peerDependencies": {
     "react": "^18.3.1",
@@ -29,13 +36,29 @@
   },
   "devDependencies": {
     "@charva/config": "workspace:*",
+    "@storybook/addon-a11y": "^8.6.18",
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/react": "^8.6.18",
+    "@storybook/react-vite": "^8.6.18",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/fontkit": "^2.0.9",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.5.4",
+    "fontkit": "^2.0.4",
+    "jsdom": "^26.1.0",
+    "postcss": "^8.5.26",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rimraf": "^6.0.1",
+    "storybook": "^8.6.18",
+    "tailwindcss": "^3.4.19",
     "tsup": "^8.3.5",
     "typescript": "^5.7.3",
+    "vite": "^5.4.21",
     "vitest": "^2.1.8"
   }
 }
