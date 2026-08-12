@@ -11,7 +11,11 @@
     "src/**/*.tsx",
     "tsup.config.ts",
     "vitest.config.ts",
-    "vitest.setup.ts"
+    "vitest.setup.ts",
+    "tailwind.config.ts",
+    "postcss.config.js",
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx"
   ],
   "exclude": ["node_modules", "dist"]
 }

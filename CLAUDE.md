@@ -100,6 +100,7 @@ Vite, Fastify и Mailpit выбирают сами: 5173, 5174, 4173, 3001, 1025
 | web-global | **5181** (preview 4181)    | 5174 — silkgrain admin                 |
 | web-umrah  | **5182** (preview 4182)    | —                                      |
 | admin      | **5183** (preview 4183)    | —                                      |
+| Storybook  | **6180**                   | 6006 — значение по умолчанию           |
 | MySQL      | **3308**                   | 3306 — XAMPP MariaDB, 3307 — silkgrain |
 | Mailpit    | SMTP **1026**, UI **8026** | 1025, 8025 — silkgrain                 |
 
