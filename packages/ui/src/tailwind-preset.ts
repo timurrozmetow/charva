@@ -64,6 +64,8 @@ export const charvaPreset = {
       surface: themed('surface'),
       /** Inputs and textareas: the page colour on light, a faint cream tint on dark. */
       field: themed('field'),
+      /** The sticky navigation island, behind its backdrop blur. */
+      island: themed('island-bg'),
       ink: themed('ink'),
       body: themed('body'),
       muted: themed('muted'),

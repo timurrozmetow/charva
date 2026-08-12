@@ -32,6 +32,14 @@ interface ThemeRoles {
   /** Card and panel background — the raised surface. */
   surface: string;
   /**
+   * The sticky navigation island: the card colour at 88% behind a heavy backdrop blur.
+   *
+   * Its own role rather than an opacity modifier on `surface`, because Tailwind's modifier
+   * needs a colour it can take apart and `var(--c-surface)` is opaque to it — it would emit
+   * the solid colour and drop the transparency without a word.
+   */
+  islandBg: string;
+  /**
    * The recessed surface: input and textarea backgrounds.
    *
    * On light this is the page colour, because the design puts `#FAF6EF` fields inside a
@@ -139,6 +147,7 @@ const darkSurface: Vars = {
 const globalTheme: ThemeRoles = {
   bg: globalPalette.bg,
   surface: globalPalette.surface,
+  islandBg: 'rgba(255, 253, 250, 0.88)',
   field: globalPalette.bg,
   ink: globalPalette.brown900,
   body: globalPalette.brown500,
@@ -170,6 +179,7 @@ const globalTheme: ThemeRoles = {
 const umrahTheme: ThemeRoles = {
   bg: umrahPalette.bg,
   surface: umrahPalette.surface,
+  islandBg: 'rgba(255, 253, 250, 0.88)',
   field: umrahPalette.bg,
   ink: umrahPalette.ink,
   body: umrahPalette.green500,
@@ -206,6 +216,8 @@ const umrahTheme: ThemeRoles = {
 const choiceTheme: ThemeRoles = {
   bg: choicePalette.bg,
   surface: choicePalette.bg,
+  // Choice's navigation is dark glass over a photograph rather than a light card.
+  islandBg: `rgba(${alphaBase.choiceGlass}, 0.6)`,
   field: `rgba(${alphaBase.globalCream}, 0.07)`,
   ink: choicePalette.cream,
   body: choicePalette.cream,
