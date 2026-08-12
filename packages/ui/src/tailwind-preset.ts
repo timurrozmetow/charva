@@ -102,11 +102,29 @@ export const charvaPreset = {
       /** The one colour the handoff does not contain — see `danger` in tokens.ts. */
       danger: themed('danger'),
 
+      /**
+       * Photo scrims and the pills that sit on them.
+       *
+       * Written as an arbitrary value — `bg-[rgba(var(--c-scrim-rgb),0.72)]` — Tailwind cannot
+       * infer the type through the `var()` and silently emits nothing. Named here, it works.
+       */
+      scrim: {
+        DEFAULT: 'rgba(var(--c-scrim-rgb), 0.72)',
+        soft: 'rgba(var(--c-scrim-rgb), 0.45)',
+        strong: 'rgba(var(--c-scrim-rgb), 0.9)',
+      },
+
       /** The accent as a tint: the selected topic chip and the passed step of the builder. */
       tint: {
         DEFAULT: 'rgba(223, 160, 89, 0.2)',
         soft: 'rgba(223, 160, 89, 0.1)',
         strong: 'rgba(223, 160, 89, 0.16)',
+        /**
+         * The border of a status badge. Written out rather than `accent/45`, because the
+         * opacity modifier needs a colour Tailwind can take apart and `var(--c-accent)` is
+         * opaque to it — it would emit the solid accent and say nothing.
+         */
+        line: 'rgba(223, 160, 89, 0.45)',
       },
     },
 
