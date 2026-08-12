@@ -34,6 +34,24 @@ const schema = z.object({
         .map((origin) => origin.trim())
         .filter(Boolean),
     ),
+
+  /**
+   * MySQL 8 on 3308 — not 3306, which XAMPP holds, and not 3307, which silkgrain holds.
+   *
+   * A URL rather than five separate variables, because it is one string to paste into a
+   * client, one thing to get wrong, and the shape the hosting provider will hand over.
+   */
+  DATABASE_URL: z.string().url().default('mysql://root:charva_dev_only@127.0.0.1:3308/charva'),
+
+  /**
+   * The schema the destructive scripts are allowed to touch.
+   *
+   * `db:reset` drops and recreates a database; there are seven other schemas on this machine
+   * belonging to three other projects, and the guard is a prefix match against this value.
+   */
+  DATABASE_NAME_PREFIX: z.string().min(1).default('charva'),
+
+  DATABASE_POOL_SIZE: z.coerce.number().int().positive().max(50).default(10),
 });
 
 export type Env = z.infer<typeof schema>;

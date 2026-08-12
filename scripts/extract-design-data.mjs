@@ -179,6 +179,41 @@ function extractRenderVals(source) {
   return { found, skipped };
 }
 
+/**
+ * The `<image-slot>` elements written directly into the markup.
+ *
+ * Around half the slots live in a data array with a `photo` brief beside them; the other half —
+ * the heroes, the office photograph, the cover of each dark section — are elements in the page.
+ * Both halves are needed, because together they are the 151 rows of `content_slots` and the
+ * checklist that makes the missing photographs visible rather than merely absent (D-21, Q-1).
+ */
+function extractImageSlots(source) {
+  const slots = [];
+  const element = /<image-slot\b([^>]*)>/g;
+  let match;
+
+  while ((match = element.exec(source)) !== null) {
+    const attributes = match[1];
+    const read = (name) => {
+      const found = new RegExp(`${name}="([^"]*)"`).exec(attributes);
+      return found === null ? undefined : found[1];
+    };
+
+    const id = read('id');
+    // A templated id belongs to a repeated element whose data array was already extracted.
+    if (id === undefined || id.includes('{{')) continue;
+
+    slots.push({
+      id,
+      brief: read('placeholder') ?? '',
+      shape: read('shape') ?? 'rect',
+      fit: read('fit') ?? 'cover',
+    });
+  }
+
+  return slots;
+}
+
 function extractFile(path) {
   const source = readFileSync(path, 'utf8');
   const found = {};
@@ -215,6 +250,7 @@ function extractFile(path) {
     }
   }
 
+  const imageSlots = extractImageSlots(source);
   const inline = extractRenderVals(source);
   for (const [name, value] of Object.entries(inline.found)) {
     // A top-level `const` wins: `renderVals` usually just passes it through with styles added.
@@ -222,7 +258,7 @@ function extractFile(path) {
   }
   skipped.push(...inline.skipped.filter((entry) => !(entry.name in found)));
 
-  return { found, skipped };
+  return { found, skipped, imageSlots };
 }
 
 function main() {
@@ -233,16 +269,22 @@ function main() {
     .sort();
 
   const screens = {};
+  const imageSlots = {};
   const skipped = [];
   let total = 0;
+  let slotTotal = 0;
 
   for (const file of files) {
-    const { found, skipped: missed } = extractFile(join(designDir, file));
+    const { found, skipped: missed, imageSlots: slots } = extractFile(join(designDir, file));
     const screen = basename(file, '.dc.html');
 
     if (Object.keys(found).length > 0) {
       screens[screen] = found;
       total += Object.keys(found).length;
+    }
+    if (slots.length > 0) {
+      imageSlots[screen] = slots;
+      slotTotal += slots.length;
     }
     for (const entry of missed) skipped.push({ screen, ...entry });
   }
@@ -255,8 +297,10 @@ function main() {
     generatedFrom: 'design_handoff_charva/design/*.dc.html',
     screenCount: files.length,
     declarationCount: total,
+    imageSlotCount: slotTotal,
     skipped,
     screens,
+    imageSlots,
   };
 
   const json = `${JSON.stringify(output, null, 2)}\n`;

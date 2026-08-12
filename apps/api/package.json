@@ -9,19 +9,25 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "clean": "rimraf dist .turbo"
+    "clean": "rimraf dist .turbo",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:reset": "tsx src/db/reset.ts"
   },
   "dependencies": {
     "@charva/contracts": "workspace:*",
     "@fastify/sensible": "^5.6.0",
     "dotenv": "^16.6.1",
+    "drizzle-orm": "^0.45.2",
     "fastify": "^4.29.0",
+    "mysql2": "^3.23.3",
     "pino": "^9.6.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@charva/config": "workspace:*",
     "@types/node": "^22.10.7",
+    "drizzle-kit": "^0.31.10",
     "pino-pretty": "^13.0.0",
     "rimraf": "^6.0.1",
     "tsup": "^8.3.5",

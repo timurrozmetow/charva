@@ -3,6 +3,7 @@
   "generatedFrom": "design_handoff_charva/design/*.dc.html",
   "screenCount": 20,
   "declarationCount": 67,
+  "imageSlotCount": 20,
   "skipped": [
     {
       "screen": "Charva Choice",
@@ -2571,5 +2572,143 @@
         }
       ]
     }
+  },
+  "imageSlots": {
+    "Charva Choice": [
+      {
+        "id": "choice-global",
+        "brief": "Фон: каньон Йангыкала на закате или Ашхабад ночью — вертикальный кадр",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "choice-umrah",
+        "brief": "Фон: Масджид ан-Набави или группа паломников — вертикальный кадр",
+        "shape": "rect",
+        "fit": "cover"
+      }
+    ],
+    "Charva Contact": [
+      {
+        "id": "ct-office",
+        "brief": "Фото офиса в Ашхабаде или команда с гостями",
+        "shape": "rect",
+        "fit": "cover"
+      }
+    ],
+    "Charva Travel Global": [
+      {
+        "id": "g-ed-1",
+        "brief": "Крупный кадр: газовый кратер Дарваза, «Врата в ад», ночная съёмка",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-gal-1",
+        "brief": "Ахалтекинский конь, портрет",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-gal-2",
+        "brief": "Ковровый узор, макро",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-gal-3",
+        "brief": "Ашхабад, белый мрамор",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-gal-4",
+        "brief": "Каньон Йангыкала на закате, панорама",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-gal-5",
+        "brief": "Древний Мерв, руины",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-gal-6",
+        "brief": "Национальная еда, дограма или плов",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-gal-7",
+        "brief": "Юрточный лагерь в Каракумах, ночь и звёзды",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-gal-8",
+        "brief": "Аваза, Каспийское море",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-vid-1",
+        "brief": "Обложка видео: тур по Туркменистану, 16:9",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "g-contact",
+        "brief": "Фото офиса или гид с группой, вертикальный кадр",
+        "shape": "rect",
+        "fit": "cover"
+      }
+    ],
+    "Charva Turkmenistan": [
+      {
+        "id": "tk-ed-1",
+        "brief": "Крупный кадр: газовый кратер Дарваза, «Врата в ад», ночная съёмка",
+        "shape": "rect",
+        "fit": "cover"
+      }
+    ],
+    "Charva Umrah Program": [
+      {
+        "id": "up-photo",
+        "brief": "Фото: группа в Медине с сопровождающим",
+        "shape": "rect",
+        "fit": "cover"
+      }
+    ],
+    "Charva Umrah Signup": [
+      {
+        "id": "us-photo",
+        "brief": "Фото: группа паломников перед вылетом",
+        "shape": "rect",
+        "fit": "cover"
+      }
+    ],
+    "Charva Umrah": [
+      {
+        "id": "u-prev-media",
+        "brief": "Групповое фото прошлой группы у Масджид ан-Набави",
+        "shape": "rect",
+        "fit": "cover"
+      },
+      {
+        "id": "u-cta",
+        "brief": "Фото: группа паломников перед вылетом, вертикальный кадр",
+        "shape": "rect",
+        "fit": "cover"
+      }
+    ],
+    "Charva Video": [
+      {
+        "id": "vd-hero",
+        "brief": "Обложка главного видео: тур по Туркменистану, 16:9",
+        "shape": "rect",
+        "fit": "cover"
+      }
+    ]
   }
 }
