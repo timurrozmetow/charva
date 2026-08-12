@@ -27,6 +27,14 @@ const paths = {
   caretDown: 'M5 8.5l7 7 7-7',
   /** The play triangle on video cards and the video hero. */
   play: 'M8 5.2v13.6L19 12 8 5.2z',
+  /**
+   * The pause bars on the carousel's stop control.
+   *
+   * Not in the design, because the design has no way to stop either auto-rotating slider.
+   * WCAG 2.2.2 requires one for anything that starts moving on its own and runs longer than
+   * five seconds, and both of these run indefinitely.
+   */
+  pause: 'M8 5h3v14H8V5zm5 0h3v14h-3V5z',
 } as const;
 
 export type IconName = keyof typeof paths | 'starHalf' | 'globe';
