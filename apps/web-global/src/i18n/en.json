@@ -195,5 +195,52 @@
         }
       ]
     }
+  },
+  "hotels": {
+    "breadcrumb": "Hotels",
+    "title": "Where to stay in Turkmenistan",
+    "lead": "From five stars in Ashgabat to a yurt camp in the Karakum. Prices are per night, per room, with breakfast where there is one.",
+    "metaTitle": "Hotels in Turkmenistan — Charva Travel",
+    "metaDescription": "Hotels, boutique hotels and a yurt camp across Turkmenistan: Ashgabat, Mary, Dashoguz, Awaza, the Karakum.",
+    "filterLabel": "Filter by class",
+    "all": "All",
+    "cta": {
+      "title": "Need a hotel for a particular route?",
+      "text": "We will match it to your dates, budget and cities — and fold it into the tour estimate.",
+      "button": "Write to us"
+    }
+  },
+  "country": {
+    "breadcrumb": "Turkmenistan",
+    "title": "A country almost nobody knows",
+    "lead": "A fifth of the Karakum, the ruins of four Silk Road capitals, and a burning gas crater in the middle of the desert. The visa is by invitation, and we arrange it.",
+    "metaTitle": "Turkmenistan: the country and visas — Charva Travel",
+    "metaDescription": "Facts about Turkmenistan, how the invitation-based visa works, and six places people come for.",
+    "factsTitle": "The country in brief",
+    "visaTitle": "Visa by invitation",
+    "visaCta": "Request an invitation",
+    "placesTitle": "What to see"
+  },
+  "reviews": {
+    "breadcrumb": "Reviews",
+    "title": "What the people who went say",
+    "lead": "Reviews are written after the trip. We do not delete the fours — they are where we learn what to improve.",
+    "metaTitle": "Reviews of tours in Turkmenistan — Charva Travel",
+    "metaDescription": "Travellers on Charva Travel routes: ratings, cities and what stayed with them.",
+    "filterLabel": "Filter by rating",
+    "all": "All reviews",
+    "onlyFive": "5 stars only",
+    "onlyFour": "4 stars",
+    "newest": "Newest first",
+    "stats": {
+      "average": "Average rating",
+      "total": "Reviews",
+      "recommend": "Would recommend"
+    },
+    "cta": {
+      "title": "Want the same?",
+      "text": "Tell us where and when — we will build the route and price it.",
+      "button": "Send an enquiry"
+    }
   }
 }

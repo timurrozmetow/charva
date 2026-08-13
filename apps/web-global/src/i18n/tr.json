@@ -195,5 +195,52 @@
         }
       ]
     }
+  },
+  "hotels": {
+    "breadcrumb": "Oteller",
+    "title": "Türkmenistan'da nerede kalınır",
+    "lead": "Aşkabat'ta beş yıldızdan Karakum'da çadır kampına. Fiyatlar gecelik, oda başına, kahvaltı varsa dahil.",
+    "metaTitle": "Türkmenistan otelleri — Charva Travel",
+    "metaDescription": "Türkmenistan genelinde oteller, butik oteller ve çadır kampı: Aşkabat, Mary, Daşoguz, Avaza, Karakum.",
+    "filterLabel": "Sınıfa göre filtre",
+    "all": "Tümü",
+    "cta": {
+      "title": "Belirli bir rota için otel mi lazım?",
+      "text": "Tarihlerinize, bütçenize ve şehirlerinize göre seçer, tur hesabına dahil ederiz.",
+      "button": "Bize yazın"
+    }
+  },
+  "country": {
+    "breadcrumb": "Türkmenistan",
+    "title": "Neredeyse hiç bilinmeyen bir ülke",
+    "lead": "Karakum'un beşte biri, İpek Yolu'nun dört başkentinin kalıntıları ve çölün ortasında yanan bir gaz krateri. Vize davetiyeyle, davetiyeyi biz hazırlıyoruz.",
+    "metaTitle": "Türkmenistan: ülke ve vize — Charva Travel",
+    "metaDescription": "Türkmenistan hakkında bilgiler, davetiyeli vize süreci ve uğruna gelinen altı yer.",
+    "factsTitle": "Kısaca ülke",
+    "visaTitle": "Davetiyeli vize",
+    "visaCta": "Davetiye talep edin",
+    "placesTitle": "Görülmesi gerekenler"
+  },
+  "reviews": {
+    "breadcrumb": "Yorumlar",
+    "title": "Gidenler ne diyor",
+    "lead": "Yorumlar dönüşten sonra yazılıyor. Dört yıldızları silmiyoruz — neyi düzelteceğimizi oradan görüyoruz.",
+    "metaTitle": "Türkmenistan tur yorumları — Charva Travel",
+    "metaDescription": "Charva Travel rotaları hakkında gezginlerin yorumları: puanlar, şehirler ve akılda kalanlar.",
+    "filterLabel": "Puana göre filtre",
+    "all": "Tüm yorumlar",
+    "onlyFive": "Sadece 5 yıldız",
+    "onlyFour": "4 yıldız",
+    "newest": "Önce yeniler",
+    "stats": {
+      "average": "Ortalama puan",
+      "total": "Yorum",
+      "recommend": "Tavsiye eder"
+    },
+    "cta": {
+      "title": "Siz de ister misiniz?",
+      "text": "Nereye ve ne zaman olduğunu söyleyin — rotayı kurup fiyatlandıralım.",
+      "button": "Başvuru bırakın"
+    }
   }
 }

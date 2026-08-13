@@ -9,11 +9,21 @@ import {
   useParams,
 } from '@tanstack/react-router';
 
-import { builderConfigQuery, settingsQuery, toursQuery } from './api/queries';
+import {
+  builderConfigQuery,
+  countryQuery,
+  hotelsQuery,
+  reviewsQuery,
+  settingsQuery,
+  toursQuery,
+} from './api/queries';
 import { Layout } from './layout/Layout';
 import { bestLang, isGlobalLang } from './lib/lang';
 import { BuilderPage } from './pages/BuilderPage';
+import { CountryPage } from './pages/CountryPage';
+import { HotelsPage } from './pages/HotelsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { ReviewsPage } from './pages/ReviewsPage';
 import { ToursPage } from './pages/ToursPage';
 
 /**
@@ -139,9 +149,86 @@ function BuilderRoute() {
   return <BuilderPage lang={useLang()} />;
 }
 
+/**
+ * The three list pages share one search shape — `filter` and `page` — so they share one
+ * validator. Writing it once means a fourth list added in phase 7 cannot invent a third
+ * spelling of the same two parameters.
+ */
+const listSearch = (search: Record<string, unknown>) => ({
+  ...(typeof search['filter'] === 'string' ? { filter: search['filter'] } : {}),
+  ...(typeof search['page'] === 'number' || typeof search['page'] === 'string'
+    ? { page: Math.max(1, Number(search['page']) || 1) }
+    : {}),
+});
+
+const hotelsRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'hotels',
+  validateSearch: listSearch,
+  loaderDeps: ({ search }) => search,
+  loader: ({ context, params, deps }) => {
+    if (!isGlobalLang(params.lang)) return;
+    void context.queryClient.prefetchQuery(
+      hotelsQuery(params.lang, {
+        ...(deps.filter === undefined || deps.filter === 'all' ? {} : { filter: deps.filter }),
+        perPage: (deps.page ?? 1) * 9,
+      }),
+    );
+  },
+  component: HotelsRoute,
+});
+
+const countryRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'turkmenistan',
+  loader: ({ context, params }) => {
+    if (isGlobalLang(params.lang))
+      void context.queryClient.prefetchQuery(countryQuery(params.lang));
+  },
+  component: CountryRoute,
+});
+
+const reviewsRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'reviews',
+  validateSearch: listSearch,
+  loaderDeps: ({ search }) => search,
+  loader: ({ context, params, deps }) => {
+    if (!isGlobalLang(params.lang)) return;
+    const rating = deps.filter === '5' || deps.filter === '4' ? Number(deps.filter) : undefined;
+    void context.queryClient.prefetchQuery(
+      reviewsQuery(params.lang, {
+        ...(rating === undefined ? {} : { rating }),
+        sort: 'newest',
+        perPage: (deps.page ?? 1) * 9,
+      }),
+    );
+  },
+  component: ReviewsRoute,
+});
+
+/*
+ * Named components rather than inline arrows.
+ *
+ * `useLang` is a hook, and a hook inside `component: () => …` sits in a function React's lint
+ * rules cannot recognise as a component — which is not pedantry: the same anonymity is what
+ * would let a hook end up behind a condition without anything noticing.
+ */
+function HotelsRoute() {
+  return <HotelsPage lang={useLang()} />;
+}
+
+function CountryRoute() {
+  return <CountryPage lang={useLang()} />;
+}
+
+function ReviewsRoute() {
+  return <ReviewsPage lang={useLang()} />;
+}
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  langRoute.addChildren([toursRoute, builderRoute]),
+  langRoute.addChildren([toursRoute, builderRoute, hotelsRoute, countryRoute, reviewsRoute]),
 ]);
 
 export function buildRouter(queryClient: QueryClient) {
