@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "title": "Charva Travel — Türkmenistana syýahat we umra",
+    "description": "Türkmenistan boýunça taýýar turlar we syýahat gurnaýjy, şeýle hem türkmen topary bilen umra ziýarady."
+  },
+  "nav": {
+    "langLabel": "Dil",
+    "home": "Charva baş sahypasyna"
+  },
+  "global": {
+    "eyebrow": "Charva Travel",
+    "title": "Türkmenistana syýahat",
+    "lead": "Taýýar turlar, myhmanhanalar we özüňiz şäherleri, myhmanhananyň derejesini, naharlanyşy we ulagy saýlaýan gurnaýjy.",
+    "chips": ["Turlar", "Tur gurnaýjy", "Myhmanhanalar", "Gezelençler", "Wiza"],
+    "stats": {
+      "tours": "Ugur",
+      "hotels": "Myhmanhana",
+      "guests": "Ýylda myhman"
+    },
+    "cta": "Global-y açmak"
+  },
+  "umrah": {
+    "eyebrow": "Charva Umrah",
+    "title": "Umra ziýarady topar bilen",
+    "lead": "Türkmen dilli ýolbaşçy, Mekge we Medine, Bedir we Uhud. Guralan toparlar we ähli resminamalar açar tabşyryşy.",
+    "chips": ["Mekge", "Medine", "Bedir", "Uhud", "Wiza"],
+    "stats": {
+      "days": "Uçuşa çenli gün",
+      "seats": "Toparda orun",
+      "groups": "Ugradylan topar"
+    },
+    "cta": "Umrah-y açmak"
+  },
+  "badge": {
+    "open": {
+      "one": "Ýazylyş açyk · {count} orun",
+      "few": "Ýazylyş açyk · {count} orun",
+      "many": "Ýazylyş açyk · {count} orun",
+      "other": "Ýazylyş açyk · {count} orun"
+    },
+    "full": "Topar doldy",
+    "closed": "Ýazylyş ýapyldy",
+    "departed": "Topar ýolda",
+    "none": "Indiki topar tiz wagtda"
+  },
+  "footer": {
+    "license": "Ygtyýarnama {license}",
+    "hint": "Ugry saýlaň"
+  }
+}

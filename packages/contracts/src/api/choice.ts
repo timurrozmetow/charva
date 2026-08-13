@@ -15,13 +15,51 @@ import { umrahTripSchema } from './umrah';
  * `Math.floor` on the Umrah homepage, so the chooser and the site it links to disagree about
  * how many days are left — one of the defects this phase exists to make impossible.
  */
+/**
+ * The three figures under each half.
+ *
+ * «32 Маршрута · 46 Отеля · 1 400+ Гостей в год» and «{дни} Дней · 45 Мест · 68 Групп» are
+ * literals in the prototype, and the first two of each contradict the nine rows of data behind
+ * them. Counted here instead — decision D-6.
+ *
+ * `guestsPerYear` is the exception the decision allows for: nothing in the database counts
+ * visitors, so it is an explicit named override in `settings` rather than a number invented in
+ * a component. It is `null` until somebody sets it, and question Q-5 asks whether they want to.
+ */
+export const choiceStatsSchema = z.object({
+  global: z.object({
+    tours: z.number().int(),
+    hotels: z.number().int(),
+    guestsPerYear: z.number().int().nullable(),
+  }),
+  umrah: z.object({
+    /** From the current departure, so it is null between groups. */
+    seatsTotal: z.number().int().nullable(),
+    groups: z.number().int(),
+    pilgrims: z.number().int(),
+  }),
+});
+
 export const choiceResponse = z.object({
   umrah: z.object({
     trip: umrahTripSchema.nullable(),
   }),
+  stats: choiceStatsSchema,
   /** The footer line, which both halves share. */
   contacts: z.object({
     global: siteSettingsSchema.shape.contacts,
     umrah: siteSettingsSchema.shape.contacts,
   }),
+  /** The licence number, shown bottom left. Still `TM-1428` — question Q-12. */
+  legal: siteSettingsSchema.shape.legal,
 });
+
+/**
+ * The inferred type, exported here rather than re-derived at each call site.
+ *
+ * A consumer writing `z.infer<typeof choiceResponse>` has to depend on zod to name a type it
+ * only reads, which puts a runtime package in an SPA's dependency list for the sake of an
+ * annotation. Contracts owns the schema, so contracts owns the type.
+ */
+export type ChoiceResponse = z.infer<typeof choiceResponse>;
+export type ChoiceStats = z.infer<typeof choiceStatsSchema>;

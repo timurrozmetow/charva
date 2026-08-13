@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "title": "Charva Travel — Türkmenistan turları ve umre",
+    "description": "Türkmenistan için hazır turlar ve gezi oluşturucu, ayrıca Türkmence konuşan grupla organize umre."
+  },
+  "nav": {
+    "langLabel": "Dil",
+    "home": "Charva ana sayfası"
+  },
+  "global": {
+    "eyebrow": "Charva Travel",
+    "title": "Türkmenistan'a yolculuk",
+    "lead": "Hazır turlar, oteller ve şehirleri, otel sınıfını, yemekleri ve ulaşımı kendiniz seçtiğiniz bir oluşturucu.",
+    "chips": ["Turlar", "Tur oluşturucu", "Oteller", "Geziler", "Vize"],
+    "stats": {
+      "tours": "Rota",
+      "hotels": "Otel",
+      "guests": "Yılda misafir"
+    },
+    "cta": "Global'i aç"
+  },
+  "umrah": {
+    "eyebrow": "Charva Umrah",
+    "title": "Türkmen grubuyla umre",
+    "lead": "Türkmence konuşan rehber, Mekke ve Medine, Bedir ve Uhud. Organize gruplar ve tüm belgeler anahtar teslim.",
+    "chips": ["Mekke", "Medine", "Bedir", "Uhud", "Vize"],
+    "stats": {
+      "days": "Kalkışa kalan gün",
+      "seats": "Gruptaki yer",
+      "groups": "Gönderilen grup"
+    },
+    "cta": "Umrah'ı aç"
+  },
+  "badge": {
+    "open": {
+      "one": "Kayıt açık · {count} yer",
+      "few": "Kayıt açık · {count} yer",
+      "many": "Kayıt açık · {count} yer",
+      "other": "Kayıt açık · {count} yer"
+    },
+    "full": "Grup doldu",
+    "closed": "Kayıt kapandı",
+    "departed": "Grup yolda",
+    "none": "Sonraki grup yakında"
+  },
+  "footer": {
+    "license": "Lisans {license}",
+    "hint": "Bir yön seçin"
+  }
+}

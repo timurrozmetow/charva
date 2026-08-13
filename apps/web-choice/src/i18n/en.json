@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "title": "Charva Travel — tours of Turkmenistan and Umrah",
+    "description": "Ready-made tours and a trip builder for Turkmenistan, plus organised Umrah with a Turkmen-speaking group."
+  },
+  "nav": {
+    "langLabel": "Language",
+    "home": "Charva home"
+  },
+  "global": {
+    "eyebrow": "Charva Travel",
+    "title": "A journey into Turkmenistan",
+    "lead": "Ready-made tours, hotels and a builder where you choose the cities, the hotel class, the meals and the transport yourself.",
+    "chips": ["Tours", "Tour builder", "Hotels", "Excursions", "Visa"],
+    "stats": {
+      "tours": "Routes",
+      "hotels": "Hotels",
+      "guests": "Guests a year"
+    },
+    "cta": "Open Global"
+  },
+  "umrah": {
+    "eyebrow": "Charva Umrah",
+    "title": "Umrah with a Turkmen group",
+    "lead": "A Turkmen-speaking guide, Mecca and Medina, Badr and Uhud. Organised groups and every document handled.",
+    "chips": ["Mecca", "Medina", "Badr", "Uhud", "Visa"],
+    "stats": {
+      "days": "Days to departure",
+      "seats": "Seats in the group",
+      "groups": "Groups travelled"
+    },
+    "cta": "Open Umrah"
+  },
+  "badge": {
+    "open": {
+      "one": "Signing up · {count} seat left",
+      "few": "Signing up · {count} seats left",
+      "many": "Signing up · {count} seats left",
+      "other": "Signing up · {count} seats left"
+    },
+    "full": "Group is full",
+    "closed": "Sign-up closed",
+    "departed": "Group is travelling",
+    "none": "Next group announced soon"
+  },
+  "footer": {
+    "license": "Licence {license}",
+    "hint": "Choose a direction"
+  }
+}
