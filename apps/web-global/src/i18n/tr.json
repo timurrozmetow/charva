@@ -120,5 +120,80 @@
       "text": "Kendinizinkini kurun: şehirler, otel sınıfı, yemek, ulaşım ve geziler — hesap anında görünür.",
       "button": "Tur oluştur"
     }
+  },
+  "builder": {
+    "breadcrumb": "Tur oluşturucu",
+    "title": "Türkmenistan turunuzu kendiniz kurun",
+    "lead": "Dokuz adım: şehirler, süre, otel, yemek, ulaşım ve etkinlikler. Fiyat her tıklamada yeniden hesaplanır ve hesap sizi bağlamaz.",
+    "metaTitle": "Türkmenistan tur oluşturucu — Charva Travel",
+    "metaDescription": "Rotayı kendiniz kurun: şehirler, günler, otel sınıfı, yemek, ulaşım ve geziler. Fiyat anında görünür.",
+    "stats": {
+      "steps": "Adım",
+      "reply": "Yönetici yanıtı",
+      "cost": "Hesap ücreti",
+      "replyValue": "15 dk",
+      "costValue": "0 $"
+    },
+    "railLabel": "Oluşturucu adımları",
+    "stepOf": "Adım {step} / {total}",
+    "hintMulti": "birden fazla seçebilirsiniz",
+    "hintSingle": "birini seçin",
+    "back": "Geri",
+    "next": "İleri",
+    "submit": "Başvuruyu gönder",
+    "filled": "{total} adımdan {filled} tanesi dolduruldu",
+    "clearHint": "Tekrar tıklayınca seçim kalkar",
+    "estimate": {
+      "title": "Turunuz",
+      "empty": "—",
+      "perPerson": "Kişi başı",
+      "total": "Toplam",
+      "pax": "Kişi",
+      "nights": "Gece",
+      "estimateNote": "Ön hesap: bazı adımlar hâlâ varsayılan değerlerde.",
+      "finalNote": "Kesin fiyatı yönetici onaylar — tarihlere ve müsaitliğe bağlıdır.",
+      "breakdown": {
+        "accommodation": "Konaklama",
+        "cities": "Şehirler",
+        "activities": "Etkinlikler",
+        "base": "Organizasyon"
+      }
+    },
+    "steps": {
+      "dest": "Yön",
+      "dates": "Tarihler",
+      "hotel": "Otel",
+      "food": "Yemek",
+      "transport": "Ulaşım",
+      "activities": "Etkinlikler",
+      "people": "Kişi",
+      "guide": "Rehber",
+      "final": "Başvuru"
+    },
+    "how": {
+      "title": "Nasıl çalışır",
+      "items": [
+        {
+          "n": "01",
+          "title": "Parametreleri seçin",
+          "text": "Şehirler, süre, otel ve gerisi — istediğiniz sırayla."
+        },
+        {
+          "n": "02",
+          "title": "Fiyatı anında görün",
+          "text": "Hesap her tıklamada yenilenir, form göndermeden."
+        },
+        {
+          "n": "03",
+          "title": "Başvuruyu gönderin",
+          "text": "Son adımda ad ve telefon; başka bir şey gerekmez."
+        },
+        {
+          "n": "04",
+          "title": "Programı alın",
+          "text": "Yönetici tarihleri teyit eder ve gün gün rotayı gönderir."
+        }
+      ]
+    }
   }
 }

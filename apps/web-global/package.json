@@ -20,8 +20,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.85.0",
-    "zod": "^3.25.76",
-    "zustand": "^5.0.15"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@charva/config": "workspace:*",

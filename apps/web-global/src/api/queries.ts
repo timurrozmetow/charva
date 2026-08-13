@@ -2,7 +2,7 @@ import {
   type ArticleDetail,
   type ArticlesResponse,
   type BuilderConfigResponse,
-  type BuilderQuoteRequest,
+  type BuilderSelection,
   type BuilderQuoteResponse,
   type CountryResponse,
   createApiClient,
@@ -195,7 +195,16 @@ export function builderConfigQuery(lang: Lang) {
  */
 export function postQuote(
   lang: Lang,
-  body: BuilderQuoteRequest,
+  /**
+   * The domain type, not the schema's inferred one.
+   *
+   * `BuilderSelection` holds `readonly string[]` because nothing should mutate a selection in
+   * place; zod infers a mutable array for the same field because that is what it parses into.
+   * The client speaks the domain type and the server validates the wire type, which is the
+   * right way round — the request is what the client *means*, and the schema is the server's
+   * check on what arrived.
+   */
+  body: { selection: BuilderSelection },
   signal?: AbortSignal,
 ): Promise<BuilderQuoteResponse> {
   return api.post<BuilderQuoteResponse>('/global/builder/quote', body, {

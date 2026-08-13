@@ -120,5 +120,80 @@
       "text": "Build your own: cities, hotel class, meals, transport and excursions — the estimate appears as you choose.",
       "button": "Build a tour"
     }
+  },
+  "builder": {
+    "breadcrumb": "Tour builder",
+    "title": "Build your own tour of Turkmenistan",
+    "lead": "Nine steps: cities, length, hotel, meals, transport and activities. The price is recalculated on every click, and the estimate commits you to nothing.",
+    "metaTitle": "Turkmenistan tour builder — Charva Travel",
+    "metaDescription": "Build the route yourself: cities, days, hotel class, meals, transport and excursions. The price is visible as you go.",
+    "stats": {
+      "steps": "Steps",
+      "reply": "Manager replies in",
+      "cost": "Cost of an estimate",
+      "replyValue": "15 min",
+      "costValue": "0 $"
+    },
+    "railLabel": "Builder steps",
+    "stepOf": "Step {step} of {total}",
+    "hintMulti": "you can choose several",
+    "hintSingle": "choose one",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Send the enquiry",
+    "filled": "Answered {filled} of {total}",
+    "clearHint": "Click again to clear",
+    "estimate": {
+      "title": "Your tour",
+      "empty": "—",
+      "perPerson": "Per person",
+      "total": "Total",
+      "pax": "People",
+      "nights": "Nights",
+      "estimateNote": "Provisional: some steps are still on their defaults.",
+      "finalNote": "A manager confirms the final price — it depends on dates and availability.",
+      "breakdown": {
+        "accommodation": "Accommodation",
+        "cities": "Cities",
+        "activities": "Activities",
+        "base": "Organisation"
+      }
+    },
+    "steps": {
+      "dest": "Destination",
+      "dates": "Dates",
+      "hotel": "Hotel",
+      "food": "Meals",
+      "transport": "Transport",
+      "activities": "Activities",
+      "people": "People",
+      "guide": "Guide",
+      "final": "Enquiry"
+    },
+    "how": {
+      "title": "How it works",
+      "items": [
+        {
+          "n": "01",
+          "title": "Choose the parameters",
+          "text": "Cities, length, hotel and the rest — in any order."
+        },
+        {
+          "n": "02",
+          "title": "See the price at once",
+          "text": "The estimate recalculates on every click, with nothing submitted."
+        },
+        {
+          "n": "03",
+          "title": "Send the enquiry",
+          "text": "A name and a phone number on the last step; nothing else."
+        },
+        {
+          "n": "04",
+          "title": "Get the programme",
+          "text": "A manager confirms the dates and sends the day-by-day route."
+        }
+      ]
+    }
   }
 }

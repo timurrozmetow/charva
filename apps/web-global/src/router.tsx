@@ -9,9 +9,10 @@ import {
   useParams,
 } from '@tanstack/react-router';
 
-import { settingsQuery, toursQuery } from './api/queries';
+import { builderConfigQuery, settingsQuery, toursQuery } from './api/queries';
 import { Layout } from './layout/Layout';
 import { bestLang, isGlobalLang } from './lib/lang';
+import { BuilderPage } from './pages/BuilderPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ToursPage } from './pages/ToursPage';
 
@@ -117,7 +118,31 @@ function ToursRoute() {
   return <ToursPage lang={useLang()} />;
 }
 
-const routeTree = rootRoute.addChildren([indexRoute, langRoute.addChildren([toursRoute])]);
+/**
+ * The builder's whole state is in the query string, so the route accepts anything and the
+ * component decides what it means. Validating each option code here would put the catalogue's
+ * vocabulary in two places.
+ */
+const builderRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'builder',
+  validateSearch: (search: Record<string, unknown>) => search,
+  loader: ({ context, params }) => {
+    if (isGlobalLang(params.lang)) {
+      void context.queryClient.prefetchQuery(builderConfigQuery(params.lang));
+    }
+  },
+  component: BuilderRoute,
+});
+
+function BuilderRoute() {
+  return <BuilderPage lang={useLang()} />;
+}
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  langRoute.addChildren([toursRoute, builderRoute]),
+]);
 
 export function buildRouter(queryClient: QueryClient) {
   return createRouter({
