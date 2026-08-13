@@ -12,19 +12,23 @@ import {
 import {
   builderConfigQuery,
   countryQuery,
+  galleryQuery,
   hotelsQuery,
   reviewsQuery,
   settingsQuery,
   toursQuery,
+  videosQuery,
 } from './api/queries';
 import { Layout } from './layout/Layout';
 import { bestLang, isGlobalLang } from './lib/lang';
 import { BuilderPage } from './pages/BuilderPage';
 import { CountryPage } from './pages/CountryPage';
+import { GalleryPage } from './pages/GalleryPage';
 import { HotelsPage } from './pages/HotelsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ReviewsPage } from './pages/ReviewsPage';
 import { ToursPage } from './pages/ToursPage';
+import { VideoPage } from './pages/VideoPage';
 
 /**
  * Every URL carries its language, and the browser's preference decides only where `/` goes.
@@ -207,6 +211,40 @@ const reviewsRoute = createRoute({
   component: ReviewsRoute,
 });
 
+const galleryRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'gallery',
+  validateSearch: listSearch,
+  loaderDeps: ({ search }) => search,
+  loader: ({ context, params, deps }) => {
+    if (!isGlobalLang(params.lang)) return;
+    void context.queryClient.prefetchQuery(
+      galleryQuery(params.lang, {
+        ...(deps.filter === undefined || deps.filter === 'all' ? {} : { category: deps.filter }),
+        perPage: (deps.page ?? 1) * 16,
+      }),
+    );
+  },
+  component: GalleryRoute,
+});
+
+const videoRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'video',
+  validateSearch: listSearch,
+  loaderDeps: ({ search }) => search,
+  loader: ({ context, params, deps }) => {
+    if (!isGlobalLang(params.lang)) return;
+    void context.queryClient.prefetchQuery(
+      videosQuery(params.lang, {
+        ...(deps.filter === undefined || deps.filter === 'all' ? {} : { category: deps.filter }),
+        perPage: (deps.page ?? 1) * 9,
+      }),
+    );
+  },
+  component: VideoRoute,
+});
+
 /*
  * Named components rather than inline arrows.
  *
@@ -226,9 +264,25 @@ function ReviewsRoute() {
   return <ReviewsPage lang={useLang()} />;
 }
 
+function GalleryRoute() {
+  return <GalleryPage lang={useLang()} />;
+}
+
+function VideoRoute() {
+  return <VideoPage lang={useLang()} />;
+}
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  langRoute.addChildren([toursRoute, builderRoute, hotelsRoute, countryRoute, reviewsRoute]),
+  langRoute.addChildren([
+    toursRoute,
+    builderRoute,
+    hotelsRoute,
+    countryRoute,
+    reviewsRoute,
+    galleryRoute,
+    videoRoute,
+  ]),
 ]);
 
 export function buildRouter(queryClient: QueryClient) {

@@ -242,5 +242,38 @@
       "text": "Nereye ve ne zaman olduğunu söyleyin — rotayı kurup fiyatlandıralım.",
       "button": "Başvuru bırakın"
     }
+  },
+  "gallery": {
+    "breadcrumb": "Galeri",
+    "title": "Fotoğraflarla Türkmenistan",
+    "lead": "Gezilerden kareler: çöl, harabeler, şehirler ve Hazar. Büyük görmek için birine dokunun.",
+    "metaTitle": "Türkmenistan galerisi — Charva Travel",
+    "metaDescription": "Türkmenistan gezilerinden fotoğraflar: Darvaza, Merv, Aşkabat, Yangıkala, Avaza.",
+    "filterLabel": "Temaya göre filtre",
+    "all": "Tümü",
+    "openPhoto": "Fotoğrafı aç",
+    "lightbox": {
+      "close": "Kapat",
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "counter": "{total} / {current}"
+    }
+  },
+  "video": {
+    "breadcrumb": "Video",
+    "title": "Türkmenistan, göründüğü gibi",
+    "lead": "Gezilerden videolar — kurgu hilesi ve stok görüntü yok.",
+    "metaTitle": "Türkmenistan videoları — Charva Travel",
+    "metaDescription": "Türkmenistan gezilerinden videolar: Darvaza krateri, Merv, Ahal-Teke atları.",
+    "filterLabel": "Temaya göre filtre",
+    "all": "Tümü",
+    "play": "İzle",
+    "views": {
+      "one": "{count} görüntülenme",
+      "few": "{count} görüntülenme",
+      "many": "{count} görüntülenme",
+      "other": "{count} görüntülenme"
+    },
+    "noPlayer": "Tarayıcınız bu videoyu oynatamıyor."
   }
 }

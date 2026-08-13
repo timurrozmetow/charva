@@ -28,6 +28,8 @@ export interface FilteredGridProps {
   isError: boolean;
   onRetry: () => void;
   skeletonCount?: number;
+  /** Placeholder shape while loading — a mosaic tile is not a card. */
+  skeletonClassName?: string;
   children: ReactNode;
 }
 
@@ -59,6 +61,7 @@ export function FilteredGrid({
   isError,
   onRetry,
   skeletonCount = 9,
+  skeletonClassName,
   children,
 }: FilteredGridProps) {
   const copy = copyFor(lang);
@@ -100,6 +103,7 @@ export function FilteredGrid({
             isError={isError}
             onRetry={onRetry}
             skeletonCount={skeletonCount}
+            {...(skeletonClassName === undefined ? {} : { skeletonClassName })}
           >
             {shown === 0 ? (
               <EmptyState

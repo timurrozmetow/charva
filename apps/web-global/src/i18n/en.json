@@ -242,5 +242,38 @@
       "text": "Tell us where and when — we will build the route and price it.",
       "button": "Send an enquiry"
     }
+  },
+  "gallery": {
+    "breadcrumb": "Gallery",
+    "title": "Turkmenistan in photographs",
+    "lead": "Pictures from the trips: desert, ruins, cities and the Caspian. Tap any of them to see it large.",
+    "metaTitle": "Turkmenistan gallery — Charva Travel",
+    "metaDescription": "Photographs from trips across Turkmenistan: Darvaza, Merv, Ashgabat, Yangykala, Awaza.",
+    "filterLabel": "Filter by theme",
+    "all": "All",
+    "openPhoto": "Open photograph",
+    "lightbox": {
+      "close": "Close",
+      "previous": "Previous",
+      "next": "Next",
+      "counter": "{current} of {total}"
+    }
+  },
+  "video": {
+    "breadcrumb": "Video",
+    "title": "Turkmenistan, as it looks",
+    "lead": "Clips from the trips — no editing tricks and no stock footage.",
+    "metaTitle": "Video about Turkmenistan — Charva Travel",
+    "metaDescription": "Video from trips across Turkmenistan: the Darvaza crater, Merv, Akhal-Teke horses.",
+    "filterLabel": "Filter by theme",
+    "all": "All",
+    "play": "Watch",
+    "views": {
+      "one": "{count} view",
+      "few": "{count} views",
+      "many": "{count} views",
+      "other": "{count} views"
+    },
+    "noPlayer": "Your browser cannot play this video."
   }
 }
