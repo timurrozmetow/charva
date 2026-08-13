@@ -1,0 +1,124 @@
+{
+  "brand": "Charva Travel",
+  "nav": {
+    "label": "Ana gezinme",
+    "home": "Charva Travel ana sayfası",
+    "openMenu": "Menüyü aç",
+    "closeMenu": "Menüyü kapat",
+    "langLabel": "Dil",
+    "cta": "Online başvuru",
+    "items": {
+      "tours": "Turlar",
+      "builder": "Tur oluşturucu",
+      "hotels": "Oteller",
+      "turkmenistan": "Türkmenistan",
+      "gallery": "Galeri",
+      "video": "Video",
+      "reviews": "Yorumlar"
+    }
+  },
+  "footer": {
+    "label": "Site altbilgisi",
+    "legal": "Charva Travel — Türkmenistan tur operatörü. {address}. Lisans No. {license}.",
+    "copyright": "© {year} Charva Travel. Tüm hakları saklıdır.",
+    "columns": {
+      "tours": "Turlar",
+      "country": "Türkmenistan",
+      "contacts": "İletişim"
+    },
+    "links": {
+      "readyTours": "Hazır turlar",
+      "builder": "Tur oluşturucu",
+      "hotels": "Oteller",
+      "contact": "Online başvuru",
+      "country": "Ülke ve vize",
+      "gallery": "Galeri",
+      "video": "Video",
+      "reviews": "Yorumlar"
+    },
+    "socials": {
+      "instagram": "Instagram",
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp",
+      "youtube": "YouTube"
+    },
+    "cross": {
+      "choice": "Yön seçin",
+      "umrah": "Charva Umrah"
+    }
+  },
+  "common": {
+    "breadcrumbHome": "Ana sayfa",
+    "loading": "Yükleniyor",
+    "retry": "Tekrar dene",
+    "showMore": "Daha fazla göster",
+    "shown": "{total} içinden {shown} gösteriliyor",
+    "from": "başlangıç",
+    "perNight": "gecelik",
+    "days": {
+      "one": "{count} gün",
+      "few": "{count} gün",
+      "many": "{count} gün",
+      "other": "{count} gün"
+    },
+    "cities": {
+      "one": "{count} şehir",
+      "few": "{count} şehir",
+      "many": "{count} şehir",
+      "other": "{count} şehir"
+    },
+    "readMinutes": "{count} dk okuma",
+    "stars": "{count} ★",
+    "more": "Ayrıntılar",
+    "nothingFound": "Sonuç bulunamadı",
+    "nothingFoundHint": "Bir filtreyi kaldırmayı deneyin — ya da bize yazın, rotayı elle kuralım.",
+    "errorTitle": "Yüklenemedi",
+    "errorHint": "Bağlantıyı kontrol edip tekrar deneyin.",
+    "notFoundTitle": "Sayfa bulunamadı",
+    "notFoundHint": "Bağlantı eski olabilir. Ana sayfadan başlayın — ya da bize yazın.",
+    "backHome": "Ana sayfa"
+  },
+  "categories": {
+    "classic": "Klasik",
+    "nature": "Doğa",
+    "history": "Tarih",
+    "culture": "Kültür",
+    "leisure": "Dinlence",
+    "cities": "Şehirler",
+    "food": "Mutfak"
+  },
+  "hotelFilters": {
+    "5star": "5 ★",
+    "4star": "4 ★",
+    "3star": "3 ★",
+    "boutique": "Butik",
+    "camp": "Kamp"
+  },
+  "tours": {
+    "breadcrumb": "Turlar",
+    "title": "Türkmenistan'ın hazır turları",
+    "lead": "Hazırlanmış ve denenmiş rotalar: uçuşlar, oteller, rehber ve tüm izinler. Hiçbiri uymuyorsa tur oluşturucuda kendinizinkini kurun.",
+    "metaTitle": "Türkmenistan hazır turları — Charva Travel",
+    "metaDescription": "Otel, rehber ve belge işlemleri dahil Türkmenistan rotaları. Klasik, çöl, tarih, kültür ve dinlence.",
+    "filterLabel": "Temaya göre filtre",
+    "all": "Tümü",
+    "sortLabel": "Sıralama",
+    "sort": {
+      "popular": "Popüler",
+      "price_asc": "Önce ucuz",
+      "price_desc": "Önce pahalı",
+      "days_asc": "Önce kısa",
+      "days_desc": "Önce uzun"
+    },
+    "stats": {
+      "routes": "Rota",
+      "days": "Tur günü",
+      "minPrice": "En düşük fiyat"
+    },
+    "cta": {
+      "title": "Uygun rota bulamadınız mı?",
+      "text": "Kendinizinkini kurun: şehirler, otel sınıfı, yemek, ulaşım ve geziler — hesap anında görünür.",
+      "button": "Tur oluştur"
+    }
+  }
+}

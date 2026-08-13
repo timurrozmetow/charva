@@ -1,5 +1,17 @@
 {
   "extends": "@charva/config/tsconfig/react.json",
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts", "tailwind.config.ts"],
-  "exclude": ["dist", "node_modules"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.json",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "tailwind.config.ts"
+  ],
+  "exclude": ["dist", "node_modules"],
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "types": ["@testing-library/jest-dom/vitest", "vite/client"]
+  }
 }

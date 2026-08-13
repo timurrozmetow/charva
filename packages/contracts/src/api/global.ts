@@ -317,3 +317,41 @@ export const globalHomeResponse = z.object({
     places: z.number().int(),
   }),
 });
+
+/**
+ * The inferred types, exported beside the schemas that produce them.
+ *
+ * A consumer writing `z.infer<typeof toursResponse>` has to depend on zod to name a type it
+ * only ever reads, which puts a runtime package into an SPA's dependency list for the sake of
+ * an annotation. Contracts owns the schema, so contracts owns the type.
+ */
+export type TourDay = z.infer<typeof tourDaySchema>;
+export type TourDetail = z.infer<typeof tourDetailSchema>;
+export type ToursQuery = z.infer<typeof toursQuery>;
+export type ToursResponse = z.infer<typeof toursResponse>;
+
+export type Amenity = z.infer<typeof amenitySchema>;
+export type HotelDetail = z.infer<typeof hotelDetailSchema>;
+export type HotelsQuery = z.infer<typeof hotelsQuery>;
+export type HotelsResponse = z.infer<typeof hotelsResponse>;
+
+export type ArticleCard = z.infer<typeof articleCardSchema>;
+export type ArticleDetail = z.infer<typeof articleDetailSchema>;
+export type ArticlesResponse = z.infer<typeof articlesResponse>;
+
+export type GalleryItem = z.infer<typeof galleryItemSchema>;
+export type GalleryResponse = z.infer<typeof galleryResponse>;
+
+export type Video = z.infer<typeof videoSchema>;
+export type VideosResponse = z.infer<typeof videosResponse>;
+
+export type Review = z.infer<typeof reviewSchema>;
+export type ReviewSummary = z.infer<typeof reviewSummarySchema>;
+export type ReviewsResponse = z.infer<typeof reviewsResponse>;
+
+export type Place = z.infer<typeof placeSchema>;
+export type CountryResponse = z.infer<typeof countryResponse>;
+export type FaqResponse = z.infer<typeof faqResponse>;
+export type FaqItem = z.infer<typeof faqSchema>;
+export type GlobalSettingsResponse = z.infer<typeof globalSettingsResponse>;
+export type GlobalHomeResponse = z.infer<typeof globalHomeResponse>;

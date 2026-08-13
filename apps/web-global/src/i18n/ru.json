@@ -1,0 +1,124 @@
+{
+  "brand": "Charva Travel",
+  "nav": {
+    "label": "Основная навигация",
+    "home": "На главную Charva Travel",
+    "openMenu": "Открыть меню",
+    "closeMenu": "Закрыть меню",
+    "langLabel": "Язык",
+    "cta": "Онлайн-заявка",
+    "items": {
+      "tours": "Туры",
+      "builder": "Сборщик туров",
+      "hotels": "Отели",
+      "turkmenistan": "Туркменистан",
+      "gallery": "Галерея",
+      "video": "Видео",
+      "reviews": "Отзывы"
+    }
+  },
+  "footer": {
+    "label": "Подвал сайта",
+    "legal": "Charva Travel — туроператор по Туркменистану. {address}. Лицензия № {license}.",
+    "copyright": "© {year} Charva Travel. Все права защищены.",
+    "columns": {
+      "tours": "Туры",
+      "country": "Туркменистан",
+      "contacts": "Контакты"
+    },
+    "links": {
+      "readyTours": "Готовые туры",
+      "builder": "Сборщик туров",
+      "hotels": "Отели",
+      "contact": "Онлайн-заявка",
+      "country": "О стране и виза",
+      "gallery": "Галерея",
+      "video": "Видео",
+      "reviews": "Отзывы"
+    },
+    "socials": {
+      "instagram": "Instagram",
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp",
+      "youtube": "YouTube"
+    },
+    "cross": {
+      "choice": "Выбор направления",
+      "umrah": "Charva Umrah"
+    }
+  },
+  "common": {
+    "breadcrumbHome": "Главная",
+    "loading": "Загружаем",
+    "retry": "Повторить",
+    "showMore": "Показать ещё",
+    "shown": "Показано {shown} из {total}",
+    "from": "от",
+    "perNight": "за ночь",
+    "days": {
+      "one": "{count} день",
+      "few": "{count} дня",
+      "many": "{count} дней",
+      "other": "{count} дней"
+    },
+    "cities": {
+      "one": "{count} город",
+      "few": "{count} города",
+      "many": "{count} городов",
+      "other": "{count} городов"
+    },
+    "readMinutes": "{count} мин чтения",
+    "stars": "{count} ★",
+    "more": "Подробнее",
+    "nothingFound": "Ничего не нашлось",
+    "nothingFoundHint": "Попробуйте снять фильтр — или напишите нам, и мы соберём маршрут вручную.",
+    "errorTitle": "Не удалось загрузить",
+    "errorHint": "Проверьте соединение и попробуйте ещё раз.",
+    "notFoundTitle": "Страница не найдена",
+    "notFoundHint": "Возможно, ссылка устарела. Начните с главной — или напишите нам.",
+    "backHome": "На главную"
+  },
+  "categories": {
+    "classic": "Классика",
+    "nature": "Природа",
+    "history": "История",
+    "culture": "Культура",
+    "leisure": "Отдых",
+    "cities": "Города",
+    "food": "Кухня"
+  },
+  "hotelFilters": {
+    "5star": "5 ★",
+    "4star": "4 ★",
+    "3star": "3 ★",
+    "boutique": "Бутик",
+    "camp": "Кемп"
+  },
+  "tours": {
+    "breadcrumb": "Туры",
+    "title": "Готовые туры по Туркменистану",
+    "lead": "Маршруты, которые уже собраны и проверены: перелёты, отели, гид и все разрешения. Если ни один не подходит — соберите свой в конструкторе.",
+    "metaTitle": "Готовые туры по Туркменистану — Charva Travel",
+    "metaDescription": "Маршруты по Туркменистану с отелями, гидом и оформлением документов. Классика, пустыня, история, культура и отдых.",
+    "filterLabel": "Фильтр по теме",
+    "all": "Все",
+    "sortLabel": "Сортировка",
+    "sort": {
+      "popular": "Популярные",
+      "price_asc": "Сначала дешевле",
+      "price_desc": "Сначала дороже",
+      "days_asc": "Сначала короткие",
+      "days_desc": "Сначала длинные"
+    },
+    "stats": {
+      "routes": "Маршрута",
+      "days": "Дней в туре",
+      "minPrice": "Минимальная цена"
+    },
+    "cta": {
+      "title": "Не нашли подходящий маршрут?",
+      "text": "Соберите свой: города, звёздность отеля, питание, транспорт и экскурсии — расчёт появится сразу.",
+      "button": "Собрать тур"
+    }
+  }
+}

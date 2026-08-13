@@ -1,5 +1,6 @@
 export * from './api';
 export * from './builder';
+export * from './client';
 export * from './constants';
 export * from './errors';
 export * from './i18n';

@@ -113,3 +113,44 @@ export function localizedText(site: Site, options: LocalizedTextOptions = {}) {
 export const anyLocalizedText = z
   .object(Object.fromEntries(LANGS.map((lang) => [lang, z.string().max(4000).optional()])))
   .strict();
+
+/**
+ * The four plural categories any language in this project uses.
+ *
+ * Russian needs three of them and the boundaries are not obvious — 1 место, 2 места, 5 мест,
+ * 21 место, 25 мест — so `count === 1 ? a : b` is wrong four times out of five, and wrong in a
+ * way a Russian reader notices immediately.
+ */
+export interface PluralForms {
+  one: string;
+  few: string;
+  many: string;
+  other: string;
+}
+
+/** Picks the right plural form for `lang` and substitutes `{count}`. */
+export function plural(forms: PluralForms, count: number, lang: Lang): string {
+  const category = new Intl.PluralRules(lang).select(count);
+
+  // `select` can answer `zero` or `two` for languages this project does not speak, so the
+  // lookup is widened deliberately: `other` is the form every plural rule guarantees exists.
+  // An interface has no implicit index signature, so the widening is a cast rather than an
+  // assignment — and it is honest: `select` really can answer a category not in the object.
+  const byCategory = forms as unknown as Record<string, string | undefined>;
+  const template = byCategory[category] ?? forms.other;
+
+  return template.replace('{count}', String(count));
+}
+
+/**
+ * Fills `{name}` placeholders.
+ *
+ * Deliberately tiny. An unknown placeholder is left as written rather than replaced with
+ * `undefined`: a visible `{license}` is a bug somebody reports, and «Лицензия undefined» is a
+ * bug somebody screenshots.
+ */
+export function fill(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (whole, name: string) =>
+    name in values ? String(values[name]) : whole,
+  );
+}

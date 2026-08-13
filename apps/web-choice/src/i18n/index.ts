@@ -1,4 +1,4 @@
-import { type Lang } from '@charva/contracts';
+import { type Lang, type PluralForms } from '@charva/contracts';
 
 import en from './en.json';
 import ru from './ru.json';
@@ -30,31 +30,12 @@ export const COPY = {
   tm: tm satisfies Copy,
 } as const satisfies Record<Lang, Copy>;
 
-/** The four plural categories any of these languages uses. Russian needs three of them. */
-export type PluralForms = Copy['badge']['open'];
-
 /**
- * Picks the right plural form and substitutes the count.
+ * Plural forms and placeholder filling live in `@charva/contracts`.
  *
- * `Intl.PluralRules` rather than `count === 1 ? a : b`, because Russian has three forms and the
- * boundaries are not obvious: 1 место, 2 места, 5 мест, 21 место, 22 места, 25 мест. Getting it
- * wrong is not subtle to a Russian reader, and the badge is the first thing on the page that
- * carries a number.
+ * Both sites need them and neither owns them: the rules are about languages, not about a page.
+ * Re-exported here so a component imports one module rather than two.
  */
-export function plural(forms: PluralForms, count: number, lang: Lang): string {
-  const category = new Intl.PluralRules(lang).select(count);
+export { fill, plural } from '@charva/contracts';
 
-  // `select` can answer `zero` or `two` for languages this project does not speak, so the
-  // lookup is widened deliberately: `other` is the form every plural rule guarantees exists.
-  const byCategory: Record<string, string | undefined> = forms;
-  const template = byCategory[category] ?? forms.other;
-
-  return template.replace('{count}', String(count));
-}
-
-/** Fills `{name}` placeholders. Deliberately tiny: this project has three of them. */
-export function fill(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (whole, name: string) =>
-    name in values ? String(values[name]) : whole,
-  );
-}
+export type { PluralForms };

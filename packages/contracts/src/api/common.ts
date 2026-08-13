@@ -114,3 +114,10 @@ export const faqSchema = z.object({
   question: z.string(),
   answer: z.string(),
 });
+
+/**
+ * No `PageMeta` alias here: `pagination.ts` already exports that interface, and the schema
+ * above is its wire form. Two names for one shape is how a client and a server come to disagree
+ * about which of them is authoritative.
+ */
+export type MoneyDto = z.infer<typeof moneySchema>;

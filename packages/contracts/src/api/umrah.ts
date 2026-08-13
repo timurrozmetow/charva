@@ -224,3 +224,17 @@ export const umrahHomeResponse = z.object({
     programDays: z.number().int(),
   }),
 });
+
+export type ZiyaratPlace = z.infer<typeof ziyaratPlaceSchema>;
+export type ZiyaratResponse = z.infer<typeof ziyaratResponse>;
+export type ZiyaratDetailResponse = z.infer<typeof ziyaratDetailResponse>;
+export type UmrahProgramDay = z.infer<typeof umrahProgramDaySchema>;
+export type UmrahProgramResponse = z.infer<typeof umrahProgramResponse>;
+export type UmrahGroupCard = z.infer<typeof umrahGroupCardSchema>;
+export type UmrahGroupMedia = z.infer<typeof umrahGroupMediaSchema>;
+export type UmrahGroupsResponse = z.infer<typeof umrahGroupsResponse>;
+export type UmrahGroupDetailResponse = z.infer<typeof umrahGroupDetailResponse>;
+export type UmrahPackageResponse = z.infer<typeof umrahPackageResponse>;
+export type UmrahCurrentTripResponse = z.infer<typeof umrahCurrentTripResponse>;
+export type UmrahHomeResponse = z.infer<typeof umrahHomeResponse>;
+export type UmrahSettingsResponse = z.infer<typeof umrahSettingsResponse>;

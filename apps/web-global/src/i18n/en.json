@@ -1,0 +1,124 @@
+{
+  "brand": "Charva Travel",
+  "nav": {
+    "label": "Main navigation",
+    "home": "Charva Travel home",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "langLabel": "Language",
+    "cta": "Enquire online",
+    "items": {
+      "tours": "Tours",
+      "builder": "Tour builder",
+      "hotels": "Hotels",
+      "turkmenistan": "Turkmenistan",
+      "gallery": "Gallery",
+      "video": "Video",
+      "reviews": "Reviews"
+    }
+  },
+  "footer": {
+    "label": "Site footer",
+    "legal": "Charva Travel — a tour operator in Turkmenistan. {address}. Licence No. {license}.",
+    "copyright": "© {year} Charva Travel. All rights reserved.",
+    "columns": {
+      "tours": "Tours",
+      "country": "Turkmenistan",
+      "contacts": "Contact"
+    },
+    "links": {
+      "readyTours": "Ready-made tours",
+      "builder": "Tour builder",
+      "hotels": "Hotels",
+      "contact": "Enquire online",
+      "country": "The country and visas",
+      "gallery": "Gallery",
+      "video": "Video",
+      "reviews": "Reviews"
+    },
+    "socials": {
+      "instagram": "Instagram",
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp",
+      "youtube": "YouTube"
+    },
+    "cross": {
+      "choice": "Choose a direction",
+      "umrah": "Charva Umrah"
+    }
+  },
+  "common": {
+    "breadcrumbHome": "Home",
+    "loading": "Loading",
+    "retry": "Try again",
+    "showMore": "Show more",
+    "shown": "Showing {shown} of {total}",
+    "from": "from",
+    "perNight": "a night",
+    "days": {
+      "one": "{count} day",
+      "few": "{count} days",
+      "many": "{count} days",
+      "other": "{count} days"
+    },
+    "cities": {
+      "one": "{count} city",
+      "few": "{count} cities",
+      "many": "{count} cities",
+      "other": "{count} cities"
+    },
+    "readMinutes": "{count} min read",
+    "stars": "{count} ★",
+    "more": "Read more",
+    "nothingFound": "Nothing matched",
+    "nothingFoundHint": "Try clearing a filter — or write to us and we will build the route by hand.",
+    "errorTitle": "Could not load",
+    "errorHint": "Check the connection and try again.",
+    "notFoundTitle": "Page not found",
+    "notFoundHint": "The link may be out of date. Start from the home page — or write to us.",
+    "backHome": "Home page"
+  },
+  "categories": {
+    "classic": "Classic",
+    "nature": "Nature",
+    "history": "History",
+    "culture": "Culture",
+    "leisure": "Leisure",
+    "cities": "Cities",
+    "food": "Food"
+  },
+  "hotelFilters": {
+    "5star": "5 ★",
+    "4star": "4 ★",
+    "3star": "3 ★",
+    "boutique": "Boutique",
+    "camp": "Camp"
+  },
+  "tours": {
+    "breadcrumb": "Tours",
+    "title": "Ready-made tours of Turkmenistan",
+    "lead": "Routes already assembled and tested: flights, hotels, a guide and every permit. If none of them fits, build your own in the tour builder.",
+    "metaTitle": "Ready-made tours of Turkmenistan — Charva Travel",
+    "metaDescription": "Routes across Turkmenistan with hotels, a guide and paperwork handled. Classic, desert, history, culture and leisure.",
+    "filterLabel": "Filter by theme",
+    "all": "All",
+    "sortLabel": "Sort",
+    "sort": {
+      "popular": "Popular",
+      "price_asc": "Cheapest first",
+      "price_desc": "Most expensive first",
+      "days_asc": "Shortest first",
+      "days_desc": "Longest first"
+    },
+    "stats": {
+      "routes": "Routes",
+      "days": "Days per tour",
+      "minPrice": "Lowest price"
+    },
+    "cta": {
+      "title": "Nothing quite right?",
+      "text": "Build your own: cities, hotel class, meals, transport and excursions — the estimate appears as you choose.",
+      "button": "Build a tour"
+    }
+  }
+}

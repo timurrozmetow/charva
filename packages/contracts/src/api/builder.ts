@@ -92,3 +92,10 @@ export const builderQuoteResponse = z.object({
   missingSteps: z.array(z.enum(BUILDER_STEPS)),
   isEstimate: z.boolean(),
 });
+
+export type BuilderOptionDto = z.infer<typeof builderOptionSchema>;
+export type BuilderStepDto = z.infer<typeof builderStepSchema>;
+export type BuilderConfigResponse = z.infer<typeof builderConfigResponse>;
+export type BuilderQuoteRequest = z.infer<typeof builderQuoteRequest>;
+export type BuilderQuoteResponse = z.infer<typeof builderQuoteResponse>;
+export type BreakdownLineDto = z.infer<typeof breakdownLineSchema>;

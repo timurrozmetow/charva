@@ -1,7 +1,8 @@
-import { type ChoiceResponse, type Lang } from '@charva/contracts';
+import { type ChoiceResponse, createApiClient, type Lang } from '@charva/contracts';
 import { queryOptions } from '@tanstack/react-query';
 
-import { apiGet } from './client';
+/** Same origin everywhere: Vite proxies `/api` locally, nginx proxies it in production. */
+const api = createApiClient();
 
 /**
  * The chooser's only request.
@@ -13,7 +14,7 @@ import { apiGet } from './client';
 export function choiceQuery(lang: Lang) {
   return queryOptions({
     queryKey: ['choice', lang] as const,
-    queryFn: ({ signal }) => apiGet<ChoiceResponse>('/choice', lang, signal),
+    queryFn: ({ signal }) => api.get<ChoiceResponse>('/choice', { query: { lang }, signal }),
     staleTime: 60_000,
     /**
      * The page renders without this data.

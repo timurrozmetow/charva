@@ -124,3 +124,8 @@ export const umrahSignupResponse = z.object({
   signupId: z.number().int(),
   isDuplicate: z.boolean(),
 });
+
+export type FormTokenResponse = z.infer<typeof formTokenResponse>;
+export type LeadResponse = z.infer<typeof leadResponse>;
+export type UmrahSignupResponse = z.infer<typeof umrahSignupResponse>;
+export type RoomType = (typeof ROOM_TYPES)[number];
