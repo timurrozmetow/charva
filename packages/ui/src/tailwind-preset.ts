@@ -1,7 +1,9 @@
 import { type Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 import {
   breakpoint,
+  choiceScrimGradient,
   duration,
   easing,
   fontFamily,
@@ -45,6 +47,7 @@ function buildFontSizes(): Record<string, FontSizeValue> {
 
 export const charvaPreset = {
   content: [],
+
   theme: {
     screens: {
       lap: { max: px(breakpoint.lap) },
@@ -117,6 +120,31 @@ export const charvaPreset = {
         strong: 'rgba(var(--c-scrim-rgb), 0.9)',
       },
 
+      /**
+       * Cream text and cream fills on a dark surface, at the opacities the design uses.
+       *
+       * `--c-cream-rgb` is the base, so these follow the theme rather than pinning
+       * `253, 249, 243` into a component — Umrah's cream is a different value, and the day a
+       * shared component uses one of these on an Umrah dark section it must come out right.
+       * The handoff writes this base at ten opacities across the twenty prototypes; naming them
+       * is the same trade the `line` scale makes above.
+       */
+      cream: {
+        DEFAULT: 'rgb(var(--c-cream-rgb))',
+        /** Body copy on dark — the lead paragraph of each chooser half. */
+        body: 'rgba(var(--c-cream-rgb), 0.72)',
+        /** Slightly brighter: chip labels, which are short and small. */
+        soft: 'rgba(var(--c-cream-rgb), 0.8)',
+        muted: 'rgba(var(--c-cream-rgb), 0.55)',
+        /** Stat captions and the bottom line of the chooser. */
+        faint: 'rgba(var(--c-cream-rgb), 0.45)',
+        /** The oversized «01» / «02» behind each half: present, and barely. */
+        ghost: 'rgba(var(--c-cream-rgb), 0.05)',
+        /** Glass fills — a chip on a photograph, the outline button. */
+        fill: 'rgba(var(--c-cream-rgb), 0.06)',
+        'fill-strong': 'rgba(var(--c-cream-rgb), 0.07)',
+      },
+
       /** The accent as a tint: the selected topic chip and the passed step of the builder. */
       tint: {
         DEFAULT: 'rgba(223, 160, 89, 0.2)',
@@ -128,6 +156,8 @@ export const charvaPreset = {
          * opaque to it — it would emit the solid accent and say nothing.
          */
         line: 'rgba(223, 160, 89, 0.45)',
+        /** A heavier sand border: the outline call to action on the Umrah half. */
+        edge: 'rgba(223, 160, 89, 0.6)',
       },
     },
 
@@ -174,6 +204,18 @@ export const charvaPreset = {
       /** Overriding `colors` wholesale leaves Tailwind's default border grey unresolvable. */
       borderColor: {
         DEFAULT: 'rgba(var(--c-border-rgb), var(--c-line-alpha))',
+      },
+
+      /**
+       * The two gradients over the chooser's halves.
+       *
+       * Built from `choiceScrimGradient` so the four stops and the two bases live in `tokens.ts`
+       * with everything else, rather than as a hundred-character literal inside a `className`
+       * where nothing can find it and no test can check it.
+       */
+      backgroundImage: {
+        'scrim-choice-global': choiceScrimGradient('global'),
+        'scrim-choice-umrah': choiceScrimGradient('umrah'),
       },
 
       spacing: {
@@ -267,7 +309,22 @@ export const charvaPreset = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    /**
+     * `hover:` compiles to `@media (hover: hover) { &:hover }`.
+     *
+     * On a touch browser a plain `:hover` is applied on tap and stays applied until something
+     * else is tapped: a card stays lifted, a chip stays filled, and on the chooser one half of
+     * the screen stays expanded after the finger has left it, with no gesture that undoes it.
+     * Tailwind made this the default in v4 and offers `future.hoverOnlyWhenSupported` in v3 —
+     * but that flag is read from the root config only and is silently dropped when it comes
+     * from a preset, which is exactly the kind of quiet no-op D-32 exists to catch. Overriding
+     * the variant works from here, because plugins *are* merged out of presets.
+     */
+    plugin((api) => {
+      api.addVariant('hover', '@media (hover: hover) { &:hover }');
+    }),
+  ],
 } satisfies Config;
 
 export default charvaPreset;

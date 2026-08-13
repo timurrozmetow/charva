@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,12 +9,16 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import charvaPreset from './tailwind-preset';
 
 /**
- * Every class this package writes must actually exist in the preset.
+ * Every class anything in this repository writes must actually exist in the preset.
  *
  * Tailwind fails silently: `text-cardTitle` misremembered as `text-card-title` produces no
  * rule, no warning and no error — the element simply renders at whatever size it inherited.
  * The same happens the day someone renames a key in the preset and misses a use of it. This
- * suite compiles the real component sources and fails on any class that came out empty.
+ * suite compiles the real sources and fails on any class that came out empty.
+ *
+ * It scans the applications as well as this package, because the preset is what is under test
+ * and the apps are its other consumers. Keeping the check here rather than copying it into
+ * four `vitest.config` files means a new app gets it by existing.
  *
  * Only classes that could come from *our* preset are checked. Stock Tailwind utilities are
  * Tailwind's problem, and matching every one of them here would mean reimplementing its
@@ -22,6 +26,18 @@ import charvaPreset from './tailwind-preset';
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+
+/** `packages/ui/src` plus every app's `src`. Missing directories are skipped, not fatal. */
+const SCANNED = [HERE, ...appSourceDirs()];
+
+function appSourceDirs(): string[] {
+  const apps = join(HERE, '..', '..', '..', 'apps');
+  if (!existsSync(apps)) return [];
+  return readdirSync(apps, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => join(apps, entry.name, 'src'))
+    .filter((dir) => existsSync(dir));
+}
 
 /** Utility families this preset defines or reshapes. */
 const OWNED_PREFIXES = [
@@ -85,9 +101,21 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-/** Tailwind's own escaping, near enough for a selector substring match. */
-function escapeClass(name: string): string {
-  return name.replace(/[^a-zA-Z0-9_-]/g, (char) => `\\${char}`);
+/**
+ * Undoes CSS identifier escaping, so a selector can be compared against a plain class name.
+ *
+ * Reversing Tailwind's escaping is far more reliable than reproducing it. Unminified, Tailwind
+ * writes a comma as the hex escape `\2c ` — with a trailing space that is part of the escape —
+ * and a full stop as `\.`; the production minifier then rewrites the first into the second. An
+ * earlier version of this file reproduced only the second and reported nine working classes as
+ * dead, which is exactly the false confidence a silent-failure check must not have.
+ */
+function unescapeCss(css: string): string {
+  return css
+    .replace(/\\([0-9a-fA-F]{1,6})[ \t\n]?/g, (_, hex: string) =>
+      String.fromCodePoint(Number.parseInt(hex, 16)),
+    )
+    .replace(/\\(.)/g, '$1');
 }
 
 async function compile(raw: string): Promise<string> {
@@ -101,7 +129,7 @@ async function compile(raw: string): Promise<string> {
 }
 
 describe('every class the components write compiles to a rule', () => {
-  const files = sourceFiles(HERE);
+  const files = SCANNED.flatMap((dir) => sourceFiles(dir));
   const used = new Map<string, string[]>();
   let css = '';
 
@@ -109,11 +137,13 @@ describe('every class the components write compiles to a rule', () => {
     for (const file of files) {
       for (const name of classCandidates(readFileSync(file, 'utf8'))) {
         const seen = used.get(name) ?? [];
-        seen.push(file.slice(HERE.length + 1));
+        // Repo-relative, so a failure names `apps/web-choice/src/…` rather than a path that
+        // only makes sense from inside this package.
+        seen.push(file.split(/[\\/]/).slice(-4).join('/'));
         used.set(name, seen);
       }
     }
-    css = await compile([...used.keys()].join(' '));
+    css = unescapeCss(await compile([...used.keys()].join(' ')));
   }, 30_000);
 
   it('finds classes to check in the first place', () => {
@@ -124,7 +154,7 @@ describe('every class the components write compiles to a rule', () => {
 
   it('leaves none of them empty', () => {
     const missing = [...used.entries()]
-      .filter(([name]) => !css.includes(`.${escapeClass(name)}`))
+      .filter(([name]) => !css.includes(`.${name}`))
       .map(([name, where]) => `${name} (${where.join(', ')})`);
 
     expect(missing, `classes that produced no CSS:\n${missing.join('\n')}`).toEqual([]);

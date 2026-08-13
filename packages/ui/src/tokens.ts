@@ -155,7 +155,40 @@ export const alphaBase = {
   umrahScrim: '14, 23, 20',
   /** Choice glass and scrims. */
   choiceGlass: '20, 14, 10',
+  /** The gradient over the Global half of the chooser. */
+  choiceGlobalScrim: '13, 9, 6',
+  /**
+   * The gradient over the Umrah half — a cooler base than the Global one.
+   *
+   * Six pixels of offset and a two-hundredth of opacity apart from its neighbour, which looks
+   * like noise until you see the two side by side. Written down rather than averaged away, for
+   * the same reason the two card shadows are (D-30): a tidying commit that unified them would
+   * change the design and nobody would be able to say which commit did it.
+   */
+  choiceUmrahScrim: '7, 14, 12',
 } as const;
+
+/**
+ * The four stops both chooser gradients use, and the only difference between them.
+ *
+ * `to top` from nearly opaque at the bottom, through a clear middle where the photograph shows,
+ * back to half-dark at the very top so the floating navigation stays legible over any image.
+ */
+export const choiceScrim = {
+  global: [0.96, 0.74, 0.22, 0.52],
+  umrah: [0.96, 0.76, 0.24, 0.54],
+} as const;
+
+export function choiceScrimGradient(half: keyof typeof choiceScrim): string {
+  const base = half === 'global' ? alphaBase.choiceGlobalScrim : alphaBase.choiceUmrahScrim;
+  const [bottom, low, mid, top] = choiceScrim[half];
+  return (
+    `linear-gradient(to top, rgba(${base}, ${String(bottom)}) 0%, ` +
+    `rgba(${base}, ${String(low)}) 34%, ` +
+    `rgba(${base}, ${String(mid)}) 68%, ` +
+    `rgba(${base}, ${String(top)}) 100%)`
+  );
+}
 
 export function alpha(base: keyof typeof alphaBase, opacity: number): string {
   return `rgba(${alphaBase[base]}, ${String(opacity)})`;
