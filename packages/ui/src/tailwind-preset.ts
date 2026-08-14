@@ -221,6 +221,13 @@ export const charvaPreset = {
         'scrim-choice-umrah': choiceScrimGradient('umrah'),
         /** The homepage hero. Reads `--c-scrim-rgb`, so one class serves both sites. */
         'scrim-hero': heroScrimGradient(),
+        /**
+         * Umrah's hero runs at 105° rather than vertically.
+         *
+         * The one genuine difference between the two overlays, and the reason the helper takes
+         * a direction: the stops and the base stay shared, so a change to either moves both.
+         */
+        'scrim-hero-diagonal': heroScrimGradient('105deg'),
       },
 
       spacing: {

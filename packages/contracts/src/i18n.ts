@@ -123,8 +123,19 @@ export const anyLocalizedText = z
  */
 export interface PluralForms {
   one: string;
-  few: string;
-  many: string;
+  /**
+   * `few` and `many` are optional because not every language has them.
+   *
+   * Russian has four categories, Turkmen and English have two. Requiring all four would force
+   * a Turkmen copy file to write «{count} gün» three times to say that the distinction does not
+   * exist in the language — which reads as an oversight and hides the real ones.
+   *
+   * The safety this gives up for Russian is bought back by a test: each app's copy suite
+   * asserts that every plural block in its Russian file supplies all four, so «2 дня» cannot
+   * silently become «2 дней» because somebody dropped a key.
+   */
+  few?: string;
+  many?: string;
   other: string;
 }
 
