@@ -1,4 +1,5 @@
 import { type ApiError } from '@charva/contracts';
+import { eq } from 'drizzle-orm';
 import { type FastifyInstance, type LightMyRequestResponse } from 'fastify';
 import mysql from 'mysql2/promise';
 
@@ -9,6 +10,7 @@ import { seedAll } from '../db/seed/seed';
 import { TEST_DATABASE_URL } from '../db/test-setup';
 import { loadEnv } from '../env';
 import { issueFormToken } from '../lib/form-token';
+import { hashPassword } from '../lib/passwords';
 
 /**
  * One app, one pool, against the real `charva_test`.
@@ -18,10 +20,25 @@ import { issueFormToken } from '../lib/form-token';
  * every CHECK exist only in the database. A test against a fake proves what the fake does.
  */
 
+export interface TestAdmin {
+  id: number;
+  email: string;
+  password: string;
+  /** A signed access token for this account, ready to put in an `Authorization` header. */
+  accessToken: string;
+}
+
 export interface TestApp {
   app: FastifyInstance;
   pool: mysql.Pool;
   prefix: string;
+  /**
+   * An owner account, so the contract walk can reach routes behind the login.
+   *
+   * Owner rather than editor on purpose: the walk asserts that every route answers, and an
+   * account without a capability would make a 403 look like a route that works.
+   */
+  admin: TestAdmin;
   /**
    * A real slug per detail route, read from the seeds.
    *
@@ -110,12 +127,38 @@ export async function buildTestApp(options: TestAppOptions = {}): Promise<TestAp
     app,
     pool,
     prefix: API_PREFIX,
+    admin: await ensureTestAdmin(app),
     discoveredSlugs: await discoverSlugs(pool),
     close: async () => {
       await app.close();
       await pool.end();
     },
   };
+}
+
+/**
+ * The account the suites log in as.
+ *
+ * Recreated rather than reused, because two suites running one after another share the schema
+ * and the second would otherwise inherit whatever the first did to the row — a lock, a bumped
+ * failure counter, a deactivation. The password is hashed with the real parameters, so a suite
+ * that logs in exercises the real cost.
+ */
+async function ensureTestAdmin(app: FastifyInstance): Promise<TestAdmin> {
+  const email = 'owner@charva.test';
+  const password = 'test-owner-password';
+
+  await app.db.delete(t.adminUsers).where(eq(t.adminUsers.email, email));
+
+  const [result] = await app.db.insert(t.adminUsers).values({
+    email,
+    name: 'Test Owner',
+    role: 'owner',
+    passwordHash: await hashPassword(password),
+  });
+
+  const { token } = app.signAccessToken({ id: result.insertId, role: 'owner', siteScope: null });
+  return { id: result.insertId, email, password, accessToken: token };
 }
 
 /** One published slug per detail route, straight from the tables the routes read. */

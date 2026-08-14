@@ -30,21 +30,25 @@ describe('loadEnv', () => {
   });
 
   /**
-   * The three secrets have development defaults so nothing has to be configured to clone the
+   * Every secret has a development default so nothing has to be configured to clone the
    * repository and run it. A default secret in a public deploy is the same as no secret: the
-   * form token would be forgeable by anyone with the source, and every passport number in the
-   * database would be encrypted under a key printed in this file.
+   * form token would be forgeable by anyone with the source, every passport number in the
+   * database would be encrypted under a key printed in this file, and anybody could sign
+   * themselves an admin session as the owner.
    */
   const REAL_SECRETS = {
     FORM_TOKEN_SECRET: 'a'.repeat(32),
     IP_HASH_SECRET: 'b'.repeat(32),
     PASSPORT_ENCRYPTION_KEY: 'ab'.repeat(32),
+    ADMIN_JWT_SECRET: 'c'.repeat(32),
+    ADMIN_REFRESH_SECRET: 'd'.repeat(32),
   };
 
   it('runs in development without a single secret configured', () => {
     const env = loadEnv({});
     expect(env.FORM_TOKEN_SECRET.length).toBeGreaterThan(15);
     expect(env.PASSPORT_ENCRYPTION_KEY).toMatch(/^[0-9a-f]{64}$/);
+    expect(env.ADMIN_JWT_SECRET.length).toBeGreaterThan(15);
   });
 
   it('refuses to boot in production on a secret nobody chose', () => {
@@ -59,7 +63,7 @@ describe('loadEnv', () => {
     }
   });
 
-  it('boots in production once all three are set', () => {
+  it('boots in production once every one of them is set', () => {
     expect(() => loadEnv({ NODE_ENV: 'production', ...REAL_SECRETS })).not.toThrow();
   });
 

@@ -27,6 +27,8 @@ const DEV_SECRETS = {
   FORM_TOKEN_SECRET: 'charva-dev-only-form-token-secret',
   IP_HASH_SECRET: 'charva-dev-only-ip-hash-secret',
   PASSPORT_ENCRYPTION_KEY: '00'.repeat(32),
+  ADMIN_JWT_SECRET: 'charva-dev-only-admin-jwt-secret',
+  ADMIN_REFRESH_SECRET: 'charva-dev-only-admin-refresh-secret',
 } as const;
 
 const schema = z.object({
@@ -125,6 +127,46 @@ const schema = z.object({
     .string()
     .regex(/^[0-9a-fA-F]{64}$/, 'must be 32 bytes as 64 hex characters')
     .default(DEV_SECRETS.PASSPORT_ENCRYPTION_KEY),
+
+  /**
+   * Signs the fifteen-minute admin access token.
+   *
+   * Separate from `FORM_TOKEN_SECRET` on purpose: those two sign things with wildly different
+   * consequences, and one key signing both means a weakness in the cheap public one is a
+   * weakness in the session.
+   */
+  ADMIN_JWT_SECRET: z.string().min(16).default(DEV_SECRETS.ADMIN_JWT_SECRET),
+
+  /**
+   * Peppers the refresh-token digest.
+   *
+   * The refresh token is 48 random bytes and is stored only as an HMAC of itself, so a dump of
+   * `admin_refresh_tokens` is not a set of working sessions — the attacker also needs this.
+   */
+  ADMIN_REFRESH_SECRET: z.string().min(16).default(DEV_SECRETS.ADMIN_REFRESH_SECRET),
+
+  /** How long an access token is good for. Short, because it cannot be revoked. */
+  ADMIN_ACCESS_TTL_MINUTES: z.coerce.number().int().positive().max(1440).default(15),
+
+  /**
+   * How long a refresh family may live before the admin logs in again.
+   *
+   * Thirty days, rotated on every use: the useful window of a stolen cookie is until its owner's
+   * browser next refreshes, because that is when reuse is detected and the family dies.
+   */
+  ADMIN_REFRESH_TTL_DAYS: z.coerce.number().int().positive().max(365).default(30),
+
+  /** Failed attempts before the account locks, and for how long. */
+  ADMIN_MAX_FAILED_ATTEMPTS: z.coerce.number().int().positive().max(100).default(5),
+  ADMIN_LOCK_MINUTES: z.coerce.number().int().positive().max(1440).default(15),
+
+  /**
+   * The ceiling on login attempts from one address, over ten minutes.
+   *
+   * The per-account lock above stops a password being guessed; this stops one address working
+   * through a list of accounts, which the lock alone would happily allow.
+   */
+  ADMIN_LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().max(1000).default(10),
 });
 
 export type Env = z.infer<typeof schema>;

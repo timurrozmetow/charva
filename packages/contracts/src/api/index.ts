@@ -8,6 +8,7 @@
  * production and fine in every test.
  */
 
+export * from './admin';
 export * from './builder';
 export * from './choice';
 export * from './common';

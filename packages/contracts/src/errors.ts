@@ -16,6 +16,13 @@ export const ERROR_CODES = [
   'rate_limited',
   'unauthorized',
   'forbidden',
+  /**
+   * The account is temporarily locked after repeated failures.
+   *
+   * Separate from `rate_limited`, which is about an address: this one is about an account, and
+   * the two are told apart because the fixes differ — wait, versus ask the owner to unlock.
+   */
+  'locked',
   /** A unique constraint, or a state the row cannot move to. */
   'conflict',
   /** Upload rejected: wrong magic bytes, too large, unsupported format. */
@@ -32,6 +39,7 @@ export const HTTP_STATUS: Record<ErrorCode, number> = {
   not_found: 404,
   conflict: 409,
   unsupported_media: 415,
+  locked: 423,
   rate_limited: 429,
   internal: 500,
 };

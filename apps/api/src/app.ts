@@ -17,12 +17,14 @@ import { z } from 'zod';
 
 import { createDb, createPool, type Database } from './db/client';
 import { type Env } from './env';
+import { adminRoutes } from './modules/admin/routes';
 import { builderRoutes } from './modules/builder/routes';
 import { choiceRoutes } from './modules/choice/routes';
 import { globalRoutes } from './modules/global/routes';
 import { leadRoutes } from './modules/leads/routes';
 import { mediaRoutes } from './modules/media/routes';
 import { umrahRoutes } from './modules/umrah/routes';
+import { adminAuthPlugin } from './plugins/admin-auth';
 import { cachePlugin } from './plugins/cache';
 import { errorHandler } from './plugins/error-handler';
 import { decorateLocale } from './plugins/locale';
@@ -173,6 +175,7 @@ export async function buildApp(env: Env, options: BuildOptions = {}): Promise<Fa
   });
 
   await app.register(cachePlugin, { ttlSeconds: env.CACHE_TTL_SECONDS });
+  await app.register(adminAuthPlugin);
   decorateLocale(app);
 
   await registerDocs(app);
@@ -184,6 +187,7 @@ export async function buildApp(env: Env, options: BuildOptions = {}): Promise<Fa
   await app.register(builderRoutes, { prefix: `${API_PREFIX}/global/builder` });
   await app.register(umrahRoutes, { prefix: `${API_PREFIX}/umrah` });
   await app.register(leadRoutes, { prefix: API_PREFIX });
+  await app.register(adminRoutes, { prefix: `${API_PREFIX}/admin` });
 
   await app.ready();
   return app;
@@ -213,6 +217,7 @@ async function registerDocs(app: FastifyInstance): Promise<void> {
         { name: 'builder', description: 'The tour builder: rates in, quote out' },
         { name: 'forms', description: 'Leads and signups, and the token that guards them' },
         { name: 'media', description: 'Images, resized on demand' },
+        { name: 'admin', description: 'Behind the login. Same origin as the admin SPA (D-20)' },
         { name: 'ops', description: 'Liveness and readiness' },
       ],
     },

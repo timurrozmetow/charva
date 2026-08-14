@@ -49,6 +49,17 @@ const SLUGS: Record<string, string> = {
   '/api/v1/global/hotels/:slug': 'garagum-camp',
 };
 
+/**
+ * The session, for the half of the API that has one.
+ *
+ * Sent as an owner, so that a 403 from a missing capability cannot be mistaken for a route that
+ * answers. Public routes get no header at all — passing one everywhere would hide a route that
+ * had quietly become authenticated.
+ */
+function authFor(url: string): Record<string, string> {
+  return url.includes('/admin') ? { authorization: `Bearer ${context.admin.accessToken}` } : {};
+}
+
 function concreteUrl(pattern: string, app: TestApp): string {
   if (!pattern.includes(':')) return pattern;
 
@@ -95,7 +106,7 @@ describe('every route', () => {
       if (servesBytes(route.url)) continue;
 
       const url = concreteUrl(route.url, context);
-      const response = await context.app.inject({ method: 'GET', url });
+      const response = await context.app.inject({ method: 'GET', url, headers: authFor(url) });
 
       expect(response.statusCode, `GET ${url} → ${response.body.slice(0, 300)}`).toBe(200);
     }
