@@ -125,6 +125,15 @@ Vite, Fastify и Mailpit выбирают сами: 5173, 5174, 4173, 3001, 1025
   `docker/docker-compose.dev.yml` и генерируемый `.services/my.ini`. Изменение требует
   перезапуска MySQL.
 - **sharp нужен libvips**, готовый бинарник покрывает **glibc x64** — на VPS Ubuntu, не Alpine.
+- **Никогда не открывать файл на запись в том же выражении, в котором он читается.**
+  `open(p,'w').write(open(p).read().replace(...))` в Python обрезает файл **до** того, как
+  выполнится чтение: аргумент вычисляется после открытия. Так в Фазе 6 обнулились оба файла
+  копии `web-umrah`, и восстанавливать их пришлось целиком. Читать в переменную, потом писать —
+  или пользоваться `Edit`.
+- **Не расширять ignore-шаблоны на исходники.** `*.sql` в `.gitignore` был написан для дампов и
+  съел `apps/api/src/db/migrations/*.sql`: в репозитории лежал `meta/_journal.json` со списком
+  из двух миграций и ни одного файла, который он называет. Чистый клон применял ноль миграций,
+  отчитывался успехом, и все db-тесты шли по пустой базе. Миграции возвращены по имени.
 
 ---
 
@@ -132,10 +141,11 @@ Vite, Fastify и Mailpit выбирают сами: 5173, 5174, 4173, 3001, 1025
 
 ```
 apps/web-choice    React 18 + Vite 5 + TS + Tailwind + TanStack Router + TanStack Query
-apps/web-global    то же + Zustand (состояние сборщика туров)
+apps/web-global    то же + react-hook-form + @hookform/resolvers (Zustand не нужен — D-58:
+                   состояние сборщика и списочных фильтров живёт в URL)
 apps/web-umrah     то же
 apps/admin         то же + shadcn/ui поверх Radix, перекрашенный в токены Charva
-apps/api           Fastify 4 + TS + Drizzle ORM + MySQL 8 + Zod
+apps/api           Fastify 5 + TS + Drizzle ORM + MySQL 8 + Zod
                    + sharp + ffmpeg + @node-rs/argon2 + nodemailer
 packages/ui        компоненты, токены, Tailwind preset, шрифты
 packages/contracts Zod-схемы и чистые функции — единственный источник типов между api и web
