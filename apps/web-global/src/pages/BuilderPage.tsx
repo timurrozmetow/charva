@@ -3,6 +3,7 @@ import { Container, Eyebrow, Heading, Section, StatStrip } from '@charva/ui';
 
 import { TourBuilder } from '../builder/TourBuilder';
 import { Breadcrumbs } from '../components/Breadcrumbs';
+import { LeadForm } from '../components/LeadForm';
 import { copyFor } from '../i18n';
 import { path } from '../lib/routes';
 import { useDocumentMeta } from '../lib/useDocumentMeta';
@@ -62,7 +63,27 @@ export function BuilderPage({ lang }: BuilderPageProps) {
 
       <Section tone="dark" space="md">
         <Container>
-          <TourBuilder lang={lang} basePath={path.builder(lang)} />
+          <TourBuilder
+            lang={lang}
+            basePath={path.builder(lang)}
+            /*
+             * The ninth step is the same form as the contact page, carrying the selection.
+             *
+             * The price is not sent with it and there is no field for one: the server prices
+             * the codes from the database and stores that in `quote_snapshot`, because a total
+             * that arrived from a browser is a total the sender chose. The party size comes
+             * from step seven, so the form does not ask for it a second time.
+             */
+            renderForm={({ selection }) => (
+              <LeadForm
+                lang={lang}
+                kind="builder"
+                selection={selection}
+                showGuests={false}
+                showTopics={false}
+              />
+            )}
+          />
         </Container>
       </Section>
 

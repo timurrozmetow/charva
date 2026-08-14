@@ -230,7 +230,16 @@ export function formTokenQuery() {
   });
 }
 
-export function postLead(lang: Lang, body: LeadRequest): Promise<LeadResponse | undefined> {
+/**
+ * The domain type again, for the same reason `postQuote` takes one.
+ *
+ * `BuilderSelection` holds `readonly string[]`; zod infers the mutable array it parses into.
+ * The client sends what it *means* and the server validates what arrived, which is the right
+ * way round.
+ */
+export type LeadPayload = Omit<LeadRequest, 'selection'> & { selection?: BuilderSelection };
+
+export function postLead(lang: Lang, body: LeadPayload): Promise<LeadResponse | undefined> {
   // `undefined` is a real answer: the honeypot branch replies 204 and writes nothing, and the
   // form shows the same confirmation either way — an error message is a lesson for a bot.
   return api.post<LeadResponse | undefined>('/global/leads', body, { query: { lang } });

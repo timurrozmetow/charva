@@ -74,18 +74,37 @@ export async function renderPage(
   return Object.assign(result, { queryClient, router });
 }
 
+export interface StubbedCall {
+  url: string;
+  method: string;
+  /** The parsed JSON body of a POST, so a test can assert what was actually sent. */
+  body: unknown;
+}
+
 /**
  * Answers every request with one payload, chosen by what the URL contains.
  *
  * Keyed by a path fragment rather than by an exact URL: the queries add `?lang=` and a page
  * size, and a test that had to reproduce those exactly would break every time a default moved
  * without anything actually being wrong.
+ *
+ * Returns the list it records into. For the lead form that is the whole point of the test —
+ * what matters is not that the button did something but that `consent`, `kind` and the signed
+ * token left the browser.
  */
-export function stubApi(routes: Record<string, unknown>): void {
+export function stubApi(routes: Record<string, unknown>): StubbedCall[] {
+  const calls: StubbedCall[] = [];
+
   vi.stubGlobal(
     'fetch',
-    vi.fn((input: string | URL) => {
+    vi.fn((input: string | URL, init?: RequestInit) => {
       const url = String(input);
+      calls.push({
+        url,
+        method: init?.method ?? 'GET',
+        body: typeof init?.body === 'string' ? JSON.parse(init.body) : undefined,
+      });
+
       const match = Object.entries(routes).find(([fragment]) => url.includes(fragment));
 
       if (match === undefined) {
@@ -99,12 +118,34 @@ export function stubApi(routes: Record<string, unknown>): void {
         );
       }
 
+      const payload = match[1];
+      if (payload instanceof StubFailure) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              error: { code: payload.code, message: payload.code, requestId: 'test' },
+            }),
+            { status: payload.status, headers: { 'content-type': 'application/json' } },
+          ),
+        );
+      }
+
       return Promise.resolve(
-        new Response(JSON.stringify(match[1]), {
+        new Response(JSON.stringify(payload), {
           status: 200,
           headers: { 'content-type': 'application/json' },
         }),
       );
     }),
   );
+
+  return calls;
+}
+
+/** A route that answers with the API's error envelope — the rate limit, mostly. */
+export class StubFailure {
+  constructor(
+    readonly status: number,
+    readonly code: string,
+  ) {}
 }
