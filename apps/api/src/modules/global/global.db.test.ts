@@ -141,11 +141,23 @@ describe('hotels', () => {
       '/global/hotels',
     );
 
-    const withAmenities = body.items.find((hotel) => hotel.amenities.length > 0);
-    expect(withAmenities).toBeDefined();
-    for (const amenity of withAmenities?.amenities ?? []) {
-      expect(amenity.code).toMatch(/^[a-z0-9_]+$/);
-      expect(amenity.name.length).toBeGreaterThan(0);
+    /*
+     * Every hotel, not the first one that happens to have any.
+     *
+     * As written before, this looked at exactly one hotel — whichever the default order put
+     * first — so `wi-fi` and `10-nomerov` were never inspected, and the character class here was
+     * narrower than the slugs the seeds actually produce. Phase 7 changed which hotel came
+     * first and the assertion failed on data that had been there since phase 2.
+     */
+    expect(body.items.some((hotel) => hotel.amenities.length > 0)).toBe(true);
+
+    for (const hotel of body.items) {
+      for (const amenity of hotel.amenities) {
+        // A stable ASCII slug — decision D-40 — and never the translated label, which is what
+        // `hotels.amenities JSON` would have forced.
+        expect(amenity.code).toMatch(/^[a-z0-9][a-z0-9_-]*$/);
+        expect(amenity.name.length).toBeGreaterThan(0);
+      }
     }
   });
 });
