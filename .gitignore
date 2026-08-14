@@ -28,6 +28,12 @@ apps/api/uploads/
 *.dump
 backups/
 
+# ...but never the migrations, which are source code and the only definition
+# of the schema. `*.sql` above was written for dumps and quietly swallowed
+# them: a clean clone had `meta/_journal.json` listing two migrations and no
+# files to apply, so `pnpm db:migrate` succeeded against an empty database.
+!apps/api/src/db/migrations/*.sql
+
 # local portable dev services (mysql, mailpit, ffmpeg)
 .services/
 
