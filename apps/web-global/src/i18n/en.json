@@ -275,5 +275,176 @@
       "other": "{count} views"
     },
     "noPlayer": "Your browser cannot play this video."
+  },
+  "home": {
+    "metaTitle": "Charva Travel — tours of Turkmenistan",
+    "metaDescription": "A tour operator in Turkmenistan: ready-made routes, hotels, visa support and guides. Build your own tour and see the price at once.",
+    "heroEyebrow": "Charva Travel · Turkmenistan",
+    "heroTitle": "The country almost nobody visits",
+    "heroLead": "The Karakum, the ruins of four Silk Road capitals, and a crater that has burned since 1971. Routes with the visa, the hotels and the guide — around your dates.",
+    "sliderLabel": "Homepage slider",
+    "slide": "Slide {index} of {total}",
+    "goToSlide": "Go to slide {index}",
+    "pause": "Pause the slideshow",
+    "play": "Resume the slideshow",
+    "search": {
+      "destination": "Destination",
+      "duration": "Length",
+      "guests": "Guests",
+      "any": "Any",
+      "submit": "Find a tour"
+    },
+    "tours": {
+      "eyebrow": "Routes",
+      "title": "Popular tours",
+      "all": "All routes"
+    },
+    "builder": {
+      "eyebrow": "Builder",
+      "title": "Build the tour around you",
+      "lead": "Cities, length, hotel class, meals and excursions. The price is recalculated on every click."
+    },
+    "hotels": {
+      "eyebrow": "Where to stay",
+      "title": "Hotels and camps",
+      "all": "All hotels"
+    },
+    "journal": {
+      "eyebrow": "Journal",
+      "title": "Worth reading before you go"
+    },
+    "gallery": {
+      "eyebrow": "Photographs",
+      "title": "Turkmenistan in frame",
+      "all": "The whole gallery"
+    },
+    "video": {
+      "eyebrow": "Video",
+      "title": "What it looks like",
+      "all": "All videos"
+    },
+    "country": {
+      "more": "More about the country and the visa"
+    },
+    "reviews": {
+      "eyebrow": "Reviews",
+      "title": "What travellers say",
+      "all": "All reviews"
+    },
+    "contact": {
+      "title": "Send an enquiry",
+      "lead": "Tell us where and when you want to go. We reply within fifteen minutes during working hours."
+    }
+  },
+  "topics": {
+    "ready_tour": "A ready-made tour",
+    "custom_route": "My own route",
+    "hotel_only": "Hotel only",
+    "visa": "Visa",
+    "transfer": "Transfer"
+  },
+  "form": {
+    "name": "Name",
+    "namePlaceholder": "What should we call you",
+    "phone": "Phone",
+    "phonePlaceholder": "+993 65 123456",
+    "email": "Email",
+    "emailPlaceholder": "so we can send the itinerary",
+    "guests": "Guests",
+    "guestsPlaceholder": "2",
+    "topics": "Interested in",
+    "message": "Message",
+    "messagePlaceholder": "Where you want to go, when, and for how many days",
+    "optional": "optional",
+    "consent": "I agree to the processing of my personal data",
+    "consentHint": "Your name and number are used only to call you back. We pass them to nobody.",
+    "submit": "Send the enquiry",
+    "sending": "Sending",
+    "replyNote": "We reply within 15 minutes during working hours.",
+    "aboutPage": "Enquiry from the page “{title}”",
+    "success": {
+      "title": "Enquiry received",
+      "text": "A manager will call {phone}. That usually takes no more than fifteen minutes.",
+      "again": "Send another"
+    },
+    "errors": {
+      "name": "Tell us what to call you — two letters at least.",
+      "phone": "We need a number we can call back.",
+      "email": "That address looks like it has a typo.",
+      "guests": "Guests — between 1 and 60.",
+      "message": "Too long: please keep it under 4000 characters.",
+      "consent": "Without your consent we cannot call you back.",
+      "failed": "That did not send. Check your connection and try again.",
+      "rateLimited": "Too many attempts from this address. Try again in ten minutes."
+    }
+  },
+  "contact": {
+    "breadcrumb": "Enquiry",
+    "title": "Tell us where you want to go",
+    "lead": "We will build the route around your dates, price it, and arrange the visa invitation.",
+    "metaTitle": "Online enquiry — Charva Travel",
+    "metaDescription": "Enquire about a tour of Turkmenistan: route, hotels, visa and transfers. A manager replies within 15 minutes.",
+    "tabsLabel": "Type of enquiry",
+    "tabs": {
+      "tour": "Tour enquiry",
+      "question": "General question"
+    },
+    "contactsTitle": "Reach us directly",
+    "labels": {
+      "phone": "Phone",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "hours": "Working hours"
+    },
+    "socialsLabel": "Find us online",
+    "officeCaption": "Our office in Ashgabat",
+    "faqTitle": "Frequent questions"
+  },
+  "tour": {
+    "breadcrumb": "Tours",
+    "aboutTitle": "About the route",
+    "programTitle": "Day by day",
+    "dayLabel": "Day {n}",
+    "galleryTitle": "Photographs from the trip",
+    "relatedTitle": "Similar routes",
+    "formTitle": "Book this route",
+    "formLead": "Leave a number — we will confirm the dates and send the day-by-day itinerary.",
+    "priceLabel": "Price",
+    "priceNote": "Per person sharing a double room. The final figure depends on the dates and the party size.",
+    "builderCta": "Adapt it to me",
+    "facts": {
+      "days": "Length",
+      "cities": "Cities",
+      "hotels": "Hotels",
+      "category": "Theme"
+    }
+  },
+  "hotel": {
+    "breadcrumb": "Hotels",
+    "aboutTitle": "About the hotel",
+    "amenitiesTitle": "Amenities",
+    "formTitle": "Book a room",
+    "formLead": "Send us the dates — we will check availability and fold it into the tour price.",
+    "priceLabel": "Price",
+    "priceNote": "Per room per night. Breakfast where it is served.",
+    "allHotels": "All hotels",
+    "facts": {
+      "city": "City",
+      "category": "Class",
+      "stars": "Stars"
+    }
+  },
+  "article": {
+    "breadcrumb": "Journal",
+    "title": "Journal",
+    "lead": "What is worth knowing before the trip: seasons, visas, roads and food.",
+    "metaTitle": "A journal about Turkmenistan — Charva Travel",
+    "metaDescription": "Articles about travelling in Turkmenistan: when to go, how to get a visa, what to eat and what to bring home.",
+    "publishedOn": "Published {date}",
+    "relatedTitle": "More from the journal",
+    "backToList": "All articles",
+    "ctaTitle": "Shall we build you a route?",
+    "ctaText": "Tell us when and for how many days — we will price it and send the itinerary.",
+    "ctaButton": "Send an enquiry"
   }
 }

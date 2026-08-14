@@ -275,5 +275,176 @@
       "other": "{count} görüntülenme"
     },
     "noPlayer": "Tarayıcınız bu videoyu oynatamıyor."
+  },
+  "home": {
+    "metaTitle": "Charva Travel — Türkmenistan turları",
+    "metaDescription": "Türkmenistan tur operatörü: hazır rotalar, oteller, davetiyeli vize ve rehber. Kendi turunuzu kurun, fiyatı hemen görün.",
+    "heroEyebrow": "Charva Travel · Türkmenistan",
+    "heroTitle": "Neredeyse kimsenin gitmediği ülke",
+    "heroLead": "Karakum, İpek Yolu’nun dört başkentinin kalıntıları ve 1971’den beri yanan bir krater. Vize, otel ve rehber dahil rotalar — sizin tarihlerinize göre.",
+    "sliderLabel": "Ana sayfa slaytı",
+    "slide": "Slayt {index} / {total}",
+    "goToSlide": "{index}. slayda git",
+    "pause": "Gösterimi durdur",
+    "play": "Gösterimi sürdür",
+    "search": {
+      "destination": "Yön",
+      "duration": "Süre",
+      "guests": "Kişi",
+      "any": "Farketmez",
+      "submit": "Tur bul"
+    },
+    "tours": {
+      "eyebrow": "Rotalar",
+      "title": "Popüler turlar",
+      "all": "Tüm rotalar"
+    },
+    "builder": {
+      "eyebrow": "Tur kurucu",
+      "title": "Turu kendinize göre kurun",
+      "lead": "Şehirler, süre, otel sınıfı, yemek ve geziler. Fiyat her tıklamada yeniden hesaplanır."
+    },
+    "hotels": {
+      "eyebrow": "Konaklama",
+      "title": "Nerede kalınır",
+      "all": "Tüm oteller"
+    },
+    "journal": {
+      "eyebrow": "Dergi",
+      "title": "Yola çıkmadan okumaya değer"
+    },
+    "gallery": {
+      "eyebrow": "Fotoğraflar",
+      "title": "Kadrajda Türkmenistan",
+      "all": "Tüm galeri"
+    },
+    "video": {
+      "eyebrow": "Video",
+      "title": "Nasıl göründüğü",
+      "all": "Tüm videolar"
+    },
+    "country": {
+      "more": "Ülke ve vize hakkında daha fazlası"
+    },
+    "reviews": {
+      "eyebrow": "Yorumlar",
+      "title": "Gezginler ne diyor",
+      "all": "Tüm yorumlar"
+    },
+    "contact": {
+      "title": "Talep bırakın",
+      "lead": "Nereye ve ne zaman gitmek istediğinizi yazın. Çalışma saatleri içinde on beş dakikada yanıtlıyoruz."
+    }
+  },
+  "topics": {
+    "ready_tour": "Hazır tur",
+    "custom_route": "Kendi rotam",
+    "hotel_only": "Sadece otel",
+    "visa": "Vize",
+    "transfer": "Transfer"
+  },
+  "form": {
+    "name": "Ad",
+    "namePlaceholder": "Size nasıl hitap edelim",
+    "phone": "Telefon",
+    "phonePlaceholder": "+993 65 123456",
+    "email": "E-posta",
+    "emailPlaceholder": "programı gönderebilmemiz için",
+    "guests": "Kişi",
+    "guestsPlaceholder": "2",
+    "topics": "İlgilendiğiniz konu",
+    "message": "Mesaj",
+    "messagePlaceholder": "Nereye, ne zaman ve kaç günlüğüne gitmek istiyorsunuz",
+    "optional": "isteğe bağlı",
+    "consent": "Kişisel verilerimin işlenmesini kabul ediyorum",
+    "consentHint": "Adınız ve numaranız yalnızca sizi geri aramak için kullanılır. Kimseyle paylaşmıyoruz.",
+    "submit": "Talebi gönder",
+    "sending": "Gönderiliyor",
+    "replyNote": "Çalışma saatleri içinde 15 dakika içinde yanıtlıyoruz.",
+    "aboutPage": "“{title}” sayfasından gelen talep",
+    "success": {
+      "title": "Talebiniz alındı",
+      "text": "Yetkilimiz {phone} numarasını arayacak. Bu genellikle on beş dakikayı geçmez.",
+      "again": "Bir tane daha gönder"
+    },
+    "errors": {
+      "name": "Size nasıl hitap edeceğimizi yazın — en az iki harf.",
+      "phone": "Geri arayabileceğimiz bir numara gerekli.",
+      "email": "Adreste bir yazım hatası var gibi görünüyor.",
+      "guests": "Kişi sayısı 1 ile 60 arasında olmalı.",
+      "message": "Çok uzun: lütfen 4000 karakteri aşmayın.",
+      "consent": "Onayınız olmadan sizi geri arayamayız.",
+      "failed": "Gönderilemedi. Bağlantınızı kontrol edip tekrar deneyin.",
+      "rateLimited": "Bu adresten çok fazla deneme yapıldı. On dakika sonra tekrar deneyin."
+    }
+  },
+  "contact": {
+    "breadcrumb": "Talep formu",
+    "title": "Nereye gitmek istediğinizi anlatın",
+    "lead": "Rotayı tarihlerinize göre kurar, fiyatlandırır ve vize davetiyenizi hazırlarız.",
+    "metaTitle": "Çevrimiçi talep — Charva Travel",
+    "metaDescription": "Türkmenistan turu talebi: rota, oteller, vize ve transfer. Yetkilimiz 15 dakika içinde yanıtlar.",
+    "tabsLabel": "Talep türü",
+    "tabs": {
+      "tour": "Tur talebi",
+      "question": "Genel soru"
+    },
+    "contactsTitle": "Doğrudan ulaşın",
+    "labels": {
+      "phone": "Telefon",
+      "whatsapp": "WhatsApp",
+      "email": "E-posta",
+      "hours": "Çalışma saatleri"
+    },
+    "socialsLabel": "Sosyal medyada biz",
+    "officeCaption": "Aşkabat ofisimiz",
+    "faqTitle": "Sık sorulan sorular"
+  },
+  "tour": {
+    "breadcrumb": "Turlar",
+    "aboutTitle": "Rota hakkında",
+    "programTitle": "Gün gün program",
+    "dayLabel": "{n}. gün",
+    "galleryTitle": "Geziden fotoğraflar",
+    "relatedTitle": "Benzer rotalar",
+    "formTitle": "Bu rotayı ayırtın",
+    "formLead": "Numaranızı bırakın — tarihleri netleştirip günlük programı gönderelim.",
+    "priceLabel": "Fiyat",
+    "priceNote": "İki kişilik odada kişi başı. Kesin tutar tarihlere ve kişi sayısına göre değişir.",
+    "builderCta": "Kendime göre değiştir",
+    "facts": {
+      "days": "Süre",
+      "cities": "Şehir",
+      "hotels": "Oteller",
+      "category": "Tema"
+    }
+  },
+  "hotel": {
+    "breadcrumb": "Oteller",
+    "aboutTitle": "Otel hakkında",
+    "amenitiesTitle": "Olanaklar",
+    "formTitle": "Oda ayırtın",
+    "formLead": "Tarihleri yazın — müsaitliği kontrol edip tur hesabına dahil edelim.",
+    "priceLabel": "Fiyat",
+    "priceNote": "Oda başına, gecelik. Kahvaltı, sunulduğu yerlerde dahildir.",
+    "allHotels": "Tüm oteller",
+    "facts": {
+      "city": "Şehir",
+      "category": "Sınıf",
+      "stars": "Yıldız"
+    }
+  },
+  "article": {
+    "breadcrumb": "Dergi",
+    "title": "Dergi",
+    "lead": "Yola çıkmadan önce bilmeye değer olanlar: mevsimler, vize, yollar ve yemek.",
+    "metaTitle": "Türkmenistan dergisi — Charva Travel",
+    "metaDescription": "Türkmenistan gezileri üzerine yazılar: ne zaman gitmeli, vize nasıl alınır, ne yenir ve ne getirilir.",
+    "publishedOn": "{date} tarihinde yayımlandı",
+    "relatedTitle": "Dergiden dahası",
+    "backToList": "Tüm yazılar",
+    "ctaTitle": "Size bir rota kuralım mı?",
+    "ctaText": "Ne zaman ve kaç günlüğüne olduğunu söyleyin — fiyatlandırıp programı gönderelim.",
+    "ctaButton": "Talep gönder"
   }
 }

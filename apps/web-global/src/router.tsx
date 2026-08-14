@@ -10,23 +10,33 @@ import {
 } from '@tanstack/react-router';
 
 import {
+  articleQuery,
   builderConfigQuery,
   countryQuery,
+  faqQuery,
   galleryQuery,
+  homeQuery,
+  hotelQuery,
   hotelsQuery,
   reviewsQuery,
   settingsQuery,
+  tourQuery,
   toursQuery,
   videosQuery,
 } from './api/queries';
 import { Layout } from './layout/Layout';
 import { bestLang, isGlobalLang } from './lib/lang';
+import { ArticleDetailPage } from './pages/ArticleDetailPage';
 import { BuilderPage } from './pages/BuilderPage';
+import { ContactPage } from './pages/ContactPage';
 import { CountryPage } from './pages/CountryPage';
 import { GalleryPage } from './pages/GalleryPage';
+import { HomePage } from './pages/HomePage';
+import { HotelDetailPage } from './pages/HotelDetailPage';
 import { HotelsPage } from './pages/HotelsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ReviewsPage } from './pages/ReviewsPage';
+import { TourDetailPage } from './pages/TourDetailPage';
 import { ToursPage } from './pages/ToursPage';
 import { VideoPage } from './pages/VideoPage';
 
@@ -96,12 +106,50 @@ function useLang(): Lang {
   return lang !== undefined && isGlobalLang(lang) ? lang : 'ru';
 }
 
+/**
+ * The `$slug` of whichever detail route is mounted.
+ *
+ * Read loosely for the same reason `useLang` is: three routes share one shape, and typing each
+ * component against its own route id would be three casts to say one thing. An empty slug is
+ * unreachable — the router only mounts these components when the segment exists.
+ */
+function useSlug(): string {
+  const { slug }: { slug?: string } = useParams({ strict: false });
+  return slug ?? '';
+}
+
 function LangLayout() {
   return <Layout lang={useLang()} />;
 }
 
 function NotFoundInLang() {
   return <NotFoundPage lang={useLang()} />;
+}
+
+/**
+ * The homepage.
+ *
+ * `validateSearch` passes everything through, because the builder embedded in section three
+ * writes its selection into *this* page's query string — the same component, the same store,
+ * one `basePath` apart. Naming the eight step parameters here would put the catalogue's
+ * vocabulary in a second place.
+ */
+const homeRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/',
+  validateSearch: (search: Record<string, unknown>) => search,
+  loader: ({ context, params }) => {
+    if (!isGlobalLang(params.lang)) return;
+    void context.queryClient.prefetchQuery(homeQuery(params.lang));
+    // The builder is below the fold but its configuration is small and its absence is what
+    // would make section three pop in as skeletons after everything else has settled.
+    void context.queryClient.prefetchQuery(builderConfigQuery(params.lang));
+  },
+  component: HomeRoute,
+});
+
+function HomeRoute() {
+  return <HomePage lang={useLang()} />;
 }
 
 const toursRoute = createRoute({
@@ -181,6 +229,24 @@ const hotelsRoute = createRoute({
   },
   component: HotelsRoute,
 });
+
+const contactRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'contact',
+  /** Only the tab, and only when it is not the default one. */
+  validateSearch: (search: Record<string, unknown>) =>
+    search['kind'] === 'question' ? { kind: 'question' as const } : {},
+  loader: ({ context, params }) => {
+    if (isGlobalLang(params.lang)) {
+      void context.queryClient.prefetchQuery(faqQuery(params.lang));
+    }
+  },
+  component: ContactRoute,
+});
+
+function ContactRoute() {
+  return <ContactPage lang={useLang()} />;
+}
 
 const countryRoute = createRoute({
   getParentRoute: () => langRoute,
@@ -272,12 +338,71 @@ function VideoRoute() {
   return <VideoPage lang={useLang()} />;
 }
 
+/*
+ * The three detail routes.
+ *
+ * They are the only addresses on this site that can be wrong — a renamed slug, an unpublished
+ * tour, a link somebody saved a year ago — so their pages answer a 404 with the not-found page
+ * rather than with «проверьте соединение». `defaultPreload: 'intent'` means the loader below
+ * usually runs while the pointer is still on the card, so the page is already there when it is
+ * clicked; on a slow connection the same prefetch is simply a head start.
+ */
+const tourDetailRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'tours/$slug',
+  loader: ({ context, params }) => {
+    if (isGlobalLang(params.lang)) {
+      void context.queryClient.prefetchQuery(tourQuery(params.lang, params.slug));
+    }
+  },
+  component: TourDetailRoute,
+});
+
+function TourDetailRoute() {
+  return <TourDetailPage lang={useLang()} slug={useSlug()} />;
+}
+
+const hotelDetailRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'hotels/$slug',
+  loader: ({ context, params }) => {
+    if (isGlobalLang(params.lang)) {
+      void context.queryClient.prefetchQuery(hotelQuery(params.lang, params.slug));
+    }
+  },
+  component: HotelDetailRoute,
+});
+
+function HotelDetailRoute() {
+  return <HotelDetailPage lang={useLang()} slug={useSlug()} />;
+}
+
+const articleDetailRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'articles/$slug',
+  loader: ({ context, params }) => {
+    if (isGlobalLang(params.lang)) {
+      void context.queryClient.prefetchQuery(articleQuery(params.lang, params.slug));
+    }
+  },
+  component: ArticleDetailRoute,
+});
+
+function ArticleDetailRoute() {
+  return <ArticleDetailPage lang={useLang()} slug={useSlug()} />;
+}
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   langRoute.addChildren([
+    homeRoute,
     toursRoute,
+    tourDetailRoute,
     builderRoute,
     hotelsRoute,
+    hotelDetailRoute,
+    articleDetailRoute,
+    contactRoute,
     countryRoute,
     reviewsRoute,
     galleryRoute,
