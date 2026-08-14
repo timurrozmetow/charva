@@ -4,6 +4,7 @@ import plugin from 'tailwindcss/plugin';
 import {
   breakpoint,
   choiceScrimGradient,
+  heroScrimGradient,
   duration,
   easing,
   fontFamily,
@@ -143,6 +144,8 @@ export const charvaPreset = {
         /** Glass fills — a chip on a photograph, the outline button. */
         fill: 'rgba(var(--c-cream-rgb), 0.06)',
         'fill-strong': 'rgba(var(--c-cream-rgb), 0.07)',
+        /** The frame the hero search bar shows through its one-pixel gaps. */
+        frame: 'rgba(var(--c-cream-rgb), 0.16)',
       },
 
       /** The accent as a tint: the selected topic chip and the passed step of the builder. */
@@ -216,6 +219,8 @@ export const charvaPreset = {
       backgroundImage: {
         'scrim-choice-global': choiceScrimGradient('global'),
         'scrim-choice-umrah': choiceScrimGradient('umrah'),
+        /** The homepage hero. Reads `--c-scrim-rgb`, so one class serves both sites. */
+        'scrim-hero': heroScrimGradient(),
       },
 
       spacing: {

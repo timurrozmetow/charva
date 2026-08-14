@@ -190,6 +190,26 @@ export function choiceScrimGradient(half: keyof typeof choiceScrim): string {
   );
 }
 
+/**
+ * The hero overlay, bottom to top: opaque enough to read a headline over, clear enough at the
+ * top to still see what was photographed.
+ *
+ * Written against `--c-scrim-rgb` rather than a literal base, so the same class works on the
+ * Global hero (`38, 27, 18`) and the Umrah one (`14, 23, 20`) — the two are drawn with two
+ * hand-written literals in the handoff. Umrah's runs at 105° instead of vertically, which is a
+ * genuine difference and gets its own token when phase 6 needs it.
+ */
+export const heroScrim = [0.94, 0.5, 0.34] as const;
+
+export function heroScrimGradient(direction = 'to top'): string {
+  const [bottom, mid, top] = heroScrim;
+  return (
+    `linear-gradient(${direction}, rgba(var(--c-scrim-rgb), ${String(bottom)}) 0%, ` +
+    `rgba(var(--c-scrim-rgb), ${String(mid)}) 46%, ` +
+    `rgba(var(--c-scrim-rgb), ${String(top)}) 100%)`
+  );
+}
+
 export function alpha(base: keyof typeof alphaBase, opacity: number): string {
   return `rgba(${alphaBase[base]}, ${String(opacity)})`;
 }

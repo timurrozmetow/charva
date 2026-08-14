@@ -1,4 +1,4 @@
-import { type InputHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react';
 
 import { cn } from '../cn';
 
@@ -27,7 +27,10 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
  * The whole label is the hit area — 17px alone is a third of the 44px minimum — and the box
  * is nudged down to sit on the first line of a consent sentence that wraps.
  */
-export function Checkbox({ children, error, className, disabled, ...rest }: CheckboxProps) {
+export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
+  { children, error, className, disabled, ...rest },
+  ref,
+) {
   return (
     <div className="flex flex-col gap-1">
       <label
@@ -39,6 +42,7 @@ export function Checkbox({ children, error, className, disabled, ...rest }: Chec
       >
         <span className="relative mt-[3px] inline-flex shrink-0">
           <input
+            ref={ref}
             type="checkbox"
             disabled={disabled}
             aria-invalid={error !== undefined || undefined}
@@ -70,4 +74,4 @@ export function Checkbox({ children, error, className, disabled, ...rest }: Chec
       )}
     </div>
   );
-}
+});

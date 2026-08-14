@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { Checkbox } from './Checkbox';
@@ -212,5 +213,46 @@ describe('FormError', () => {
 
     rerender(<FormError>Не удалось отправить заявку</FormError>);
     expect(screen.getByRole('alert')).toHaveTextContent('Не удалось отправить заявку');
+  });
+});
+
+describe('ref forwarding', () => {
+  /*
+   * The one property a form library needs and the only one a screenshot cannot show.
+   *
+   * `register()` hands a control its `ref`, and that ref is how react-hook-form learns the
+   * element exists. Dropped — which is what a plain function component silently does with it —
+   * the form validates its own default values forever: every field reports «заполните поле» no
+   * matter what was typed, and it reads as a validation bug rather than as a missing ref.
+   *
+   * This was real. All four controls were written without `forwardRef` in phase 1 and nothing
+   * noticed until phase 5 put an actual form on the contact page.
+   */
+  it('Input hands its ref to the input', () => {
+    const ref = createRef<HTMLInputElement>();
+    render(<Input ref={ref} />);
+    expect(ref.current?.tagName).toBe('INPUT');
+  });
+
+  it('Textarea hands its ref to the textarea', () => {
+    const ref = createRef<HTMLTextAreaElement>();
+    render(<Textarea ref={ref} />);
+    expect(ref.current?.tagName).toBe('TEXTAREA');
+  });
+
+  it('Select hands its ref to the select, not to the wrapper', () => {
+    const ref = createRef<HTMLSelectElement>();
+    render(
+      <Select ref={ref}>
+        <option>Ашхабад</option>
+      </Select>,
+    );
+    expect(ref.current?.tagName).toBe('SELECT');
+  });
+
+  it('Checkbox hands its ref to the input behind the drawn box', () => {
+    const ref = createRef<HTMLInputElement>();
+    render(<Checkbox ref={ref}>Согласен</Checkbox>);
+    expect(ref.current?.type).toBe('checkbox');
   });
 });

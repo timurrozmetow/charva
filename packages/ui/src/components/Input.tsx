@@ -1,4 +1,5 @@
 import {
+  forwardRef,
   type InputHTMLAttributes,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
@@ -54,33 +55,48 @@ function useControlProps(explicit: {
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
-export function Input({
-  className,
-  id,
-  required,
-  'aria-invalid': ariaInvalid,
-  'aria-describedby': describedBy,
-  ...rest
-}: InputProps) {
+/*
+ * All three controls forward their ref, and that is not a nicety.
+ *
+ * `register()` from react-hook-form returns `{name, onChange, onBlur, ref}`, and the ref is how
+ * the library learns the element exists at all. Spread onto a plain function component it is
+ * silently dropped — React warns and moves on — and the form then validates its own default
+ * values forever: every field reports «заполните поле» however much the visitor typed. It looks
+ * exactly like a validation bug and is not one, which is why it is worth a paragraph.
+ */
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  {
+    className,
+    id,
+    required,
+    'aria-invalid': ariaInvalid,
+    'aria-describedby': describedBy,
+    ...rest
+  },
+  ref,
+) {
   const wired = useControlProps({
     id,
     required,
     'aria-invalid': ariaInvalid,
     'aria-describedby': describedBy,
   });
-  return <input className={cn(CONTROL, className)} {...wired} {...rest} />;
-}
+  return <input ref={ref} className={cn(CONTROL, className)} {...wired} {...rest} />;
+});
 
 export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>;
 
-export function Textarea({
-  className,
-  id,
-  required,
-  'aria-invalid': ariaInvalid,
-  'aria-describedby': describedBy,
-  ...rest
-}: TextareaProps) {
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
+  {
+    className,
+    id,
+    required,
+    'aria-invalid': ariaInvalid,
+    'aria-describedby': describedBy,
+    ...rest
+  },
+  ref,
+) {
   const wired = useControlProps({
     id,
     required,
@@ -89,6 +105,7 @@ export function Textarea({
   });
   return (
     <textarea
+      ref={ref}
       // The design's own `resize: vertical`, kept: a textarea the user cannot grow is a
       // textarea they will fight, and horizontal resizing breaks the grid.
       className={cn(CONTROL, 'min-h-[130px] resize-y', className)}
@@ -96,7 +113,7 @@ export function Textarea({
       {...rest}
     />
   );
-}
+});
 
 export type SelectProps = SelectHTMLAttributes<HTMLSelectElement>;
 
@@ -108,15 +125,18 @@ export type SelectProps = SelectHTMLAttributes<HTMLSelectElement>;
  * worth building here. `appearance-none` removes the arrow; the caret is drawn beside it and
  * ignores pointer events so clicks still fall through to the control.
  */
-export function Select({
-  className,
-  id,
-  required,
-  'aria-invalid': ariaInvalid,
-  'aria-describedby': describedBy,
-  children,
-  ...rest
-}: SelectProps) {
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+  {
+    className,
+    id,
+    required,
+    'aria-invalid': ariaInvalid,
+    'aria-describedby': describedBy,
+    children,
+    ...rest
+  },
+  ref,
+) {
   const wired = useControlProps({
     id,
     required,
@@ -125,7 +145,12 @@ export function Select({
   });
   return (
     <div className="relative">
-      <select className={cn(CONTROL, 'appearance-none pr-12', className)} {...wired} {...rest}>
+      <select
+        ref={ref}
+        className={cn(CONTROL, 'appearance-none pr-12', className)}
+        {...wired}
+        {...rest}
+      >
         {children}
       </select>
       <Icon
@@ -135,4 +160,4 @@ export function Select({
       />
     </div>
   );
-}
+});

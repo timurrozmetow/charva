@@ -20,6 +20,14 @@ export interface AccordionProps {
   multiple?: boolean;
   /** Where these questions sit in the document outline. */
   headingLevel?: 2 | 3 | 4;
+  /**
+   * Two columns for the contact page's FAQ, one everywhere else.
+   *
+   * A prop rather than a class through `className`, because `flex flex-col` and `grid` are the
+   * same CSS property and which one wins would depend on the order Tailwind happened to emit
+   * them in — a conflict `cn` deliberately does not resolve, since this project has no others.
+   */
+  columns?: 1 | 2;
   className?: string;
 }
 
@@ -42,6 +50,7 @@ export function Accordion({
   onOpenChange,
   multiple = false,
   headingLevel = 3,
+  columns = 1,
   className,
 }: AccordionProps) {
   const base = useId();
@@ -58,7 +67,15 @@ export function Accordion({
   };
 
   return (
-    <div className={cn('flex flex-col gap-4', className)}>
+    <div
+      className={cn(
+        // `items-start`, so opening one row does not stretch the closed row beside it.
+        columns === 2
+          ? 'grid grid-cols-2 items-start gap-4 tab:grid-cols-1'
+          : 'flex flex-col gap-4',
+        className,
+      )}
+    >
       {items.map((item) => {
         const isOpen = current.includes(item.id);
         const buttonId = `${base}-${item.id}-button`;
