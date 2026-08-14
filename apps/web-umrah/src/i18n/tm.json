@@ -1,0 +1,307 @@
+{
+  "brand": "Charva Umrah",
+  "nav": {
+    "label": "Esasy nawigasiýa",
+    "home": "Charva Umrah — baş sahypa",
+    "openMenu": "Menýuny açmak",
+    "closeMenu": "Menýuny ýapmak",
+    "langLabel": "Dil",
+    "cta": "Ýazylmak",
+    "items": {
+      "paket": "Paket",
+      "ziyarat": "Ziýarat ýerleri",
+      "maksatnama": "Maksatnama",
+      "suratlar": "Suratlar"
+    }
+  },
+  "footer": {
+    "label": "Saýtyň aşaky bölümi",
+    "legal": "Charva Umrah — umra ziýaratlaryny guraýan tur operator. {address}. Ygtyýarnama № {license}.",
+    "copyright": "© {year} Charva Umrah. Ähli hukuklar goralan.",
+    "columns": {
+      "trip": "Ziýarat",
+      "about": "Biz barada",
+      "contacts": "Habarlaşmak"
+    },
+    "links": {
+      "paket": "Paketiň düzümi",
+      "maksatnama": "Gün-günden maksatnama",
+      "ziyarat": "Ziýarat ýerleri",
+      "yazylmak": "Topara ýazylmak",
+      "suratlar": "Suratlar we wideolar"
+    },
+    "socials": {
+      "instagram": "Instagram",
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp",
+      "youtube": "YouTube"
+    },
+    "cross": {
+      "choice": "Ugry saýlamak",
+      "global": "Charva Travel"
+    }
+  },
+  "common": {
+    "breadcrumbHome": "Baş sahypa",
+    "loading": "Ýüklenýär",
+    "retry": "Gaýtadan synanyşmak",
+    "showMore": "Ýene görkezmek",
+    "shown": "Görkezildi {shown} / {total}",
+    "more": "Jikme-jik",
+    "nothingFound": "Hiç zat tapylmady",
+    "nothingFoundHint": "Süzgüji aýryp görüň — ýa-da bize ýazyň.",
+    "errorTitle": "Ýüklemek başartmady",
+    "errorHint": "Birikmäňizi barlap, gaýtadan synanyşyň.",
+    "notFoundTitle": "Sahypa tapylmady",
+    "notFoundHint": "Belki salgy köneldi. Baş sahypadan başlaň.",
+    "backHome": "Baş sahypa",
+    "people": {
+      "one": "{count} adam",
+      "other": "{count} adam"
+    },
+    "days": {
+      "one": "{count} gün",
+      "other": "{count} gün"
+    }
+  },
+  "cities": {
+    "mekge": "Mekge",
+    "medine": "Medine",
+    "bedir": "Bedir",
+    "jidda": "Jidda"
+  },
+  "trip": {
+    "countdownTitle": "Ugramaga galdy",
+    "clock": {
+      "days": "gün",
+      "hours": "sagat",
+      "minutes": "minut",
+      "seconds": "sekunt"
+    },
+    "announce": "Ugramaga {days} gün {hours} sagat galdy",
+    "seatsTitle": "Topar doldy",
+    "seatsOf": "{taken} / {total} adam",
+    "seatsLeftLabel": "Boş ýer",
+    "seatsLeft": "Boş ýer: {left}",
+    "hotel": "Otel",
+    "departOn": "Ugramak",
+    "returnOn": "Dolanmak",
+    "duration": "Dowamlylygy",
+    "badgeNext": "Indiki topar · {date}",
+    "states": {
+      "full": {
+        "title": "Topar doldy",
+        "text": "Ähli ýerler eýelendi. Nobata ýazylyň — ýer boşasa ýa-da indiki topar yglan edilse, size jaň ederis."
+      },
+      "closed": {
+        "title": "Ýazylyş ýapyldy",
+        "text": "Bu topara resminamalar taýýarlanýar. Indiki topar barada habar bermegimiz üçin arza galdyryň."
+      },
+      "departed": {
+        "title": "Topar ýolda",
+        "text": "Topar {departed} ugrady we {returns} dolanar. Indiki topara ýazylyp bilersiňiz."
+      },
+      "none": {
+        "title": "Indiki topar heniz yglan edilmedi",
+        "text": "Sene belli bolan badyna habar bermegimiz üçin telefon belgiňizi galdyryň."
+      },
+      "nextIs": "Indiki topar: {date}"
+    }
+  },
+  "home": {
+    "metaTitle": "Charva Umrah — türkmen topary bilen umra ziýaraty",
+    "metaDescription": "Aşgabatdan umra: uçar bileti, wiza, Mekgede we Medinede 4 ★ otel, türkmen dilli ýolbaşçy. Toparyň ugraýan senesi we boş ýerler.",
+    "heroTitle": "Umra ziýaraty — türkmen topary bilen",
+    "heroLead": "Aşgabatdan Jidda çenli uçar, wiza we ähli resminamalar, Haremden 400 metrde otel, gündelik üç wagt nahar we 24/7 türkmen dilli ýolbaşçy.",
+    "ctaPrimary": "Topara ýazylmak",
+    "ctaSecondary": "Paketi görmek",
+    "sliderLabel": "Baş sahypanyň slaýdy",
+    "slide": "Slaýt {index} / {total}",
+    "goToSlide": "{index}-nji slaýda geçmek",
+    "pause": "Görkezişi saklamak",
+    "play": "Görkezişi dowam etdirmek",
+    "stats": {
+      "groups": "Ugradylan topar",
+      "pilgrims": "Zyýaratçy",
+      "places": "Ziýarat ýeri",
+      "programDays": "Gün maksatnama"
+    },
+    "package": {
+      "eyebrow": "Umra topary",
+      "title": "Paketiň düzümi",
+      "cta": "Ýazylmak",
+      "more": "Jikme-jik"
+    },
+    "ziyarat": {
+      "eyebrow": "Ziýarat",
+      "title": "Nirelere barýarys",
+      "all": "Ähli ýerler"
+    },
+    "program": {
+      "eyebrow": "Maksatnama",
+      "title": "Gün-günden maksatnama",
+      "text": "Ugramakdan dolanmaga çenli her gün — ziýaratlar, nahar we dynç wagty bilen.",
+      "cta": "Maksatnamany görmek"
+    },
+    "media": {
+      "eyebrow": "Suratlar",
+      "title": "Öňki toparlarymyz",
+      "text": "Her toparyň suratlary we wideolary — arhiwde.",
+      "cta": "Suratlary görmek"
+    },
+    "signup": {
+      "title": "Indiki topara goşulyň",
+      "text": "Arza goýberiň — ýolbaşçy jaň edip, ähli şertleri düşündirer.",
+      "cta": "Ýazylmak"
+    },
+    "faqTitle": "Köp berilýän soraglar"
+  },
+  "paket": {
+    "breadcrumb": "Paket",
+    "title": "Paketiň düzümi",
+    "lead": "Bir topar, bir paket. Baha barada ýolbaşçy bilen habarlaşyň — ol ähli şertleri düşündirer.",
+    "metaTitle": "Umra paketiniň düzümi — Charva Umrah",
+    "metaDescription": "Umra paketine näme girýär: uçar bileti, wiza, otel, nahar, transfer we türkmen dilli ýolbaşçy. Şertler we ýazylyş tertibi.",
+    "itemsTitle": "Näme girýär",
+    "conditionsTitle": "Paketiň şertleri",
+    "includedTitle": "Baha girýär",
+    "orderTitle": "Ýazylyş tertibi",
+    "cta": "Topara ýazylmak"
+  },
+  "ziyarat": {
+    "breadcrumb": "Ziýarat ýerleri",
+    "title": "Ziýarat ýerleri",
+    "lead": "Mekgede, Medinede we Bedirde baryljak ýerler. Ählisi maksatnama girýär.",
+    "metaTitle": "Ziýarat ýerleri — Charva Umrah",
+    "metaDescription": "Masjid al-Haram, Masjid an-Nabawi, Uhud, Bedir, Kuba we beýleki ziýarat ýerleri — umra maksatnamasynda.",
+    "filterLabel": "Şäher boýunça süzgüç",
+    "all": "Ählisi",
+    "duration": "Wagty",
+    "nearbyTitle": "Golaýdaky ýerler",
+    "cta": {
+      "title": "Ähli ziýaratlar maksatnamada",
+      "button": "Maksatnama"
+    }
+  },
+  "maksatnama": {
+    "breadcrumb": "Maksatnama",
+    "title": "Gün-günden maksatnama",
+    "lead": "Ugramakdan dolanmaga çenli her gün: ziýaratlar, nahar wagtlary we dynç.",
+    "metaTitle": "Umra maksatnamasy gün-günden — Charva Umrah",
+    "metaDescription": "Aşgabatdan ugramakdan dolanmaga çenli umra maksatnamasy: Mekge, Medine, Bedir we Uhud ziýaratlary.",
+    "stats": {
+      "days": "Gün",
+      "places": "Ziýarat ýeri",
+      "seats": "Adam topar"
+    },
+    "dayLabel": "{n}-nji gün",
+    "routineTitle": "Gündelik tertip",
+    "expand": "Açmak",
+    "cta": "Topara ýazylmak"
+  },
+  "suratlar": {
+    "breadcrumb": "Suratlar",
+    "title": "Suratlar we wideolar",
+    "lead": "Öňki toparlarymyzyň ziýaratyndan surat we wideo.",
+    "metaTitle": "Toparlarymyzyň suratlary — Charva Umrah",
+    "metaDescription": "Umra toparlarymyzyň suratlary we wideolary: Mekge, Medine, Bedir we Uhud.",
+    "tabsLabel": "Toparlar",
+    "photos": {
+      "one": "{count} surat",
+      "other": "{count} surat"
+    },
+    "videos": {
+      "one": "{count} wideo",
+      "other": "{count} wideo"
+    },
+    "openPhoto": "Suraty açmak",
+    "playVideo": "Wideony görmek",
+    "noPlayer": "Brauzeriňiz bu wideony oýnadyp bilmeýär.",
+    "videosTitle": "Wideolar",
+    "archiveTitle": "Ähli toparlar",
+    "archive": {
+      "group": "Topar",
+      "departedOn": "Ugralan wagty",
+      "pilgrims": "Zyýaratçy",
+      "material": "Material",
+      "view": "Görmek"
+    },
+    "stats": {
+      "groups": "Topar",
+      "pilgrims": "Zyýaratçy",
+      "photos": "Surat",
+      "videos": "Wideo"
+    },
+    "lightbox": {
+      "close": "Ýapmak",
+      "previous": "Öňki",
+      "next": "Indiki",
+      "counter": "{current} / {total}"
+    },
+    "cta": {
+      "title": "Indiki topara goşulyň",
+      "button": "Ýazylmak"
+    }
+  },
+  "yazylmak": {
+    "breadcrumb": "Ýazylmak",
+    "title": "Topara ýazylmak",
+    "lead": "Arzany dolduryň — ýolbaşçy jaň edip, ähli şertleri we tölegi düşündirer.",
+    "metaTitle": "Topara ýazylmak — Charva Umrah",
+    "metaDescription": "Umra toparyna onlaýn arza: ady, telefony we adam sany. Ýolbaşçy jaň edip şertleri düşündirer.",
+    "badge": "Boş ýer: {left} · {days} gün galdy",
+    "summaryTitle": "Saýlanan paket",
+    "summaryNote": "Baha we töleg şertleri barada ýolbaşçy jaň edip düşündirer.",
+    "contactsTitle": "Göni habarlaşmak",
+    "labels": {
+      "phone": "Telefon",
+      "whatsapp": "WhatsApp",
+      "email": "E-mail",
+      "hours": "Iş wagty"
+    },
+    "closedTitle": "Häzir ýazylyş ýapyk",
+    "closedText": "Indiki topar yglan edilende habar bermegimiz üçin telefon belgiňizi galdyryň."
+  },
+  "form": {
+    "fullName": "Ady we familiýasy",
+    "fullNamePlaceholder": "Meret Aýdogdyýew",
+    "phone": "Telefon",
+    "phonePlaceholder": "+993 65 123456",
+    "passport": "Passport belgisi",
+    "passportPlaceholder": "I-AB 1234567",
+    "passportHint": "Hökman däl — ýolbaşçy jaň edende hem aýdyp bilersiňiz.",
+    "peopleCount": "Adam sany",
+    "peopleCountPlaceholder": "2",
+    "roomType": "Otag görnüşi",
+    "rooms": {
+      "single": "1 adamlyk",
+      "double": "2 adamlyk",
+      "triple": "3 adamlyk",
+      "quad": "4 adamlyk"
+    },
+    "comment": "Bellik",
+    "commentPlaceholder": "Mahram, saglyk aýratynlyklary ýa-da başga soraglar",
+    "optional": "hökman däl",
+    "consent": "Şertler bilen ylalaşýaryn we maglumatlarymyň işlenmegine razylyk berýärin",
+    "consentHint": "Ady we telefon diňe jaň etmek üçin gerek. Passport belgisi şifrlenen görnüşde saklanýar we diňe resminama taýýarlanda ulanylýar.",
+    "submit": "Arzany ibermek",
+    "sending": "Iberilýär",
+    "replyNote": "Iş wagtynda 15 minudyň içinde jogap berýäris.",
+    "success": {
+      "title": "Arza kabul edildi",
+      "text": "Ýolbaşçy {phone} belgä jaň eder. Adatça bu on bäş minutdan köp wagt almaýar.",
+      "again": "Ýene bir arza ibermek"
+    },
+    "errors": {
+      "fullName": "Adyňyzy we familiýaňyzy ýazyň.",
+      "phone": "Jaň edip boljak belgi gerek.",
+      "passport": "Passport belgisi gaty gysga ýa-da gaty uzyn.",
+      "peopleCount": "Adam sany 1 bilen 20 aralygynda bolmaly.",
+      "comment": "Gaty uzyn: 2000 belgiden geçmesin.",
+      "consent": "Razylyk bolmasa arzany kabul edip bilmeris.",
+      "failed": "Ibermek başartmady. Birikmäňizi barlap, gaýtadan synanyşyň.",
+      "rateLimited": "Bu salgydan gaty köp synanyşyk. On minutdan soň gaýtadan synanyşyň.",
+      "closed": "Ýazylyş ýapyk. Indiki topar barada bize jaň ediň."
+    }
+  }
+}
