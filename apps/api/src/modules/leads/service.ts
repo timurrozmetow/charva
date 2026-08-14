@@ -142,6 +142,9 @@ export async function submitLead(
     topics: input.topics ?? null,
     message: input.message ?? null,
     locale: meta.locale,
+    // The date a retention policy is counted from. `leadRequest` types it as `true`, so there
+    // is no branch here: a submission without it never reaches this function.
+    consentAt: now,
     selection: input.selection ?? null,
     quoteSnapshot,
     dedupeHash: hash,

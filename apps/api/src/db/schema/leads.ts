@@ -35,6 +35,14 @@ export const leads = mysqlTable(
     message: text(),
     /** Which language the visitor was reading, so the reply is written in it. */
     locale: varchar({ length: 5 }).notNull().default('ru'),
+    /**
+     * When consent to be contacted was given — the date a retention policy is counted from.
+     *
+     * Nullable only because rows predating the column were collected by a form that never
+     * asked; every row the current form writes sets it. Question Q-13 covers how long the
+     * period is and what the sentence beside the checkbox has to say.
+     */
+    consentAt: timestamp('consent_at'),
     /** The builder selection, by option code. */
     selection: json().$type<Record<string, string | string[]>>(),
     /**

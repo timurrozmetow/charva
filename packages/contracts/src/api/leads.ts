@@ -30,6 +30,27 @@ import { builderSelectionSchema } from './builder';
  */
 export const HONEYPOT_FIELD = 'website';
 
+/**
+ * The five interest chips the contact form offers, as codes.
+ *
+ * The handoff stores them as the Russian labels themselves — `TOPICS = ['Готовый тур', …]` —
+ * which means a lead recorded today cannot be read once the page is translated, and a chip
+ * cannot be renamed without rewriting history. Decision D-10, the same rule the builder's
+ * option codes follow.
+ *
+ * The schema below stays a permissive `string`: the inbox has to keep whatever a lead was
+ * filed under, including codes retired since. This list is what the site *offers*.
+ */
+export const LEAD_TOPICS = [
+  'ready_tour',
+  'custom_route',
+  'hotel_only',
+  'visa',
+  'transfer',
+] as const;
+
+export type LeadTopic = (typeof LEAD_TOPICS)[number];
+
 const honeypot = z.string().max(200).optional();
 
 /** The signed timestamp from `GET /forms/token`. Anti-spam layer three. */
@@ -65,6 +86,15 @@ export const leadRequest = z
      * that in `quote_snapshot`; a total that arrived from a browser is a total the sender chose.
      */
     selection: builderSelectionSchema.optional(),
+    /**
+     * Must be `true`, and the moment it arrives is stored.
+     *
+     * The handoff draws this control on the contact form as a styled `<span>` — it cannot be
+     * checked, and nothing would have recorded it if it could. A name and a telephone number
+     * given so somebody can ring back is personal data, and a retention period is counted from
+     * a date, so the date has to exist. Same reasoning as the Umrah form below.
+     */
+    consent: z.literal(true),
     formToken,
     [HONEYPOT_FIELD]: honeypot,
   })

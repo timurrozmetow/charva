@@ -47,6 +47,7 @@ function lead(overrides: Record<string, unknown> = {}): Record<string, unknown> 
     name: 'Мерет Аннаев',
     phone: '+993 65 123456',
     message: 'Расскажите про тур в Дарвазу',
+    consent: true,
     formToken: agedFormToken(context.app),
     ...overrides,
   };
@@ -84,6 +85,22 @@ describe('a genuine submission', () => {
 
     const [row] = await context.app.db.select().from(t.leads).limit(1);
     expect(row?.phone).toBe('+99365123456');
+  });
+
+  it('records when consent was given, because retention is counted from a date', async () => {
+    await postLead(lead());
+
+    const [row] = await context.app.db.select().from(t.leads).limit(1);
+    expect(row?.consentAt).toBeInstanceOf(Date);
+  });
+
+  it('refuses without consent rather than assuming it', async () => {
+    // The handoff's checkbox is a styled `<span>`: unchecked and uncheckable. Here an absent
+    // consent is a rejected submission, not a stored row with an empty column.
+    const response = await postLead(lead({ consent: false }));
+
+    expect(response.statusCode).toBe(400);
+    expect(await countLeads()).toBe(0);
   });
 
   it('never stores the address in the clear', async () => {
