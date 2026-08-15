@@ -87,6 +87,26 @@ const schema = z.object({
    */
   PUBLIC_MEDIA_BASE_URL: z.string().default(''),
 
+  /**
+   * The two video binaries.
+   *
+   * Bare names by default, which is what `apt install ffmpeg` gives a VPS. On this machine
+   * there is no Docker and no admin right, so `pnpm setup:services` unpacks a portable copy
+   * under `.services/` and `lib/ffmpeg.ts` finds it without either of these being set.
+   */
+  FFMPEG_PATH: z.string().min(1).default('ffmpeg'),
+  FFPROBE_PATH: z.string().min(1).default('ffprobe'),
+
+  /**
+   * Upload ceilings, in megabytes.
+   *
+   * Two of them because they defend against different things: a photograph over twenty
+   * megabytes is a mistake, while a video of that size is a short clip. Both are enforced by
+   * the multipart parser, before anything is written to disk.
+   */
+  MAX_IMAGE_UPLOAD_MB: z.coerce.number().int().positive().max(200).default(20),
+  MAX_VIDEO_UPLOAD_MB: z.coerce.number().int().positive().max(4096).default(400),
+
   /** How long a public GET stays in the in-process cache. Sixty seconds — decision D-7. */
   CACHE_TTL_SECONDS: z.coerce.number().int().min(0).max(3600).default(60),
 

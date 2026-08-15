@@ -73,6 +73,10 @@ async function discoverAdminIds(app: TestApp): Promise<Map<string, number>> {
   const found = new Map<string, number>();
 
   for (const route of app.app.registeredRoutes) {
+    // Only the routes the walk actually visits. A `PATCH /admin/leads/:id` needs no fixture,
+    // and looking for one would report an empty inbox as a gap in coverage.
+    if (route.method !== 'GET') continue;
+
     const match = /^\/api\/v1\/admin\/(\w+)\/:id$/.exec(route.url);
     if (match?.[1] === undefined) continue;
 

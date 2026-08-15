@@ -148,3 +148,198 @@ export const adminReorderRequest = z
   .strict();
 
 export type AdminReorderRequest = z.infer<typeof adminReorderRequest>;
+
+// --------------------------------------------------------------------------------------------
+// The media library
+// --------------------------------------------------------------------------------------------
+
+/**
+ * A stored file, as the library screen shows it.
+ *
+ * `url` is assembled when the row is serialised and is never a column: `media.storage_key` holds
+ * a relative key, which is what makes moving to object storage one adapter rather than an
+ * UPDATE across every row that ever referenced a picture (decision D-8).
+ */
+export const adminMediaSchema = z.object({
+  id: z.number().int(),
+  storageKey: z.string(),
+  url: z.string(),
+  mime: z.string(),
+  width: z.number().int().nullable(),
+  height: z.number().int().nullable(),
+  sizeBytes: z.number().int(),
+  /** Video only. Read from the file by ffprobe, never typed by hand. */
+  durationSec: z.number().int().nullable(),
+  /** Inline blurred preview, a few hundred bytes. */
+  lqip: z.string().nullable(),
+  focalX: z.number().int().nullable(),
+  focalY: z.number().int().nullable(),
+  alt: z.record(z.string(), z.string()).nullable(),
+  source: z.enum(['upload', 'stock', 'external']),
+  attribution: z.string().nullable(),
+  license: z.string().nullable(),
+  /** Blocks deployment while any remain — decision D-25. */
+  isPlaceholder: z.boolean(),
+  createdAt: z.string(),
+});
+
+export type AdminMedia = z.infer<typeof adminMediaSchema>;
+
+export const adminMediaListResponse = z.object({
+  items: z.array(adminMediaSchema),
+  meta: adminRowsMeta,
+});
+
+export const adminUploadResponse = z.object({
+  media: adminMediaSchema,
+  /** Video only: the frame the player shows before it is pressed. */
+  poster: adminMediaSchema.nullable(),
+  /** The checksum already existed, so nothing new was written and this is the row it matched. */
+  isDuplicate: z.boolean(),
+});
+
+export const adminMediaPatch = z
+  .object({
+    alt: z.record(z.string(), z.string()).nullable().optional(),
+    /** 0–1000 rather than a fraction, so it stays an integer. `Img` divides by a thousand. */
+    focalX: z.number().int().min(0).max(1000).nullable().optional(),
+    focalY: z.number().int().min(0).max(1000).nullable().optional(),
+    attribution: z.string().max(255).nullable().optional(),
+    license: z.string().max(120).nullable().optional(),
+    isPlaceholder: z.boolean().optional(),
+  })
+  .strict();
+
+// --------------------------------------------------------------------------------------------
+// The photograph checklist
+// --------------------------------------------------------------------------------------------
+
+/**
+ * One of the 174 places a photograph is supposed to go.
+ *
+ * This is the screen that turns «there are no photographs» from an undocumented blocker into a
+ * list somebody can work through — decision D-21, question Q-1. `brief` is the art direction
+ * copied verbatim out of the prototype's `<image-slot>`.
+ */
+export const adminSlotSchema = z.object({
+  id: z.number().int(),
+  site: z.enum(['choice', 'global', 'umrah']),
+  page: z.string(),
+  slotKey: z.string(),
+  brief: z.string(),
+  recommendedWidth: z.number().int().nullable(),
+  recommendedHeight: z.number().int().nullable(),
+  sortOrder: z.number().int(),
+  /** Null while the photograph does not exist, which is the entire point of the table. */
+  media: adminMediaSchema.nullable(),
+});
+
+export type AdminSlot = z.infer<typeof adminSlotSchema>;
+
+export const adminSlotsResponse = z.object({
+  items: z.array(adminSlotSchema),
+  meta: adminRowsMeta,
+  /** How far off Q-1 is, counted rather than estimated. */
+  progress: z.object({ filled: z.number().int(), total: z.number().int() }),
+});
+
+export const adminAttachSlotRequest = z
+  .object({ mediaId: z.number().int().positive().nullable() })
+  .strict();
+
+// --------------------------------------------------------------------------------------------
+// The inbox
+// --------------------------------------------------------------------------------------------
+
+export const LEAD_STATUSES = ['new', 'in_progress', 'won', 'lost', 'spam'] as const;
+export const SIGNUP_STATUSES = ['new', 'contacted', 'confirmed', 'cancelled', 'spam'] as const;
+
+/**
+ * An enquiry, as the inbox shows it.
+ *
+ * `quoteSnapshot` is the price the *server* worked out at the moment of submission, never a
+ * number that arrived from a browser — so the figure the manager quotes on the phone is the one
+ * the business actually stands behind.
+ */
+export const adminLeadSchema = z.object({
+  id: z.number().int(),
+  kind: z.enum(['tour', 'question', 'builder']),
+  name: z.string(),
+  phone: z.string(),
+  email: z.string().nullable(),
+  guests: z.number().int().nullable(),
+  topics: z.array(z.string()).nullable(),
+  message: z.string().nullable(),
+  locale: z.string(),
+  consentAt: z.string().nullable(),
+  selection: z.record(z.string(), z.unknown()).nullable(),
+  quoteSnapshot: z.unknown().nullable(),
+  status: z.enum(LEAD_STATUSES),
+  adminNotes: z.string().nullable(),
+  createdAt: z.string(),
+});
+
+export const adminLeadsResponse = z.object({
+  items: z.array(adminLeadSchema),
+  meta: adminRowsMeta,
+});
+
+/**
+ * A signup, with the passport deliberately missing.
+ *
+ * `hasPassport` says whether there is one to ask for; the number itself never appears in a list
+ * response, at any privilege level. Reading it is a separate, logged action — decision D-18.
+ */
+export const adminSignupSchema = z.object({
+  id: z.number().int(),
+  tripId: z.number().int(),
+  fullName: z.string(),
+  phone: z.string(),
+  hasPassport: z.boolean(),
+  peopleCount: z.number().int(),
+  roomType: z.string().nullable(),
+  comment: z.string().nullable(),
+  locale: z.string(),
+  consentAt: z.string().nullable(),
+  status: z.enum(SIGNUP_STATUSES),
+  adminNotes: z.string().nullable(),
+  createdAt: z.string(),
+});
+
+export const adminSignupsResponse = z.object({
+  items: z.array(adminSignupSchema),
+  meta: adminRowsMeta,
+});
+
+export const adminLeadPatch = z
+  .object({
+    status: z.enum(LEAD_STATUSES).optional(),
+    adminNotes: z.string().max(4000).nullable().optional(),
+  })
+  .strict();
+
+export const adminSignupPatch = z
+  .object({
+    status: z.enum(SIGNUP_STATUSES).optional(),
+    adminNotes: z.string().max(4000).nullable().optional(),
+  })
+  .strict();
+
+/**
+ * The answer to «show me the passport number», which is a request that gets written down.
+ *
+ * A POST rather than a GET because it has an effect — a row in `audit_log` — and because a GET
+ * would end up in browser history, in a proxy log and in whatever prefetches links.
+ */
+export const adminPassportResponse = z.object({
+  passportNumber: z.string(),
+  /** Echoed back so the screen can say «this was recorded», rather than implying it was not. */
+  recordedAt: z.string(),
+});
+
+export const adminRevealPassportRequest = z
+  .object({
+    /** Why it is being read. Written to the log beside who read it. */
+    reason: z.string().min(3).max(200),
+  })
+  .strict();

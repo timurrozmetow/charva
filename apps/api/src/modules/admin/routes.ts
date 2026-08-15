@@ -3,6 +3,8 @@ import { type FastifyPluginAsync } from 'fastify';
 import { adminAuthRoutes } from './auth/routes';
 import { registerLinkRoutes } from './crud/links';
 import { registerCrudRoutes } from './crud/routes';
+import { registerInboxRoutes } from './inbox/routes';
+import { registerMediaRoutes } from './media/routes';
 
 /**
  * Everything behind the login.
@@ -15,4 +17,6 @@ export const adminRoutes: FastifyPluginAsync = async (instance) => {
   await instance.register(adminAuthRoutes, { prefix: '/auth' });
   registerCrudRoutes(instance);
   registerLinkRoutes(instance);
+  registerInboxRoutes(instance);
+  await registerMediaRoutes(instance);
 };

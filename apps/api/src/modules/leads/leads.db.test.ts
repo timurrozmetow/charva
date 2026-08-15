@@ -325,9 +325,20 @@ describe('signing up for the pilgrimage', () => {
       'I-AŞ 1234567',
     );
 
-    // And nothing public exposes it: there is no route that returns a signup at all in phase 3.
+    /*
+     * And nothing public exposes it.
+     *
+     * Phase 3 could say this by counting routes — there was exactly one, and it only accepted.
+     * Phase 7 added the inbox, so the claim is now the narrower and truer one: every route that
+     * touches a signup outside the public form is under `/admin`, and the number itself is not
+     * in any list schema. `inbox.db.test.ts` proves the second half against real bytes.
+     */
     const routes = context.app.registeredRoutes.filter((route) => route.url.includes('signups'));
-    expect(routes.map((route) => route.method)).toEqual(['POST']);
+    const publicRoutes = routes.filter((route) => !route.url.includes('/admin/'));
+
+    expect(publicRoutes.map((route) => `${route.method} ${route.url}`)).toEqual([
+      'POST /api/v1/umrah/signups',
+    ]);
   });
 
   it('records when consent was given, because retention is counted from a date', async () => {
