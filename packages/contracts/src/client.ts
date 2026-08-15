@@ -39,6 +39,13 @@ export interface ApiClientOptions {
   /** Same origin in every environment: Vite proxies it locally, nginx proxies it in production,
    * and the browser therefore never sends a preflight. */
   baseUrl?: string;
+  /**
+   * Headers computed per request — in practice the admin's `Authorization`.
+   *
+   * A function rather than a value because the access token is rotated every fifteen minutes
+   * and a client built once at module load would keep sending the first one it was given.
+   */
+  headers?: () => Record<string, string>;
 }
 
 export interface RequestOptions {
@@ -47,7 +54,7 @@ export interface RequestOptions {
   signal?: AbortSignal;
 }
 
-export function createApiClient({ baseUrl = '/api/v1' }: ApiClientOptions = {}) {
+export function createApiClient({ baseUrl = '/api/v1', headers }: ApiClientOptions = {}) {
   async function request<T>(method: string, path: string, options: RequestOptions, body?: unknown) {
     const search = new URLSearchParams();
     for (const [name, value] of Object.entries(options.query ?? {})) {
@@ -60,6 +67,7 @@ export function createApiClient({ baseUrl = '/api/v1' }: ApiClientOptions = {}) 
       headers: {
         accept: 'application/json',
         ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+        ...(headers?.() ?? {}),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       ...(options.signal === undefined ? {} : { signal: options.signal }),
@@ -76,10 +84,22 @@ export function createApiClient({ baseUrl = '/api/v1' }: ApiClientOptions = {}) 
     return (await response.json()) as T;
   }
 
+  /*
+   * The write verbs exist for the admin, and only the admin.
+   *
+   * The three public sites send exactly two kinds of request — a read and a form submission —
+   * and that is a property worth being able to see: nothing a visitor's browser does can edit a
+   * row, because the client they are served has no method that could.
+   */
   return {
     get: <T>(path: string, options: RequestOptions = {}) => request<T>('GET', path, options),
     post: <T>(path: string, body: unknown, options: RequestOptions = {}) =>
       request<T>('POST', path, options, body),
+    patch: <T>(path: string, body: unknown, options: RequestOptions = {}) =>
+      request<T>('PATCH', path, options, body),
+    put: <T>(path: string, body: unknown, options: RequestOptions = {}) =>
+      request<T>('PUT', path, options, body),
+    remove: <T>(path: string, options: RequestOptions = {}) => request<T>('DELETE', path, options),
   };
 }
 

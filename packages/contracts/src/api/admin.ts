@@ -243,6 +243,8 @@ export const adminSlotsResponse = z.object({
   progress: z.object({ filled: z.number().int(), total: z.number().int() }),
 });
 
+export type AdminSlotsResponse = z.infer<typeof adminSlotsResponse>;
+
 export const adminAttachSlotRequest = z
   .object({ mediaId: z.number().int().positive().nullable() })
   .strict();
@@ -279,10 +281,14 @@ export const adminLeadSchema = z.object({
   createdAt: z.string(),
 });
 
+export type AdminLead = z.infer<typeof adminLeadSchema>;
+
 export const adminLeadsResponse = z.object({
   items: z.array(adminLeadSchema),
   meta: adminRowsMeta,
 });
+
+export type AdminLeadsResponse = z.infer<typeof adminLeadsResponse>;
 
 /**
  * A signup, with the passport deliberately missing.
@@ -306,10 +312,14 @@ export const adminSignupSchema = z.object({
   createdAt: z.string(),
 });
 
+export type AdminSignup = z.infer<typeof adminSignupSchema>;
+
 export const adminSignupsResponse = z.object({
   items: z.array(adminSignupSchema),
   meta: adminRowsMeta,
 });
+
+export type AdminSignupsResponse = z.infer<typeof adminSignupsResponse>;
 
 export const adminLeadPatch = z
   .object({

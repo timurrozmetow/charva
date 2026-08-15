@@ -14,15 +14,21 @@
   "dependencies": {
     "@charva/contracts": "workspace:*",
     "@charva/ui": "workspace:*",
+    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-router": "^1.170.27",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@charva/config": "workspace:*",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.5.4",
+    "jsdom": "^26.1.0",
     "postcss": "^8.5.26",
     "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.19",

@@ -1,5 +1,12 @@
 {
   "extends": "@charva/config/tsconfig/react.json",
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts", "tailwind.config.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "tailwind.config.ts"
+  ],
   "exclude": ["dist", "node_modules"]
 }

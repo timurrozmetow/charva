@@ -31,6 +31,7 @@ export * from './components/Modal';
 export * from './components/MosaicGrid';
 export * from './components/packMosaic';
 export * from './components/ProgressBar';
+export * from './components/QueryState';
 export * from './components/RadioChipGroup';
 export * from './components/Section';
 export * from './components/SectionHead';
