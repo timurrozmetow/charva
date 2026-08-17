@@ -1,6 +1,8 @@
+import { like } from 'drizzle-orm';
 import { type LightMyRequestResponse } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import * as t from '../../db/schema';
 import { buildTestApp, type TestApp } from '../../test/app';
 
 /**
@@ -24,6 +26,11 @@ beforeAll(async () => {
 }, 60_000);
 
 afterAll(async () => {
+  // The tour created below carries an English title, and the suites share one schema in
+  // sequence — left behind, it is the next suite's fixture. The translation report counts
+  // exactly this and read it as somebody having started translating the catalogue.
+  await context.app.db.delete(t.tours).where(like(t.tours.slug, 'acceptance-%'));
+
   await context.close();
 });
 

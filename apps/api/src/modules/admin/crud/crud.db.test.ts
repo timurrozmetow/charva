@@ -1,5 +1,5 @@
 import { type AdminResourceMeta } from '@charva/contracts';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, like } from 'drizzle-orm';
 import { type LightMyRequestResponse } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -32,6 +32,18 @@ beforeAll(async () => {
 }, 60_000);
 
 afterAll(async () => {
+  /*
+   * Take the rows back out.
+   *
+   * The suites share one schema and run in sequence, so anything left here is the next suite's
+   * fixture. That is not theoretical: every tour created below carries an English title, and
+   * the translation-coverage report — which counts exactly that — read them as evidence that
+   * somebody had started translating the catalogue. Every row this file creates is prefixed
+   * `crud-` for this reason.
+   */
+  await context.app.db.delete(t.tours).where(like(t.tours.slug, 'crud-%'));
+  await context.app.db.delete(t.ziyaratPlaces).where(like(t.ziyaratPlaces.slug, 'crud-%'));
+
   await context.close();
 });
 
