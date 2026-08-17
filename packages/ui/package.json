@@ -18,7 +18,7 @@
     }
   },
   "scripts": {
-    "build": "tsup && node scripts/emit-css.mjs",
+    "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",

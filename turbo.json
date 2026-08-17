@@ -13,10 +13,12 @@
       "outputs": ["storybook-static/**"]
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },
     "storybook": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },
