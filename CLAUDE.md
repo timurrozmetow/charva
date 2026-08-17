@@ -63,12 +63,12 @@ silkgrain («где проза противоречит коду, выигрыв
 
 ## Локальное окружение — прочитать, это не стандартная настройка
 
-|            | Ожидание        | Реальность на этой машине                                              |
-| ---------- | --------------- | ---------------------------------------------------------------------- |
-| База       | MySQL 8         | XAMPP держит **MariaDB 10.4 на 3306**, silkgrain — **MySQL 8 на 3307** |
-| Контейнеры | Docker Compose  | **ни Docker, ни WSL, ни прав администратора**                          |
-| ffmpeg     | нужен для видео | **не установлен**                                                      |
-| Node       | —               | v26.4.0, npm 11.17.0, pnpm 10.34.5                                     |
+|            | Ожидание        | Реальность на этой машине                                                 |
+| ---------- | --------------- | ------------------------------------------------------------------------- |
+| База       | MySQL 8         | XAMPP держит **MariaDB 10.4 на 3306**, silkgrain — **MySQL 8 на 3307**    |
+| Контейнеры | Docker Compose  | **ни Docker, ни WSL, ни прав администратора**                             |
+| ffmpeg     | нужен для видео | стоит портативно: `.services/ffmpeg/bin/`, ставится `pnpm setup:services` |
+| Node       | —               | v26.4.0, npm 11.17.0, pnpm 10.34.5                                        |
 
 Решение:
 
@@ -144,9 +144,11 @@ apps/web-choice    React 18 + Vite 5 + TS + Tailwind + TanStack Router + TanStac
 apps/web-global    то же + react-hook-form + @hookform/resolvers (Zustand не нужен — D-58:
                    состояние сборщика и списочных фильтров живёт в URL)
 apps/web-umrah     то же
-apps/admin         то же + shadcn/ui поверх Radix, перекрашенный в токены Charva
+apps/admin         то же + packages/ui (D-76: shadcn/ui был в стеке и не понадобился —
+                   тридцать компонентов уже есть в токенах Charva)
 apps/api           Fastify 5 + TS + Drizzle ORM + MySQL 8 + Zod
-                   + sharp + ffmpeg + @node-rs/argon2 + nodemailer
+                   + sharp + ffmpeg + @node-rs/argon2 + @fastify/jwt + @fastify/multipart
+                   (nodemailer появится вместе с ответом на Q-11, не раньше — D-50)
 packages/ui        компоненты, токены, Tailwind preset, шрифты
 packages/contracts Zod-схемы и чистые функции — единственный источник типов между api и web
 packages/config    eslint, tsconfig, prettier
@@ -326,7 +328,15 @@ pnpm db:migrate         # применить всё, чего нет в журн
 pnpm db:reset           # снести и применить заново. Отказывается работать не с charva*
 pnpm db:seed            # контент обоих сайтов. Отказывается сидировать непустую базу
 pnpm db:studio          # drizzle-kit studio
+
+# Учётные записи админки. В сидах их нет и не будет — D-79.
+pnpm admin:create -- --email=you@charva.tm --name="Имя" --role=owner --scope=umrah
+pnpm admin:create -- --email=you@charva.tm --reset      # он же сброс пароля и разблокировка
 ```
+
+Пароль печатается один раз и нигде не хранится. Роли — `owner | editor | manager`, скоуп —
+`global | umrah` или пропущен, что означает оба сайта. Таблица прав — в
+`packages/contracts/src/permissions.ts`, она одна на SPA и API (D-78).
 
 `pnpm verify` — ворота Фазы 8 и обязан выйти с 0.
 
@@ -345,8 +355,10 @@ pnpm db:studio          # drizzle-kit studio
   `any` и `@ts-ignore` — ошибки линтера; `@ts-expect-error` требует описания.
 - Каждый пакет типизируется через `tsc --noEmit`; эмит делают tsup (пакеты, api) или Vite (SPA).
 - Импорты без расширений — всё бандлится, `moduleResolution: "Bundler"` их разрешает.
-- Комментарии по-русски, как в `check-out`. Длинные пояснительные блоки там, где решение
-  неочевидно, приветствуются: в этом проекте много мест, где «правильно» расходится с макетом.
+- **Документы по-русски, комментарии в коде по-английски.** Так написаны все триста с лишним
+  исходников; правило изначально говорило обратное и разошлось с практикой к концу Фазы 1.
+  Длинные пояснительные блоки там, где решение неочевидно, приветствуются: в этом проекте много
+  мест, где «правильно» расходится с макетом, и через месяц причина не восстанавливается.
 - Никогда не коммитить: `.env`, дампы БД, `node_modules`, `uploads/`, `.services/`.
 
 ---

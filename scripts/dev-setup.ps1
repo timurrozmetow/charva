@@ -206,6 +206,15 @@ function Start-DevService {
     param([string]$Name, [string]$FilePath, [string[]]$ArgumentList, [string]$WorkingDirectory)
 
     if (Get-RunningProcess $Name) { Write-Note "$Name already running"; return }
+
+    # A service that was never installed is a note, not an exception. Start-Process throws
+    # DirectoryNotFoundException on a missing WorkingDirectory, which used to abort the whole
+    # -Action start - taking down the report of the services that had just started fine.
+    if (-not (Test-Path -LiteralPath $FilePath)) {
+        Write-Warn "$Name is not installed - run this script with -Action install"
+        return
+    }
+
     if (Test-PortOpen -Port $Ports[$Name]) {
         Write-Warn "port $($Ports[$Name]) is already in use - assuming an external $Name and leaving it alone"
         return
@@ -352,7 +361,12 @@ function Start-Mailpit {
         '--listen', "127.0.0.1:$MailpitUiPort",
         '--max', '500'
     ) -WorkingDirectory $MailpitHome
-    Write-Note "inbox at http://localhost:$MailpitUiPort"
+
+    # Only where there is an inbox to open. Printing the address next to "not installed" is
+    # the kind of line somebody follows for a minute before reading the one above it.
+    if (Test-Path -LiteralPath (Join-Path $MailpitHome 'mailpit.exe')) {
+        Write-Note "inbox at http://localhost:$MailpitUiPort"
+    }
 }
 
 function Stop-Mailpit { Stop-DevService 'mailpit' }
