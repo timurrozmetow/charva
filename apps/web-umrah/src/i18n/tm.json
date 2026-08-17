@@ -109,8 +109,6 @@
     }
   },
   "home": {
-    "metaTitle": "Charva Umrah — türkmen topary bilen umra ziýaraty",
-    "metaDescription": "Aşgabatdan umra: uçar bileti, wiza, Mekgede we Medinede 4 ★ otel, türkmen dilli ýolbaşçy. Toparyň ugraýan senesi we boş ýerler.",
     "heroTitle": "Umra ziýaraty — türkmen topary bilen",
     "heroLead": "Aşgabatdan Jidda çenli uçar, wiza we ähli resminamalar, Haremden 400 metrde otel, gündelik üç wagt nahar we 24/7 türkmen dilli ýolbaşçy.",
     "ctaPrimary": "Topara ýazylmak",
@@ -160,8 +158,6 @@
     "breadcrumb": "Paket",
     "title": "Paketiň düzümi",
     "lead": "Bir topar, bir paket. Baha barada ýolbaşçy bilen habarlaşyň — ol ähli şertleri düşündirer.",
-    "metaTitle": "Umra paketiniň düzümi — Charva Umrah",
-    "metaDescription": "Umra paketine näme girýär: uçar bileti, wiza, otel, nahar, transfer we türkmen dilli ýolbaşçy. Şertler we ýazylyş tertibi.",
     "itemsTitle": "Näme girýär",
     "conditionsTitle": "Paketiň şertleri",
     "includedTitle": "Baha girýär",
@@ -172,8 +168,6 @@
     "breadcrumb": "Ziýarat ýerleri",
     "title": "Ziýarat ýerleri",
     "lead": "Mekgede, Medinede we Bedirde baryljak ýerler. Ählisi maksatnama girýär.",
-    "metaTitle": "Ziýarat ýerleri — Charva Umrah",
-    "metaDescription": "Masjid al-Haram, Masjid an-Nabawi, Uhud, Bedir, Kuba we beýleki ziýarat ýerleri — umra maksatnamasynda.",
     "filterLabel": "Şäher boýunça süzgüç",
     "all": "Ählisi",
     "duration": "Wagty",
@@ -187,8 +181,6 @@
     "breadcrumb": "Maksatnama",
     "title": "Gün-günden maksatnama",
     "lead": "Ugramakdan dolanmaga çenli her gün: ziýaratlar, nahar wagtlary we dynç.",
-    "metaTitle": "Umra maksatnamasy gün-günden — Charva Umrah",
-    "metaDescription": "Aşgabatdan ugramakdan dolanmaga çenli umra maksatnamasy: Mekge, Medine, Bedir we Uhud ziýaratlary.",
     "stats": {
       "days": "Gün",
       "places": "Ziýarat ýeri",
@@ -203,8 +195,6 @@
     "breadcrumb": "Suratlar",
     "title": "Suratlar we wideolar",
     "lead": "Öňki toparlarymyzyň ziýaratyndan surat we wideo.",
-    "metaTitle": "Toparlarymyzyň suratlary — Charva Umrah",
-    "metaDescription": "Umra toparlarymyzyň suratlary we wideolary: Mekge, Medine, Bedir we Uhud.",
     "tabsLabel": "Toparlar",
     "photos": {
       "one": "{count} surat",
@@ -247,8 +237,6 @@
     "breadcrumb": "Ýazylmak",
     "title": "Topara ýazylmak",
     "lead": "Arzany dolduryň — ýolbaşçy jaň edip, ähli şertleri we tölegi düşündirer.",
-    "metaTitle": "Topara ýazylmak — Charva Umrah",
-    "metaDescription": "Umra toparyna onlaýn arza: ady, telefony we adam sany. Ýolbaşçy jaň edip şertleri düşündirer.",
     "badge": "Boş ýer: {left} · {days} gün galdy",
     "summaryTitle": "Saýlanan paket",
     "summaryNote": "Baha we töleg şertleri barada ýolbaşçy jaň edip düşündirer.",

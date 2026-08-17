@@ -49,9 +49,9 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
 
   useDocumentMeta(
     {
-      title: hotel === undefined ? copy.hotels.metaTitle : `${hotel.name} — ${copy.brand}`,
-      description: hotel?.summary ?? copy.hotels.metaDescription,
+      route: 'hotels',
       pathAfterLang: `/hotels/${slug}`,
+      ...(hotel === undefined ? {} : { content: { name: hotel.name, summary: hotel.summary } }),
     },
     lang,
   );

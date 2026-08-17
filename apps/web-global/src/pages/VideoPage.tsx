@@ -35,14 +35,7 @@ export function VideoPage({ lang }: VideoPageProps) {
     }),
   );
 
-  useDocumentMeta(
-    {
-      title: copy.video.metaTitle,
-      description: copy.video.metaDescription,
-      pathAfterLang: '/video',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'video', pathAfterLang: '/video' }, lang);
 
   const items = query.data?.items ?? [];
   const labels: Record<string, string> = copy.categories;

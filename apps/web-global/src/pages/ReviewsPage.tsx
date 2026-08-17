@@ -55,14 +55,7 @@ export function ReviewsPage({ lang }: ReviewsPageProps) {
     }),
   );
 
-  useDocumentMeta(
-    {
-      title: copy.reviews.metaTitle,
-      description: copy.reviews.metaDescription,
-      pathAfterLang: '/reviews',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'reviews', pathAfterLang: '/reviews' }, lang);
 
   const items = query.data?.items ?? [];
   const summary = query.data?.summary;

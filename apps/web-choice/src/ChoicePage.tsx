@@ -40,7 +40,7 @@ export function ChoicePage({ lang }: ChoicePageProps) {
    */
   const daysLeft = useDaysUntil(trip?.departAt ?? Date.now());
 
-  useDocumentMeta(lang, copy.meta.title, copy.meta.description);
+  useDocumentMeta(lang);
 
   const globalStats: HalfStat[] = [
     { value: format(data?.stats.global.tours), label: copy.global.stats.tours },

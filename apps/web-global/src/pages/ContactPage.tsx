@@ -75,14 +75,7 @@ export function ContactPage({ lang }: ContactPageProps) {
   const settings = useQuery(settingsQuery(lang));
   const faq = useQuery(faqQuery(lang));
 
-  useDocumentMeta(
-    {
-      title: copy.contact.metaTitle,
-      description: copy.contact.metaDescription,
-      pathAfterLang: '/contact',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'contact', pathAfterLang: '/contact' }, lang);
 
   const contacts = settings.data?.contacts;
   const socials = settings.data?.socials;

@@ -64,14 +64,7 @@ export function ToursPage({ lang }: ToursPageProps) {
     }),
   );
 
-  useDocumentMeta(
-    {
-      title: copy.tours.metaTitle,
-      description: copy.tours.metaDescription,
-      pathAfterLang: '/tours',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'tours', pathAfterLang: '/tours' }, lang);
 
   const setSearch = (next: Partial<{ category: string; sort: string; page: number }>) => {
     void navigate({

@@ -1,19 +1,24 @@
-import { type Lang, SITE_LANGS } from '@charva/contracts';
+import { hreflangSet, type Lang, routeMeta } from '@charva/contracts';
 import { useEffect } from 'react';
 
+const SITE = 'choice';
+
 /**
- * Keeps `<html lang>`, the title and the description in step with the route.
+ * Keeps `<html lang>`, the title and the description in step with the language.
  *
  * `lang` on the root element is the one that is not cosmetic: it decides which voice a screen
  * reader uses, and a Turkmen page announced by a Russian synthesiser is unintelligible rather
  * than merely wrong. The prototype's chooser switches nothing at all — its language menu changes
  * only its own label.
  *
- * `hreflang` links are written here too. Phase 8 renders the whole head from the API for
- * crawlers (decision D-4); until then these keep the four translations discoverable from one
- * another, which is the part a client-rendered page can do honestly.
+ * The strings come from `@charva/contracts` rather than from this app's copy file, because the
+ * API renders the same head into the shell for crawlers and link previews (decision D-4). One
+ * source, two renderers; two copies of a title is how the server's version and the browser's
+ * come to disagree without anybody noticing.
  */
-export function useDocumentMeta(lang: Lang, title: string, description: string): void {
+export function useDocumentMeta(lang: Lang): void {
+  const { title, description } = routeMeta(SITE, 'home', lang);
+
   useEffect(() => {
     document.documentElement.lang = lang;
     document.title = title;
@@ -25,11 +30,11 @@ export function useDocumentMeta(lang: Lang, title: string, description: string):
     for (const stale of document.querySelectorAll('link[rel="alternate"][data-charva]')) {
       stale.remove();
     }
-    for (const code of [...SITE_LANGS.choice, 'x-default'] as const) {
+    for (const { hreflang, lang: target } of hreflangSet(SITE)) {
       const link = document.createElement('link');
       link.rel = 'alternate';
-      link.hreflang = code;
-      link.href = new URL(`/${code === 'x-default' ? 'ru' : code}`, location.origin).toString();
+      link.hreflang = hreflang;
+      link.href = new URL(`/${target}`, location.origin).toString();
       link.dataset['charva'] = '';
       document.head.append(link);
     }

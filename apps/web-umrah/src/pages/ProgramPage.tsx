@@ -45,14 +45,7 @@ export function ProgramPage({ lang }: ProgramPageProps) {
   const query = useQuery(programQuery(lang));
   const data = query.data;
 
-  useDocumentMeta(
-    {
-      title: copy.maksatnama.metaTitle,
-      description: copy.maksatnama.metaDescription,
-      pathAfterLang: '/maksatnama',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'maksatnama', pathAfterLang: '/maksatnama' }, lang);
 
   const days = data?.days ?? [];
   const places = new Set(days.map((day) => day.city).filter((city) => city !== '')).size;

@@ -24,14 +24,7 @@ export interface BuilderPageProps {
 export function BuilderPage({ lang }: BuilderPageProps) {
   const copy = copyFor(lang);
 
-  useDocumentMeta(
-    {
-      title: copy.builder.metaTitle,
-      description: copy.builder.metaDescription,
-      pathAfterLang: '/builder',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'builder', pathAfterLang: '/builder' }, lang);
 
   return (
     <>

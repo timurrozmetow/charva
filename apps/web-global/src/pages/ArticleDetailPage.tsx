@@ -36,9 +36,11 @@ export function ArticleDetailPage({ lang, slug }: ArticleDetailPageProps) {
 
   useDocumentMeta(
     {
-      title: article === undefined ? copy.article.metaTitle : `${article.title} — ${copy.brand}`,
-      description: article?.summary ?? copy.article.metaDescription,
+      route: 'article',
       pathAfterLang: `/articles/${slug}`,
+      ...(article === undefined
+        ? {}
+        : { content: { name: article.title, summary: article.summary } }),
     },
     lang,
   );

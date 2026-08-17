@@ -26,14 +26,7 @@ export function CountryPage({ lang }: CountryPageProps) {
   const copy = copyFor(lang);
   const query = useQuery(countryQuery(lang));
 
-  useDocumentMeta(
-    {
-      title: copy.country.metaTitle,
-      description: copy.country.metaDescription,
-      pathAfterLang: '/turkmenistan',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'country', pathAfterLang: '/turkmenistan' }, lang);
 
   return (
     <>

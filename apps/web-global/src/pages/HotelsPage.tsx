@@ -40,14 +40,7 @@ export function HotelsPage({ lang }: HotelsPageProps) {
     }),
   );
 
-  useDocumentMeta(
-    {
-      title: copy.hotels.metaTitle,
-      description: copy.hotels.metaDescription,
-      pathAfterLang: '/hotels',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'hotels', pathAfterLang: '/hotels' }, lang);
 
   const items = query.data?.items ?? [];
   const labels: Record<string, string> = copy.hotelFilters;

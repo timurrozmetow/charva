@@ -74,14 +74,7 @@ export function MediaPage({ lang }: MediaPageProps) {
 
   const group = useQuery({ ...groupQuery(lang, selected), enabled: selected !== '' });
 
-  useDocumentMeta(
-    {
-      title: copy.suratlar.metaTitle,
-      description: copy.suratlar.metaDescription,
-      pathAfterLang: '/suratlar',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'suratlar', pathAfterLang: '/suratlar' }, lang);
 
   const items = groups.data?.items ?? [];
   const stats = groups.data?.stats;

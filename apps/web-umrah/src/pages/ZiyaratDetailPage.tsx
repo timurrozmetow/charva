@@ -37,9 +37,9 @@ export function ZiyaratDetailPage({ lang, slug }: ZiyaratDetailPageProps) {
 
   useDocumentMeta(
     {
-      title: place === undefined ? copy.ziyarat.metaTitle : `${place.name} — ${copy.brand}`,
-      description: place?.description ?? copy.ziyarat.metaDescription,
+      route: 'ziyarat',
       pathAfterLang: `/ziyarat/${slug}`,
+      ...(place === undefined ? {} : { content: { name: place.name, summary: place.description } }),
     },
     lang,
   );

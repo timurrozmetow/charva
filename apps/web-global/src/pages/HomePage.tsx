@@ -53,10 +53,7 @@ export function HomePage({ lang }: HomePageProps) {
   const query = useQuery(homeQuery(lang));
   const data = query.data;
 
-  useDocumentMeta(
-    { title: copy.home.metaTitle, description: copy.home.metaDescription, pathAfterLang: '' },
-    lang,
-  );
+  useDocumentMeta({ route: 'home', pathAfterLang: '' }, lang);
 
   const slotFor = (key: string): ContentSlot | undefined =>
     data?.slots.find((slot) => slot.slotKey === key);

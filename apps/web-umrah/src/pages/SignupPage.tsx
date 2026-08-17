@@ -37,14 +37,7 @@ export function SignupPage({ lang }: SignupPageProps) {
   const trip = useQuery(tripQuery(lang));
   const settings = useQuery(settingsQuery(lang));
 
-  useDocumentMeta(
-    {
-      title: copy.yazylmak.metaTitle,
-      description: copy.yazylmak.metaDescription,
-      pathAfterLang: '/yazylmak',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'yazylmak', pathAfterLang: '/yazylmak' }, lang);
 
   const current = trip.data?.trip ?? null;
   const contacts = settings.data?.contacts;

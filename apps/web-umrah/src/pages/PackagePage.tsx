@@ -36,14 +36,7 @@ export function PackagePage({ lang }: PackagePageProps) {
   const query = useQuery(packageQuery(lang));
   const data = query.data;
 
-  useDocumentMeta(
-    {
-      title: copy.paket.metaTitle,
-      description: copy.paket.metaDescription,
-      pathAfterLang: '/paket',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'paket', pathAfterLang: '/paket' }, lang);
 
   const trip = data?.trip ?? null;
   const cover = data?.slots.find((slot) => slot.slotKey === 'u-pk-cover');

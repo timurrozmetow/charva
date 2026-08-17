@@ -21,10 +21,7 @@ export interface NotFoundPageProps {
 export function NotFoundPage({ lang }: NotFoundPageProps) {
   const copy = copyFor(lang);
 
-  useDocumentMeta(
-    { title: copy.common.notFoundTitle, description: copy.common.notFoundHint, pathAfterLang: '' },
-    lang,
-  );
+  useDocumentMeta({ route: 'notFound', pathAfterLang: '' }, lang);
 
   return (
     <Section space="lg">

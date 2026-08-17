@@ -53,9 +53,9 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
 
   useDocumentMeta(
     {
-      title: tour === undefined ? copy.tours.metaTitle : `${tour.title} — ${copy.brand}`,
-      description: tour?.summary ?? copy.tours.metaDescription,
+      route: 'tours',
       pathAfterLang: `/tours/${slug}`,
+      ...(tour === undefined ? {} : { content: { name: tour.title, summary: tour.summary } }),
     },
     lang,
   );

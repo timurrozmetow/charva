@@ -43,14 +43,7 @@ export function GalleryPage({ lang }: GalleryPageProps) {
     }),
   );
 
-  useDocumentMeta(
-    {
-      title: copy.gallery.metaTitle,
-      description: copy.gallery.metaDescription,
-      pathAfterLang: '/gallery',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'gallery', pathAfterLang: '/gallery' }, lang);
 
   const items = query.data?.items ?? [];
   const labels: Record<string, string> = copy.categories;

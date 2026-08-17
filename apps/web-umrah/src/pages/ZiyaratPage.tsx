@@ -65,14 +65,7 @@ export function ZiyaratPage({ lang }: ZiyaratPageProps) {
 
   const query = useQuery(ziyaratQuery(lang, city === ALL ? undefined : city));
 
-  useDocumentMeta(
-    {
-      title: copy.ziyarat.metaTitle,
-      description: copy.ziyarat.metaDescription,
-      pathAfterLang: '/ziyarat',
-    },
-    lang,
-  );
+  useDocumentMeta({ route: 'ziyarat', pathAfterLang: '/ziyarat' }, lang);
 
   const items = query.data?.items ?? [];
   const facets = query.data?.facets.cities ?? [];
