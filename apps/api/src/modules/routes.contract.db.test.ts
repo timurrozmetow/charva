@@ -46,6 +46,8 @@ function servesBytes(url: string): boolean {
     url === '/docs' ||
     url.startsWith('/docs/') ||
     url.endsWith('/shell') ||
+    url.endsWith('/sitemap.xml') ||
+    url.endsWith('/robots.txt') ||
     /\/(img|uploads)\/\*$/.test(url)
   );
 }

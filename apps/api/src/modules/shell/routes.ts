@@ -10,6 +10,7 @@ import { ApiProblem } from '../../plugins/error-handler';
 
 import { injectHead, renderHead } from './html';
 import { renderShellHead } from './service';
+import { collectEntries, renderRobots, renderSitemap } from './sitemap';
 
 /**
  * The SPA shell, with a head that means something.
@@ -31,6 +32,12 @@ const querystring = z.object({
   origin: z.string().url().optional(),
 });
 
+/** The two files a crawler asks for by name, and neither of them is a page. */
+const crawlerQuery = z.object({
+  site: z.enum([...SITES, 'admin', 'api']),
+  origin: z.string().url().optional(),
+});
+
 export const shellRoutes: FastifyPluginCallback = (instance, _options, done) => {
   const app = instance.withTypeProvider<ZodTypeProvider>();
   const templates = new Map<Site, string>();
@@ -44,8 +51,8 @@ export const shellRoutes: FastifyPluginCallback = (instance, _options, done) => 
         description:
           'Decision D-4. A crawler and a Telegram card read HTML and run no JavaScript; for ' +
           'this audience links travel through Telegram, so a preview that unfurls as a bare ' +
-          'URL is a link nobody taps. Returns HTML, which is why it is the second route in ' +
-          'the API with no response schema — there is no JSON here to constrain.',
+          'URL is a link nobody taps. Returns HTML, which is why it declares no response ' +
+          'schema — there is no JSON here for the serialiser to constrain.',
         querystring,
       },
     },
@@ -78,6 +85,58 @@ export const shellRoutes: FastifyPluginCallback = (instance, _options, done) => 
           .header('cache-control', 'public, max-age=60, stale-while-revalidate=300')
           .send(html)
       );
+    },
+  );
+
+  app.get(
+    '/sitemap.xml',
+    {
+      schema: {
+        tags: ['shell'],
+        summary: 'Every published URL of one site, in every language it speaks',
+        description:
+          'Each URL carries the full `xhtml:link` alternate set, including a self-reference: ' +
+          'a set where one page names another without being named back is treated as ' +
+          'unconfirmed and ignored. Published rows only — a sitemap listing URLs that answer ' +
+          '404 is one a crawler stops trusting.',
+        querystring: crawlerQuery,
+      },
+    },
+    async (request, reply) => {
+      const site = request.query.site;
+      if (site === 'admin' || site === 'api') {
+        throw new ApiProblem('not_found', `${site} has no sitemap: it has no public pages`);
+      }
+
+      const origin = request.query.origin ?? `${request.protocol}://${request.hostname}`;
+      const entries = await collectEntries(app.db, site);
+
+      return reply
+        .header('content-type', 'application/xml; charset=utf-8')
+        .header('cache-control', 'public, max-age=3600')
+        .send(renderSitemap(site, origin, entries));
+    },
+  );
+
+  app.get(
+    '/robots.txt',
+    {
+      schema: {
+        tags: ['shell'],
+        summary: 'robots.txt for one host',
+        description:
+          'The admin and the API disallow everything — not because a crawler could get past ' +
+          'the login, but because an indexed login form serves nobody and an indexed ' +
+          '/api/v1 response is a JSON document in somebody search results.',
+        querystring: crawlerQuery,
+      },
+    },
+    (request, reply) => {
+      const origin = request.query.origin ?? `${request.protocol}://${request.hostname}`;
+      return reply
+        .header('content-type', 'text/plain; charset=utf-8')
+        .header('cache-control', 'public, max-age=86400')
+        .send(renderRobots(request.query.site, origin));
     },
   );
 

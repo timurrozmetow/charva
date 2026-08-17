@@ -5,6 +5,7 @@ import { buildTestApp, type TestApp } from '../../test/app';
 import { escapeHtml, escapeJsonLd, type HeadTag, injectHead, renderHead } from './html';
 import { resolveRoute } from './routes-map';
 import { renderShellHead } from './service';
+import { collectEntries, renderRobots, renderSitemap } from './sitemap';
 
 /**
  * The head a crawler and a Telegram card receive.
@@ -244,5 +245,78 @@ describe('injecting into the built page', () => {
 
   it('refuses a template it cannot render into', () => {
     expect(() => injectHead('<html><body>no head</body></html>', '')).toThrow(/no <\/head>/i);
+  });
+});
+
+describe('the sitemap', () => {
+  it('lists every published page in every language the site speaks', async () => {
+    const entries = await collectEntries(context.app.db, 'global');
+    const xml = renderSitemap('global', ORIGIN, entries);
+
+    const locations = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+
+    // Three languages × every entry, and nothing outside this origin.
+    expect(locations).toHaveLength(entries.length * 3);
+    expect(locations.every((url) => url?.startsWith(ORIGIN))).toBe(true);
+
+    expect(locations).toContain(`${ORIGIN}/ru/tours`);
+    expect(locations).toContain(`${ORIGIN}/en/tours`);
+    expect(locations).toContain(`${ORIGIN}/tr/tours`);
+    expect(locations).toContain(`${ORIGIN}/ru/tours/klassicheskiy-turkmenistan`);
+  });
+
+  it('gives each URL the whole alternate set, itself included', () => {
+    const xml = renderSitemap('umrah', 'https://umra.charva-travel.com', [
+      { pathAfterLang: '/paket', lastModified: null, changeFrequency: 'monthly', priority: '0.9' },
+    ]);
+
+    // Two languages plus x-default, on each of the two entries: a set where one page names
+    // another without being named back is treated as unconfirmed and ignored.
+    expect(xml.match(/xhtml:link/g)).toHaveLength(6);
+    expect(xml).toContain('hreflang="x-default"');
+    expect(xml).toContain('href="https://umra.charva-travel.com/tm/paket"');
+  });
+
+  it('lists no unpublished row', async () => {
+    const [rows] = await context.pool.query(
+      'SELECT slug FROM tours WHERE is_published = 0 LIMIT 1',
+    );
+    const hidden = (rows as { slug: string }[])[0]?.slug;
+
+    const xml = renderSitemap('global', ORIGIN, await collectEntries(context.app.db, 'global'));
+    if (hidden !== undefined) expect(xml).not.toContain(hidden);
+
+    // And the check is not vacuous: a published one is definitely there.
+    expect(xml).toContain('klassicheskiy-turkmenistan');
+  });
+
+  it('is well-formed enough to parse as XML', async () => {
+    const xml = renderSitemap('global', ORIGIN, await collectEntries(context.app.db, 'global'));
+
+    expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
+    expect(xml.match(/<url>/g)?.length).toBe(xml.match(/<\/url>/g)?.length);
+    // No raw ampersand anywhere: a slug with one would break the whole document.
+    expect(xml).not.toMatch(/&(?!amp;|lt;|gt;|quot;|#39;)/);
+  });
+});
+
+describe('robots.txt', () => {
+  it('closes the admin and the API completely', () => {
+    for (const host of ['admin', 'api'] as const) {
+      const robots = renderRobots(host, `https://${host}.charva-travel.com`);
+      expect(robots).toContain('Disallow: /');
+      expect(robots).not.toContain('Sitemap:');
+      expect(robots).not.toContain('Allow: /');
+    }
+  });
+
+  it('opens the public sites and points at their own sitemap', () => {
+    const robots = renderRobots('global', ORIGIN);
+    expect(robots).toContain('Allow: /');
+    expect(robots).toContain(`Sitemap: ${ORIGIN}/sitemap.xml`);
+    // The photographs stay crawlable — image search is worth having for a tour operator —
+    // but the resizer is not a page.
+    expect(robots).toContain('Disallow: /img/');
+    expect(robots).not.toContain('Disallow: /uploads');
   });
 });
