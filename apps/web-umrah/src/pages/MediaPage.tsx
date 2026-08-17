@@ -11,6 +11,7 @@ import {
   MosaicGrid,
   Section,
   StatStrip,
+  TabPanel,
   Tabs,
 } from '@charva/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -30,6 +31,16 @@ export interface MediaPageProps {
 }
 
 const PER_PAGE = 6;
+
+/**
+ * The id the tab list and its panel agree on.
+ *
+ * They are in two different `<Section>`s — the tabs above, the mosaic below — and nesting one
+ * inside the other to share a React context would change the page's width and padding. A fixed
+ * prefix lets `aria-controls` on a tab point at the panel that is actually there, which is
+ * what makes it a tab list rather than a row of buttons wearing the role.
+ */
+const TABS_ID = 'suratlar-groups';
 
 /**
  * Photographs and clips from the groups that have already travelled.
@@ -141,6 +152,7 @@ export function MediaPage({ lang }: MediaPageProps) {
               value={selected}
               onValueChange={setSelected}
               label={copy.suratlar.tabsLabel}
+              idBase={TABS_ID}
             />
           </QueryState>
         </Container>
@@ -148,71 +160,73 @@ export function MediaPage({ lang }: MediaPageProps) {
 
       <Section space="sm">
         <Container>
-          <QueryState
-            lang={lang}
-            isPending={group.isPending && selected !== ''}
-            isError={group.isError}
-            onRetry={() => void group.refetch()}
-            skeletonCount={6}
-            skeletonClassName="h-[220px] rounded-media"
-          >
-            <MosaicGrid
-              items={photos.map((photo) => {
-                const openIndex = openable.findIndex((candidate) => candidate.id === photo.id);
+          <TabPanel value={selected} idBase={TABS_ID}>
+            <QueryState
+              lang={lang}
+              isPending={group.isPending && selected !== ''}
+              isError={group.isError}
+              onRetry={() => void group.refetch()}
+              skeletonCount={6}
+              skeletonClassName="h-[220px] rounded-media"
+            >
+              <MosaicGrid
+                items={photos.map((photo) => {
+                  const openIndex = openable.findIndex((candidate) => candidate.id === photo.id);
 
-                return {
-                  id: String(photo.id),
-                  spanCols: photo.spanCols,
-                  spanRows: photo.spanRows,
-                  content:
-                    photo.media === null ? (
-                      <ImageSlot
-                        slotKey={`u-group-${selected}-${String(photo.id)}`}
-                        brief={photo.caption}
-                        media={null}
-                        className="size-full"
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setOpen(openIndex);
-                        }}
-                        className="group relative block size-full overflow-hidden text-left"
-                      >
+                  return {
+                    id: String(photo.id),
+                    spanCols: photo.spanCols,
+                    spanRows: photo.spanRows,
+                    content:
+                      photo.media === null ? (
                         <ImageSlot
                           slotKey={`u-group-${selected}-${String(photo.id)}`}
                           brief={photo.caption}
-                          media={{ src: photo.media.url, alt: photo.media.alt }}
+                          media={null}
                           className="size-full"
                         />
-                        {photo.caption !== '' && (
-                          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-scrim-strong to-transparent p-4 text-bodySm font-semibold text-dark-on">
-                            {photo.caption}
-                          </span>
-                        )}
-                        <span className="sr-only">{copy.suratlar.openPhoto}</span>
-                      </button>
-                    ),
-                };
-              })}
-            />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpen(openIndex);
+                          }}
+                          className="group relative block size-full overflow-hidden text-left"
+                        >
+                          <ImageSlot
+                            slotKey={`u-group-${selected}-${String(photo.id)}`}
+                            brief={photo.caption}
+                            media={{ src: photo.media.url, alt: photo.media.alt }}
+                            className="size-full"
+                          />
+                          {photo.caption !== '' && (
+                            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-scrim-strong to-transparent p-4 text-bodySm font-semibold text-dark-on">
+                              {photo.caption}
+                            </span>
+                          )}
+                          <span className="sr-only">{copy.suratlar.openPhoto}</span>
+                        </button>
+                      ),
+                  };
+                })}
+              />
 
-            {videos.length > 0 && (
-              <>
-                <Heading level={2} size="h2Sm" className="mt-16">
-                  {copy.suratlar.videosTitle}
-                </Heading>
-                <ul className="mt-8 grid list-none grid-cols-3 gap-[22px] p-0 lap:grid-cols-2 mob:grid-cols-1">
-                  {videos.map((video) => (
-                    <li key={video.id}>
-                      <GroupVideo video={video} lang={lang} slug={selected} />
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </QueryState>
+              {videos.length > 0 && (
+                <>
+                  <Heading level={2} size="h2Sm" className="mt-16">
+                    {copy.suratlar.videosTitle}
+                  </Heading>
+                  <ul className="mt-8 grid list-none grid-cols-3 gap-[22px] p-0 lap:grid-cols-2 mob:grid-cols-1">
+                    {videos.map((video) => (
+                      <li key={video.id}>
+                        <GroupVideo video={video} lang={lang} slug={selected} />
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </QueryState>
+          </TabPanel>
         </Container>
       </Section>
 

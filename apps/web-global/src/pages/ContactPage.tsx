@@ -7,6 +7,7 @@ import {
   ImageSlot,
   Section,
   Skeleton,
+  TabPanel,
   Tabs,
 } from '@charva/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -115,17 +116,24 @@ export function ContactPage({ lang }: ContactPageProps) {
                 value={tab}
                 onValueChange={setTab}
                 label={copy.contact.tabsLabel}
-              />
+              >
+                {/*
+                  The form is the panel.
 
-              {/*
-                Keyed by the tab.
+                  It has to be one: a `role="tab"` points `aria-controls` at a panel id, and
+                  a tab list with no panel points at nothing — which a screen reader announces
+                  as a tab controlling something it cannot find.
 
-                Remounting on a switch is deliberate: the two tabs submit different `kind`s and
-                show different fields, and carrying a half-filled «Гостей» into «Общий вопрос»
-                would send a number the form no longer displays. What is lost is a name and a
-                phone, which is a fair trade for never submitting something invisible.
-              */}
-              <LeadForm key={tab} lang={lang} kind={tab satisfies LeadKind} className="mt-9" />
+                  Keyed by the tab, and remounting on a switch is deliberate: the two tabs
+                  submit different `kind`s and show different fields, and carrying a half-filled
+                  «Гостей» into «Общий вопрос» would send a number the form no longer displays.
+                  What is lost is a name and a phone, a fair trade for never submitting
+                  something invisible.
+                */}
+                <TabPanel value={tab} hasFocusableContent className="mt-9">
+                  <LeadForm key={tab} lang={lang} kind={tab satisfies LeadKind} />
+                </TabPanel>
+              </Tabs>
             </div>
 
             <div className="flex flex-col gap-[26px]">

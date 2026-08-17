@@ -31,6 +31,15 @@ export interface TabsProps {
   onValueChange: (value: string) => void;
   /** Names the tab list — «Группы паломников». */
   label: string;
+  /**
+   * A fixed id prefix, for when the panel cannot be a child of this component.
+   *
+   * The Umrah media page is that case: the tabs sit in one section and the mosaic they control
+   * in the next, and nesting the second section inside the first to satisfy the component
+   * would change the page's width and padding. Given the same string, `TabPanel` builds the
+   * matching ids without the context.
+   */
+  idBase?: string;
   children?: ReactNode;
   className?: string;
   listClassName?: string;
@@ -53,11 +62,13 @@ export function Tabs({
   value,
   onValueChange,
   label,
+  idBase,
   children,
   className,
   listClassName,
 }: TabsProps) {
-  const base = useId();
+  const generated = useId();
+  const base = idBase ?? generated;
   const listRef = useRef<HTMLDivElement>(null);
 
   // On the tabs themselves, not on the list. Under a roving tabindex the list never holds
@@ -134,6 +145,16 @@ export function Tabs({
 export interface TabPanelProps {
   /** Matches the `value` of the tab this panel belongs to. */
   value: string;
+  /** Set to the same string as the tab list's, when the panel is not a child of `<Tabs>`. */
+  idBase?: string;
+  /**
+   * True when the panel already contains something focusable — a form, a list of links.
+   *
+   * The ARIA authoring practices make the panel itself focusable *only* when its content is
+   * not: a grid of photographs would otherwise be skipped entirely by a keyboard user, while a
+   * panel holding a form would gain a tab stop before the first field that does nothing.
+   */
+  hasFocusableContent?: boolean;
   children?: ReactNode;
   className?: string;
 }
@@ -141,23 +162,36 @@ export interface TabPanelProps {
 /**
  * The panel for one tab. Renders nothing unless its tab is the selected one.
  *
- * Given `tabIndex={0}` because its content is a grid of images with nothing focusable in it,
- * and without that a keyboard user tabs straight past the thing the tab just revealed.
+ * Not optional, though it looks it: a `role="tab"` carries `aria-controls` pointing at this
+ * element's id, and a tab list rendered without a panel points at nothing. That is an invalid
+ * ARIA reference — a screen reader announces a tab that controls something it cannot find —
+ * and it is what axe reports as critical. Both call sites in this repository shipped without
+ * one until phase 8 measured it.
  */
-export function TabPanel({ value, children, className }: TabPanelProps) {
+export function TabPanel({
+  value,
+  idBase,
+  hasFocusableContent = false,
+  children,
+  className,
+}: TabPanelProps) {
   const tabs = useContext(TabsContext);
-  if (tabs?.active !== value) return null;
+  const base = idBase ?? tabs?.base;
+
+  if (base === undefined) {
+    throw new Error('<TabPanel> needs either a <Tabs> ancestor or an idBase matching one');
+  }
+
+  // Inside `<Tabs>` the context decides which panel is showing. Given an `idBase` the panel is
+  // somewhere else on the page and the page itself passes only the value being shown.
+  if (idBase === undefined && tabs?.active !== value) return null;
 
   return (
     <div
       role="tabpanel"
-      id={`${tabs.base}-${value}-panel`}
-      aria-labelledby={`${tabs.base}-${value}-tab`}
-      // The ARIA authoring practices require this exact thing: a tab panel whose content holds
-      // nothing focusable must be focusable itself, or the keyboard skips straight over what
-      // the tab just revealed. The rule cannot tell the two cases apart.
-      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-      tabIndex={0}
+      id={`${base}-${value}-panel`}
+      aria-labelledby={`${base}-${value}-tab`}
+      tabIndex={hasFocusableContent ? undefined : 0}
       className={className}
     >
       {children}
