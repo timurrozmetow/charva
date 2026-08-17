@@ -107,6 +107,15 @@ const schema = z.object({
   MAX_IMAGE_UPLOAD_MB: z.coerce.number().int().positive().max(200).default(20),
   MAX_VIDEO_UPLOAD_MB: z.coerce.number().int().positive().max(4096).default(400),
 
+  /**
+   * Where the built SPAs live, for the shell to read their `index.html` from.
+   *
+   * Empty means the monorepo layout — `apps/web-<site>/dist` relative to the API's working
+   * directory — which is what both a local `pnpm build` and the VPS deploy produce. A value
+   * points at a directory holding `web-choice/`, `web-global/` and `web-umrah/`.
+   */
+  SHELL_DIST_DIR: z.string().default(''),
+
   /** How long a public GET stays in the in-process cache. Sixty seconds — decision D-7. */
   CACHE_TTL_SECONDS: z.coerce.number().int().min(0).max(3600).default(60),
 

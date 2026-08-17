@@ -29,15 +29,25 @@ afterAll(async () => {
 });
 
 /**
- * The three families of route that answer with bytes rather than JSON.
+ * The families of route that answer with bytes rather than JSON.
  *
  * The response-schema rule exists so that a JSON body is produced by a declared shape; there is
- * no JSON here to constrain. `/img/*` returns WebP, `/uploads/*` returns stored files, and
- * `/docs` is Swagger UI's own bundle. They are matched by an explicit predicate rather than a
- * wildcard, so a fourth exemption has to be argued for in a diff instead of appearing quietly.
+ * no JSON here to constrain. `/img/*` returns WebP, `/uploads/*` returns stored files, `/docs`
+ * is Swagger UI's own bundle, and `/shell` returns the SPA's HTML with a rendered head (D-4).
+ * They are matched by an explicit predicate rather than a wildcard, so a fifth exemption has to
+ * be argued for in a diff instead of appearing quietly.
+ *
+ * `/shell` earned its place the same way the others did: it produces no object. Its head is
+ * built from `HeadTag[]`, and `shell.db.test.ts` asserts on those tags rather than on the
+ * string — which is the same guarantee a response schema gives, made where the shape exists.
  */
 function servesBytes(url: string): boolean {
-  return url === '/docs' || url.startsWith('/docs/') || /\/(img|uploads)\/\*$/.test(url);
+  return (
+    url === '/docs' ||
+    url.startsWith('/docs/') ||
+    url.endsWith('/shell') ||
+    /\/(img|uploads)\/\*$/.test(url)
+  );
 }
 
 /**

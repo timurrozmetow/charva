@@ -23,6 +23,7 @@ import { choiceRoutes } from './modules/choice/routes';
 import { globalRoutes } from './modules/global/routes';
 import { leadRoutes } from './modules/leads/routes';
 import { mediaRoutes } from './modules/media/routes';
+import { shellRoutes } from './modules/shell/routes';
 import { umrahRoutes } from './modules/umrah/routes';
 import { adminAuthPlugin } from './plugins/admin-auth';
 import { cachePlugin } from './plugins/cache';
@@ -188,6 +189,7 @@ export async function buildApp(env: Env, options: BuildOptions = {}): Promise<Fa
   await app.register(umrahRoutes, { prefix: `${API_PREFIX}/umrah` });
   await app.register(leadRoutes, { prefix: API_PREFIX });
   await app.register(adminRoutes, { prefix: `${API_PREFIX}/admin` });
+  await app.register(shellRoutes, { prefix: API_PREFIX });
 
   await app.ready();
   return app;
@@ -218,6 +220,7 @@ async function registerDocs(app: FastifyInstance): Promise<void> {
         { name: 'forms', description: 'Leads and signups, and the token that guards them' },
         { name: 'media', description: 'Images, resized on demand' },
         { name: 'admin', description: 'Behind the login. Same origin as the admin SPA (D-20)' },
+        { name: 'shell', description: 'The SPA shell, head rendered for crawlers (D-4)' },
         { name: 'ops', description: 'Liveness and readiness' },
       ],
     },
