@@ -122,6 +122,7 @@ export async function getConfigForDisplay(db: Database, lang: Lang) {
         numericValue: t.builderOptions.numericValue,
         priceModifierMinor: t.builderOptions.priceModifierMinor,
         modifierType: t.builderOptions.modifierType,
+        isExclusive: t.builderOptions.isExclusive,
         sortOrder: t.builderOptions.sortOrder,
       })
       .from(t.builderOptions)
@@ -151,6 +152,7 @@ export async function getConfigForDisplay(db: Database, lang: Lang) {
               numericValue: option.numericValue,
               priceModifierMinor: option.priceModifierMinor,
               modifierType: option.modifierType,
+              isExclusive: option.isExclusive,
             })),
         },
       ];

@@ -120,6 +120,10 @@ export function TourBuilder({ lang, basePath, renderForm }: TourBuilderProps) {
   const currentStep = steps[step] ?? steps[0];
   if (currentStep === undefined) return null;
 
+  const exclusiveCodes = new Set(
+    currentStep.options.filter((option) => option.isExclusive).map((option) => option.code),
+  );
+
   const isChosen = (code: string) => {
     const chosen = selection[currentStep.code];
     if (chosen === undefined) return false;
@@ -143,7 +147,9 @@ export function TourBuilder({ lang, basePath, renderForm }: TourBuilderProps) {
         totalSteps={steps.length}
         isChosen={isChosen}
         onPick={(code) => {
-          pick(currentStep.code, code);
+          // Which of this step's answers stand alone comes from the configuration, so a
+          // seventh exclusive option needs a row in the admin rather than a deploy.
+          pick(currentStep.code, code, exclusiveCodes);
         }}
         onBack={() => {
           goToStep(step - 1);

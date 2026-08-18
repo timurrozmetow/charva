@@ -19,6 +19,7 @@ export * from './components/Field';
 export * from './components/FilterChipRow';
 export * from './components/FormError';
 export * from './components/Heading';
+export * from './components/Flag';
 export * from './components/Icon';
 export * from './components/ImageSlot';
 export * from './components/Img';

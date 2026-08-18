@@ -27,6 +27,13 @@ export const builderOptionSchema = z.object({
   /** What it *costs*, in minor units. Only hotel options carry one. */
   priceModifierMinor: z.number().int().nullable(),
   modifierType: z.enum(MODIFIER_TYPES),
+  /**
+   * Cannot be held together with anything else on its step.
+   *
+   * Only meaningful on a `multi` step, where it is the answer that means the question does not
+   * apply — «Без питания». Choosing it clears the others; choosing another clears it.
+   */
+  isExclusive: z.boolean(),
 });
 
 export const builderStepSchema = z.object({

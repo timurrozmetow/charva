@@ -67,6 +67,14 @@ export const builderOptions = mysqlTable(
     /** What it *costs*, in minor units. Only hotel options carry one. */
     priceModifierMinor: bigint({ mode: 'number' }),
     modifierType: mysqlEnum(['per_night', 'per_item', 'flat', 'none']).notNull().default('none'),
+    /**
+     * Cannot be held together with anything else on its step.
+     *
+     * «Без питания» on the food step: the answer that means the question does not apply. Ticked,
+     * it clears the rest; ticking anything else clears it. A column rather than a rule about
+     * one code in the browser, because the builder's vocabulary is edited from the admin.
+     */
+    isExclusive: boolean().notNull().default(false),
     isPublished: boolean().notNull().default(true),
     sortOrder: int().notNull().default(0),
     createdAt: timestamp('created_at').notNull().defaultNow(),

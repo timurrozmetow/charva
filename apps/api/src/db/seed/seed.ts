@@ -736,6 +736,15 @@ const NUMERIC_VALUES: Record<string, number> = {
   pax_10_plus: 12,
 };
 
+/**
+ * Options that cannot be held with anything else on their step.
+ *
+ * One so far. «Без питания» is not a sixth kind of food but the answer that the question does
+ * not apply, and the step let it be ticked alongside «Халяль» — a request for halal food and
+ * for no food at once.
+ */
+const EXCLUSIVE_OPTIONS = new Set(['food_none']);
+
 /** Per night, in minor units — the designer's numbers, awaiting confirmation (Q-10). */
 const HOTEL_RATES: Record<string, number> = {
   hotel_3star: 4_600,
@@ -793,6 +802,9 @@ async function seedBuilder(db: Database): Promise<number> {
         numericValue: NUMERIC_VALUES[code] ?? null,
         priceModifierMinor: rate ?? null,
         modifierType: rate !== undefined ? 'per_night' : step.multi === true ? 'per_item' : 'none',
+        // «Без питания» is the answer that means the question does not apply, so it cannot be
+        // held with «Халяль» — which the step allowed until the owner pointed at it.
+        isExclusive: EXCLUSIVE_OPTIONS.has(code),
         sortOrder: index + 1,
       });
     });

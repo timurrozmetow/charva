@@ -30,7 +30,16 @@ export function BuilderPage({ lang }: BuilderPageProps) {
     <>
       <Breadcrumbs lang={lang} trail={[{ label: copy.builder.breadcrumb }]} />
 
-      <Section space="sm">
+      {/*
+        Bottom padding, spelled out.
+
+        A `page`-toned section gets top spacing only — sections stack, and the next one's top
+        padding is the gap. That breaks where the next section is dark: its padding is inside
+        its own background, so the dark band starts on the line under the lead paragraph and
+        the header has no air at all. The values are `space="sm"`'s own, so the gap below
+        matches the gap above.
+      */}
+      <Section space="sm" className="pb-16 tab:pb-12 mob:pb-10">
         <Container>
           <div className="grid grid-cols-[1.3fr_1fr] items-end gap-[70px] tab:grid-cols-1 tab:gap-8">
             <div>

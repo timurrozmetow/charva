@@ -137,6 +137,39 @@ describe('the tour builder', () => {
     });
   });
 
+  it('lets «Без питания» stand alone, because it is not a kind of food', async () => {
+    /*
+     * The step is multiple-choice and its answers are not all the same kind of thing. Halal,
+     * vegetarian and gluten-free are restrictions; national and European are preferences; and
+     * «Без питания» is the answer that the question does not apply. Nothing stopped the three
+     * being held at once — a request for halal food and for no food.
+     *
+     * Which options behave this way is `builder_options.is_exclusive`, so a seventh one is a
+     * row an editor adds rather than a branch somebody writes here.
+     */
+    const { router } = await render('/ru/builder?step=3');
+
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Халяль/ }));
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Национальная/ }));
+    await waitFor(() => {
+      expect(router.state.location.searchStr).toContain('food_halal%2Cfood_national');
+    });
+
+    // Ticking it clears the rest.
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Без питания/ }));
+    await waitFor(() => {
+      expect(router.state.location.searchStr).toContain('food=food_none');
+    });
+    expect(router.state.location.searchStr).not.toContain('food_halal');
+
+    // And ticking a real answer withdraws it.
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Халяль/ }));
+    await waitFor(() => {
+      expect(router.state.location.searchStr).toContain('food=food_halal');
+    });
+    expect(router.state.location.searchStr).not.toContain('food_none');
+  });
+
   it('tells assistive technology which options are chosen', async () => {
     // The prototype draws every option as a `<div>` with a click handler, so on nine
     // consecutive screens a screen-reader user cannot tell which of six is selected.

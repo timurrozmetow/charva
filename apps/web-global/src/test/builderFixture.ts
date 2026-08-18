@@ -68,7 +68,13 @@ export function builderConfig(
         hint: '',
         railLabel: 'Питание',
         isRequired: false,
-        options: [opt('food_halal', 'Халяль', ''), opt('food_national', 'Национальная кухня', '')],
+        options: [
+          opt('food_halal', 'Халяль', ''),
+          opt('food_national', 'Национальная кухня', ''),
+          // The answer that means the question does not apply. It cannot be held with the
+          // other two, and that is a property of the row rather than of the browser.
+          opt('food_none', 'Без питания', '', { isExclusive: true }),
+        ],
       },
       {
         code: 'transport',
@@ -140,6 +146,7 @@ function opt(
     numericValue: null,
     priceModifierMinor: null,
     modifierType: 'none',
+    isExclusive: false,
     ...extra,
   };
 }

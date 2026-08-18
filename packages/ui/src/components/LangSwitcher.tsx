@@ -2,7 +2,13 @@ import { type KeyboardEvent, type ReactNode, useEffect, useId, useRef, useState 
 
 import { cn } from '../cn';
 
+import { Flag, type FlagCode } from './Flag';
 import { Icon } from './Icon';
+
+/** The four this project speaks. Anything else renders without a flag rather than wrongly. */
+const FLAGGED = new Set<string>(['ru', 'en', 'tr', 'tm']);
+
+const isFlagged = (code: string): code is FlagCode => FLAGGED.has(code);
 
 export interface LangOption {
   /** `ru`, `en`, `tr`, `tm`. */
@@ -130,7 +136,13 @@ export function LangSwitcher({ options, value, renderLink, label, className }: L
         onKeyDown={onTriggerKeyDown}
         className="flex min-h-tap items-center gap-2 rounded-full px-3 py-2 text-[13px] font-medium text-nav transition-colors duration-colour hover:bg-line-soft"
       >
-        <Icon name="globe" size={16} className="text-body" />
+        {/* The flag replaces the globe on the trigger: a globe says «this is a language
+            chooser», which the two-letter code already says, and the flag says which one. */}
+        {isFlagged(value) ? (
+          <Flag code={value} size={18} />
+        ) : (
+          <Icon name="globe" size={16} className="text-body" />
+        )}
         <span className="uppercase">{value}</span>
         <Icon
           name="caretDown"
@@ -158,8 +170,11 @@ export function LangSwitcher({ options, value, renderLink, label, className }: L
               <li key={option.code}>
                 {renderLink(option, {
                   className: cn(
-                    'flex min-h-tap items-center justify-between gap-4 rounded-sm px-3 py-2',
+                    'flex min-h-tap items-center justify-between gap-4 rounded-sm px-3 py-[9px]',
                     'transition-colors duration-colour hover:bg-line-soft',
+                    // The selected row is legible as selected without hovering it — the tick
+                    // alone is easy to miss on a four-item list read at a glance.
+                    selected && 'bg-tint',
                   ),
                   ...(selected ? { 'aria-current': 'true' as const } : {}),
                   onClick: () => {
@@ -167,10 +182,13 @@ export function LangSwitcher({ options, value, renderLink, label, className }: L
                   },
                   children: (
                     <>
-                      <span className="flex flex-col gap-0.5 text-left">
-                        <span className="text-[13px] font-semibold text-ink">{option.name}</span>
-                        <span className="font-bold uppercase text-label text-muted">
-                          {option.code}
+                      <span className="flex items-center gap-3 text-left">
+                        {isFlagged(option.code) && <Flag code={option.code} size={20} />}
+                        <span className="flex flex-col gap-0.5">
+                          <span className="text-[13px] font-semibold text-ink">{option.name}</span>
+                          <span className="font-bold uppercase text-label text-muted">
+                            {option.code}
+                          </span>
                         </span>
                       </span>
                       {selected && <Icon name="check" size={13} className="text-accent-text" />}

@@ -24,11 +24,13 @@ export interface BuilderState {
   selection: BuilderSelection;
   step: number;
   /** Toggles an option. Clicking the chosen one again clears it, as the prototype does. */
-  pick: (step: string, code: string) => void;
+  pick: (step: string, code: string, exclusive?: ReadonlySet<string>) => void;
   goToStep: (index: number) => void;
   /** How many priced-or-answered steps have an answer, out of the eight that take one. */
   answered: number;
 }
+
+const EMPTY: ReadonlySet<string> = new Set();
 
 export function useBuilderSelection(basePath: string): BuilderState {
   const navigate = useNavigate();
@@ -80,14 +82,34 @@ export function useBuilderSelection(basePath: string): BuilderState {
   );
 
   const pick = useCallback(
-    (stepCode: string, code: string) => {
+    (stepCode: string, code: string, exclusive: ReadonlySet<string> = EMPTY) => {
       const current = selection[stepCode as keyof BuilderSelection];
 
       if (MULTI.has(stepCode)) {
         const codes = current === undefined ? [] : [...(current as readonly string[])];
         const at = codes.indexOf(code);
-        if (at >= 0) codes.splice(at, 1);
-        else codes.push(code);
+
+        if (at >= 0) {
+          codes.splice(at, 1);
+        } else if (exclusive.has(code)) {
+          /*
+           * An exclusive answer replaces the step rather than joining it.
+           *
+           * «Без питания» is not a sixth kind of food, it is the answer that the question does
+           * not apply — and the step used to allow it alongside «Халяль», which asks for halal
+           * food and for no food. Which options behave this way is a column in
+           * `builder_options`, not a code written here: the vocabulary is edited in the admin.
+           */
+          codes.length = 0;
+          codes.push(code);
+        } else {
+          // And the reverse. Adding any real answer withdraws the «does not apply».
+          for (let index = codes.length - 1; index >= 0; index -= 1) {
+            if (exclusive.has(codes[index] ?? '')) codes.splice(index, 1);
+          }
+          codes.push(code);
+        }
+
         write({ [stepCode]: codes.join(',') });
         return;
       }
