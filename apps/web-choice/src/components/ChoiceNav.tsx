@@ -48,7 +48,11 @@ export function ChoiceNav({ lang }: ChoiceNavProps) {
             className="h-10 w-auto"
             // The largest element above the fold is the headline, not this; but it is the first
             // thing painted in the nav and a late logo reads as a broken page.
-            fetchPriority="high"
+            //
+            // Lowercase and spread, exactly as `Img` does it. React 18 does not know the
+            // camel-cased prop: it warns, drops the attribute, and the hint never reaches the
+            // browser — so the version that looks right is the one that does nothing.
+            {...({ fetchpriority: 'high' } as Record<string, string>)}
           />
         </Link>
 
