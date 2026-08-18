@@ -65,6 +65,25 @@ const OWNED_PREFIXES = [
   'pb-',
   'gap-',
   'font-',
+  /*
+   * The rest of the spacing families, added after `p-13` reached production.
+   *
+   * Tailwind's default scale jumps 12 → 14, so `p-13` produced no rule at all and the dark
+   * enquiry panel on both homepages rendered with no padding: the heading sat flush against
+   * the rounded corner and was clipped by it. `px-` and `pt-` were already checked here, which
+   * is exactly why the gap was invisible — the families that happened to be listed worked, and
+   * the two that were not, did not.
+   */
+  'p-',
+  'm-',
+  'mt-',
+  'mb-',
+  'ml-',
+  'mr-',
+  'mx-',
+  'my-',
+  'space-',
+  'size-',
 ];
 
 /** Variants the preset adds. A class carrying one of these is ours by definition. */

@@ -235,6 +235,16 @@ export const charvaPreset = {
         section: px(layout.sectionGap),
         'section-lg': px(layout.footerGap),
         tap: px(minTapTarget),
+        /*
+         * The step Tailwind's own scale skips.
+         *
+         * It goes 12 (48px) → 14 (56px), and the panels in this design are padded 52. Ten call
+         * sites had already been written as `p-13` and `mt-13`, every one of them producing no
+         * rule at all — the enquiry panel on both homepages had no padding whatsoever, and its
+         * heading was clipped by the panel's own rounded corner. Adding the step is what those
+         * ten call sites always meant.
+         */
+        13: px(52),
       },
 
       maxWidth: {

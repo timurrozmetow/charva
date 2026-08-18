@@ -105,23 +105,30 @@ export function HomePage({ lang }: HomePageProps) {
         skeletonClassName="h-[80vh] min-h-[560px] rounded-none"
       >
         <section className="relative min-h-dvh">
+          {/*
+            Positioned by a wrapper, not by a class on the carousel — see the same note on
+            Global's hero. `cn` is clsx, so `absolute` passed to a component that already sets
+            `relative` does not replace it: both stay, and Tailwind's order picks `relative`.
+          */}
           {heroSlides.length > 0 && (
-            <Carousel
-              slides={heroSlides}
-              indicators="dots"
-              labels={{
-                region: copy.home.sliderLabel,
-                slide: (index, total) => fill(copy.home.slide, { index: index + 1, total }),
-                goTo: (index, label) =>
-                  `${fill(copy.home.goToSlide, { index: index + 1 })}${
-                    label === undefined ? '' : `, ${label}`
-                  }`,
-                pause: copy.home.pause,
-                play: copy.home.play,
-              }}
-              className="absolute inset-0"
-              indicatorsClassName="bottom-10 left-gutter mob:left-6"
-            />
+            <div className="absolute inset-0">
+              <Carousel
+                slides={heroSlides}
+                indicators="dots"
+                labels={{
+                  region: copy.home.sliderLabel,
+                  slide: (index, total) => fill(copy.home.slide, { index: index + 1, total }),
+                  goTo: (index, label) =>
+                    `${fill(copy.home.goToSlide, { index: index + 1 })}${
+                      label === undefined ? '' : `, ${label}`
+                    }`,
+                  pause: copy.home.pause,
+                  play: copy.home.play,
+                }}
+                className="size-full"
+                indicatorsClassName="bottom-10 left-gutter mob:left-6"
+              />
+            </div>
           )}
 
           <Container className="relative grid min-h-dvh grid-cols-[1.05fr_0.95fr] items-center gap-[60px] py-32 tab:grid-cols-1 tab:gap-10 tab:py-24">

@@ -111,22 +111,33 @@ export function HomePage({ lang }: HomePageProps) {
         skeletonClassName="h-[70vh] min-h-[520px] rounded-none"
       >
         <section className="relative min-h-[720px] tab:min-h-[560px]">
+          {/*
+            Positioned by a wrapper, not by a class on the carousel.
+
+            `cn` is clsx: `className="absolute inset-0"` on a component that already sets
+            `relative` leaves both in the attribute, and Tailwind emits `relative` after
+            `absolute`, so the carousel became an in-flow element of zero height. The slides are
+            `absolute inset-0` inside it, so they collapsed with it — the hero photograph and
+            its scrim shrank to a strip and the light hero text ended up on the cream page.
+          */}
           {heroSlides.length > 0 && (
-            <Carousel
-              slides={heroSlides}
-              indicators="rail"
-              labels={{
-                region: copy.home.sliderLabel,
-                slide: (index, total) => fill(copy.home.slide, { index: index + 1, total }),
-                goTo: (index, label) =>
-                  `${fill(copy.home.goToSlide, { index: index + 1 })}${
-                    label === undefined ? '' : `, ${label}`
-                  }`,
-                pause: copy.home.pause,
-                play: copy.home.play,
-              }}
-              className="absolute inset-0"
-            />
+            <div className="absolute inset-0">
+              <Carousel
+                slides={heroSlides}
+                indicators="rail"
+                labels={{
+                  region: copy.home.sliderLabel,
+                  slide: (index, total) => fill(copy.home.slide, { index: index + 1, total }),
+                  goTo: (index, label) =>
+                    `${fill(copy.home.goToSlide, { index: index + 1 })}${
+                      label === undefined ? '' : `, ${label}`
+                    }`,
+                  pause: copy.home.pause,
+                  play: copy.home.play,
+                }}
+                className="size-full"
+              />
+            </div>
           )}
 
           <Container className="relative flex min-h-[720px] flex-col justify-end pb-20 pt-40 tab:min-h-[560px] tab:pb-14">
