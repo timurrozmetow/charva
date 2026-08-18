@@ -1,3 +1,4 @@
+import { API_PREFIX } from './api/media';
 import { type ApiError, apiErrorSchema } from './errors';
 
 /**
@@ -54,7 +55,7 @@ export interface RequestOptions {
   signal?: AbortSignal;
 }
 
-export function createApiClient({ baseUrl = '/api/v1', headers }: ApiClientOptions = {}) {
+export function createApiClient({ baseUrl = API_PREFIX, headers }: ApiClientOptions = {}) {
   async function request<T>(method: string, path: string, options: RequestOptions, body?: unknown) {
     const search = new URLSearchParams();
     for (const [name, value] of Object.entries(options.query ?? {})) {

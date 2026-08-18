@@ -1,4 +1,4 @@
-import { type AdminMedia, ApiRequestError } from '@charva/contracts';
+import { type AdminMedia, ApiRequestError, imageUrl } from '@charva/contracts';
 import { Badge, Button, EmptyState, Field, Input, Modal, QueryState } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
@@ -164,12 +164,17 @@ export function MediaThumb({ media, className }: { media: AdminMedia; className?
 
   return (
     <img
-      src={`/img/${media.storageKey}?w=320`}
+      src={imageUrl(media.storageKey, 320)}
       alt={media.alt?.['ru'] ?? ''}
       loading="lazy"
       className={className ?? 'h-[110px] w-full object-cover'}
     />
   );
+}
+
+/** `2026/08/834f273f00da.webp` → `834f273f00da.webp`. The year and month are storage, not a name. */
+function fileName(storageKey: string): string {
+  return storageKey.split('/').at(-1) ?? storageKey;
 }
 
 function MediaDetails({ media, onClose }: { media: AdminMedia; onClose: () => void }) {
@@ -186,8 +191,16 @@ function MediaDetails({ media, onClose }: { media: AdminMedia; onClose: () => vo
     },
   });
 
+  /*
+   * The dialog is titled with the file name, not the storage key.
+   *
+   * The key is `2026/08/834f273f00da.webp` — a year, a month and twelve characters of a
+   * checksum — and as a heading it set itself across the whole width, collided with the close
+   * button and told the reader nothing they could act on. The full key is a row in the table
+   * below, where it is a fact rather than a title.
+   */
   return (
-    <Modal open onClose={onClose} title={media.storageKey} closeLabel={copy.form.cancel}>
+    <Modal open onClose={onClose} title={fileName(media.storageKey)} closeLabel={copy.form.cancel}>
       <div className="flex flex-col gap-5">
         <MediaThumb
           media={media}
@@ -195,6 +208,12 @@ function MediaDetails({ media, onClose }: { media: AdminMedia; onClose: () => vo
         />
 
         <dl className="grid grid-cols-2 gap-2 text-bodySm text-muted">
+          <dt>{copy.media.path}</dt>
+          {/* Where the file actually is, for anybody who has to find it on disk or in a
+              backup. `break-all` because it has no spaces to wrap at. */}
+          {/* No `font-mono`: the preset defines Stolzl and nothing else, so the class produces
+              no rule at all — which the class audit said the moment it was written. */}
+          <dd className="break-all text-[12px] text-ink">{media.storageKey}</dd>
           <dt>{copy.media.size}</dt>
           <dd>{Math.round(media.sizeBytes / 1024)} КБ</dd>
           <dt>{copy.media.dimensions}</dt>

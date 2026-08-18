@@ -4,6 +4,7 @@ import {
   type Lang,
   type MediaRef,
   pickLocale,
+  uploadUrl,
 } from '@charva/contracts';
 import { inArray } from 'drizzle-orm';
 
@@ -45,7 +46,9 @@ export interface MediaContext {
 }
 
 export function mediaUrl(storageKey: string, baseUrl: string): string {
-  return `${baseUrl}/uploads/${storageKey}`;
+  // The prefix is part of the path, not of the origin: `/uploads` is registered inside the
+  // same versioned plugin as every other route, so a URL built without it is a 404.
+  return uploadUrl(storageKey, baseUrl);
 }
 
 /**

@@ -88,7 +88,13 @@ export function Modal({
       >
         <h2
           id={titleId}
-          className={cn('m-0 px-11 pt-10 text-h3 font-medium text-ink', hideTitle && 'sr-only')}
+          className={cn(
+            // `pr-20` rather than `px-11`: the close button is absolutely positioned in the
+            // top right, and a title long enough to reach it used to run underneath. Reserving
+            // its width is what makes a long title wrap instead of colliding.
+            'm-0 break-words pl-11 pr-20 pt-10 text-h3 font-medium text-ink',
+            hideTitle && 'sr-only',
+          )}
         >
           {title}
         </h2>

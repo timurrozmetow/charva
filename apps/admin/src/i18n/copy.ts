@@ -109,6 +109,7 @@ export const copy = {
     onlyImages: 'Только фото',
     onlyVideos: 'Только видео',
     all: 'Всё',
+    path: 'Файл',
     size: 'Размер',
     dimensions: 'Размер кадра',
     duration: 'Длительность',
