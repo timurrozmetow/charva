@@ -32,7 +32,7 @@ interface ThemeRoles {
   /** Card and panel background — the raised surface. */
   surface: string;
   /**
-   * The sticky navigation island: the card colour at 88% behind a heavy backdrop blur.
+   * The navigation island: the card colour at 88% behind a heavy backdrop blur.
    *
    * Its own role rather than an opacity modifier on `surface`, because Tailwind's modifier
    * needs a colour it can take apart and `var(--c-surface)` is opaque to it — it would emit

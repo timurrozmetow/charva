@@ -7,7 +7,7 @@ export type BlockTag = 'div' | 'section' | 'article' | 'aside' | 'header' | 'foo
 
 export interface ContainerProps extends HTMLAttributes<HTMLElement> {
   as?: BlockTag;
-  /** `island` is the sticky navigation bar, which the design draws 40px narrower. */
+  /** `island` is the navigation bar, which the design draws 40px narrower. */
   width?: 'content' | 'island';
 }
 

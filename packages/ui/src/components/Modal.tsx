@@ -30,7 +30,7 @@ export interface ModalProps {
  * returns to whatever opened it.
  *
  * Rendered through a portal on `document.body`. A dialog nested inside the page is subject to
- * every ancestor's `overflow`, `transform` and stacking context — and this design has a sticky
+ * every ancestor's `overflow`, `transform` and stacking context — and this design has a
  * navigation island with a `backdrop-filter`, which creates one.
  */
 export function Modal({

@@ -48,11 +48,15 @@ const ITEM =
 const ITEM_ACTIVE = 'bg-tint-strong font-semibold text-accent-active';
 
 /**
- * The sticky navigation island, shared by both public sites.
+ * The navigation island, shared by both public sites.
  *
  * One component, not two. The markup in `Charva Nav` and `Charva Umrah Nav` is identical and
  * the differences are entirely colour — the item colour, the border, the caret — all of which
  * are theme variables here, so neither site knows the other exists.
+ *
+ * It scrolls away with the page. It used to be `sticky`, which the prototypes cannot express
+ * either way — they are single static frames — so that was a decision, and this is the
+ * opposite one.
  *
  * Below `tab:` the menu collapses into a sheet, which the design describes in prose and does
  * not draw: the prototypes are fixed at `min-width: 1280px` with no media query anywhere in
@@ -100,7 +104,7 @@ export function SiteNav({
     });
 
   return (
-    <div className={cn('sticky top-0 z-[100] pt-[18px]', className)}>
+    <div className={cn('relative z-[100] pt-[18px]', className)}>
       <Container width="island" className="px-10 tab:px-6 mob:px-4">
         <nav
           aria-label={labels.nav}

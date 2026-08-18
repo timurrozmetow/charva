@@ -222,7 +222,7 @@ export const layout = {
   /** Content container. */
   containerMax: 1480,
   containerPadding: 60,
-  /** The sticky nav island sits slightly narrower than the content. */
+  /** The nav island sits slightly narrower than the content. */
   navIslandMax: 1440,
   navIslandPadding: '18px 40px 0',
   /** Choice has its own, wider-padded nav. */

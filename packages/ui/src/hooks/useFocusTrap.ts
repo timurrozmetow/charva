@@ -99,7 +99,7 @@ export function useFocusTrap(
  * Stops the page behind an overlay from scrolling.
  *
  * The padding compensation is not cosmetic: removing the scrollbar shifts every fixed element
- * on the page — the sticky navigation island above all — sideways by its width, and the jump
+ * on the page sideways by its width, and the jump
  * is plainly visible each time a lightbox opens.
  */
 export function useScrollLock(active: boolean): void {
