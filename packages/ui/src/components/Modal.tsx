@@ -10,6 +10,10 @@ export interface ModalProps {
   /** The dialog's accessible name. Rendered unless `hideTitle`. */
   title: ReactNode;
   hideTitle?: boolean;
+  /**
+   * Pads the body. Off for a dialog whose content is the panel — the lightbox.
+   */
+  padded?: boolean;
   children?: ReactNode;
   /** Accessible name of the close button — translated by the caller. */
   closeLabel: string;
@@ -38,6 +42,7 @@ export function Modal({
   onClose,
   title,
   hideTitle = false,
+  padded = true,
   children,
   closeLabel,
   size = 'default',
@@ -113,7 +118,24 @@ export function Modal({
           </span>
         </button>
 
-        {children}
+        {/*
+          The body is padded here, not by each caller.
+
+          It used to be neither: `children` was placed straight into the panel while the
+          heading carried `pl-11`, so every dialog in the admin had its title indented and its
+          content flush against the edges. Three call sites each forgot the same padding,
+          which is the sign it belongs to the component.
+
+          The lightbox is the exception and says so: it is a photograph filling the panel, and
+          padding around it would be a frame nobody asked for.
+        */}
+        {padded ? (
+          <div className={cn('px-11 pb-10 pt-6', hideTitle && 'pt-10', 'mob:px-6 mob:pb-8')}>
+            {children}
+          </div>
+        ) : (
+          children
+        )}
       </div>
     </div>,
     document.body,

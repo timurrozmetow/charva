@@ -201,13 +201,14 @@ function MediaDetails({ media, onClose }: { media: AdminMedia; onClose: () => vo
    */
   return (
     <Modal open onClose={onClose} title={fileName(media.storageKey)} closeLabel={copy.form.cancel}>
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-7">
         <MediaThumb
           media={media}
           className="max-h-[320px] w-full rounded-panel-sm object-contain"
         />
 
-        <dl className="grid grid-cols-2 gap-2 text-bodySm text-muted">
+        {/* Rows breathe: a label and a value on one line at 8px apart read as one smudge. */}
+        <dl className="grid grid-cols-[130px_1fr] gap-x-6 gap-y-3 text-bodySm text-muted">
           <dt>{copy.media.path}</dt>
           {/* Where the file actually is, for anybody who has to find it on disk or in a
               backup. `break-all` because it has no spaces to wrap at. */}

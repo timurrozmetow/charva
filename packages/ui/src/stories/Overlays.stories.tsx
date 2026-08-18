@@ -44,7 +44,9 @@ export const Dialog: Story = {
           title="Заявка отправлена"
           closeLabel="Закрыть"
         >
-          <div className="flex flex-col gap-5 px-11 pb-10 pt-6">
+          {/* No padding here any more: `Modal` applies exactly these values itself. This story
+              was the only place that had them — the three real dialogs did not. */}
+          <div className="flex flex-col gap-5">
             <p className="m-0 text-body font-light text-body">
               Менеджер перезвонит в течение пятнадцати минут по номеру, который вы указали.
             </p>

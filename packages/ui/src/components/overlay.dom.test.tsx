@@ -159,6 +159,23 @@ describe('Modal', () => {
     expect(document.body).not.toHaveStyle({ overflow: 'hidden' });
   });
 
+  it('pads its body, so a caller cannot forget to', () => {
+    /*
+     * The body used to be dropped straight into the panel while the heading carried its own
+     * left padding, so every dialog in the admin had an indented title and content flush
+     * against the edge. Three call sites forgot the same padding and the Storybook story did
+     * not — which is what «this belongs to the component» looks like from outside.
+     */
+    render(
+      <Modal open onClose={vi.fn()} title="Диалог" closeLabel="Закрыть">
+        <p>Содержимое</p>
+      </Modal>,
+    );
+
+    const body = screen.getByText('Содержимое').parentElement;
+    expect(body?.className).toContain('px-11');
+    expect(body?.className).toContain('pb-10');
+  });
   it('renders nothing at all while closed', () => {
     render(<Modal open={false} onClose={vi.fn()} title="Диалог" closeLabel="Закрыть" />);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -181,6 +198,14 @@ describe('Lightbox', () => {
     );
   }
 
+  it('is not padded, because the photograph is the dialog', () => {
+    render(<Harness />);
+
+    // A frame of surface colour around a full-bleed image is the one thing this dialog
+    // must not have, and it is why  takes  rather than always padding.
+    const image = screen.getByAltText('Кратер Дарваза');
+    expect(image.closest('.px-11')).toBeNull();
+  });
   it('shows the photograph and says where in the set it is', () => {
     render(<Harness />);
     expect(screen.getByAltText('Кратер Дарваза')).toBeInTheDocument();

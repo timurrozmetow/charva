@@ -77,6 +77,7 @@ export function Lightbox({ items, index, onIndexChange, onClose, labels }: Light
       onClose={onClose}
       title={labels.counter(index + 1, items.length)}
       hideTitle
+      padded={false}
       closeLabel={labels.close}
       size="wide"
       className="bg-transparent"
