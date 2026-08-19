@@ -8,6 +8,8 @@ import { path } from '../lib/routes';
 
 export interface GlobalNavProps {
   lang: Lang;
+  /** Floats the island over the homepage's hero photograph instead of standing above it. */
+  overlay?: boolean;
 }
 
 /**
@@ -21,7 +23,7 @@ export interface GlobalNavProps {
  * to remember to say which navigation item it is is a page that will one day forget, and the
  * symptom — nothing highlighted — is invisible to everyone who built it.
  */
-export function GlobalNav({ lang }: GlobalNavProps) {
+export function GlobalNav({ lang, overlay = false }: GlobalNavProps) {
   const copy = copyFor(lang);
   const { pathname } = useLocation();
 
@@ -48,6 +50,7 @@ export function GlobalNav({ lang }: GlobalNavProps) {
   return (
     <SiteNav
       items={items}
+      overlay={overlay}
       {...(activeKey === undefined ? {} : { activeKey })}
       labels={{
         nav: copy.nav.label,

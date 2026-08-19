@@ -1,5 +1,5 @@
 import { type AdminMedia, ApiRequestError, imageUrl } from '@charva/contracts';
-import { Badge, Button, EmptyState, Field, Input, Modal, QueryState } from '@charva/ui';
+import { Badge, Button, cn, EmptyState, Field, Input, Modal, QueryState } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
@@ -108,28 +108,21 @@ export function MediaPage() {
           retry: copy.list.retry,
         }}
         skeletonCount={12}
-        skeletonClassName="h-[160px] rounded-panel-sm"
-        gridClassName="grid grid-cols-6 gap-4 lap:grid-cols-4 tab:grid-cols-3 mob:grid-cols-2"
+        skeletonClassName="h-[240px] rounded-panel"
+        gridClassName={GRID}
       >
         {(media.data?.items.length ?? 0) === 0 ? (
           <EmptyState title={copy.list.empty} description={copy.media.lead} />
         ) : (
-          <ul className="grid list-none grid-cols-6 gap-4 p-0 lap:grid-cols-4 tab:grid-cols-3 mob:grid-cols-2">
+          <ul className={`${GRID} list-none p-0`}>
             {(media.data?.items ?? []).map((item) => (
               <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => {
+                <MediaCard
+                  media={item}
+                  onOpen={() => {
                     setSelected(item);
                   }}
-                  className="w-full overflow-hidden rounded-panel-sm border border-line bg-surface text-left"
-                >
-                  <MediaThumb media={item} />
-                  <span className="flex items-center justify-between gap-2 px-3 py-2">
-                    <span className="truncate text-label text-muted">{item.storageKey}</span>
-                    {item.isPlaceholder && <Badge variant="scrim">врем.</Badge>}
-                  </span>
-                </button>
+                />
               </li>
             ))}
           </ul>
@@ -148,14 +141,24 @@ export function MediaPage() {
   );
 }
 
+/*
+ * Cards sized by the grid, not by the window.
+ *
+ * Six fixed columns made a card as wide as the screen divided by six — on a 3440px monitor that
+ * is a 540px-wide picture squeezed into 110px of height, which is a letterbox rather than a
+ * thumbnail. `auto-fill` keeps one card the same size everywhere and puts as many in a row as
+ * fit, which is what a media library is: a wall of pictures at a readable size.
+ */
+const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-4';
+
 export function MediaThumb({ media, className }: { media: AdminMedia; className?: string }) {
   if (media.mime.startsWith('video/')) {
     return (
       <span
-        className={
-          className ??
-          'flex h-[110px] w-full items-center justify-center bg-dark text-label uppercase tracking-[0.2em] text-dark-on'
-        }
+        className={cn(
+          'flex items-center justify-center bg-dark text-label uppercase tracking-[0.2em] text-dark-on',
+          className ?? 'aspect-[4/3] w-full',
+        )}
       >
         video · {media.durationSec ?? 0}s
       </span>
@@ -164,10 +167,13 @@ export function MediaThumb({ media, className }: { media: AdminMedia; className?
 
   return (
     <img
-      src={imageUrl(media.storageKey, 320)}
+      src={imageUrl(media.storageKey, 640)}
       alt={media.alt?.['ru'] ?? ''}
       loading="lazy"
-      className={className ?? 'h-[110px] w-full object-cover'}
+      // The fit belongs to whichever class list wins, so it is never written twice: `cn` is
+      // clsx, and `object-cover` here beside a caller's `object-contain` would be decided by
+      // the stylesheet rather than by the caller (decision D-90).
+      className={cn('bg-field', className ?? 'aspect-[4/3] w-full object-cover')}
     />
   );
 }
@@ -175,6 +181,55 @@ export function MediaThumb({ media, className }: { media: AdminMedia; className?
 /** `2026/08/834f273f00da.webp` → `834f273f00da.webp`. The year and month are storage, not a name. */
 function fileName(storageKey: string): string {
   return storageKey.split('/').at(-1) ?? storageKey;
+}
+
+/**
+ * One file.
+ *
+ * The card used to be a strip of photograph with its storage key printed underneath — twelve
+ * characters of checksum, identical in shape for every row, and the only thing a person could
+ * read. What identifies a picture to the person looking for it is the picture, then what it
+ * shows; so the description leads, the file name is the fallback when nothing has described it
+ * yet, and the checksum is left to the dialog, where it is a fact rather than a label.
+ */
+function MediaCard({ media, onOpen }: { media: AdminMedia; onOpen: () => void }) {
+  const described = media.alt?.['ru']?.trim() ?? '';
+  const isVideo = media.mime.startsWith('video/');
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group flex w-full flex-col overflow-hidden rounded-panel border border-line bg-surface text-left transition-colors duration-colour hover:border-line-strong"
+    >
+      <span className="relative block overflow-hidden">
+        <MediaThumb media={media} />
+
+        {(media.isPlaceholder || isVideo) && (
+          <span className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
+            {isVideo && <Badge variant="scrim">видео</Badge>}
+            {media.isPlaceholder && <Badge variant="scrim">временное</Badge>}
+          </span>
+        )}
+      </span>
+
+      <span className="flex min-w-0 flex-col gap-1 px-3.5 py-3">
+        {/* Two lines at most: a description long enough to wrap forever would set every card in
+            the row to its height. */}
+        <span
+          className={cn(
+            'line-clamp-2 text-bodySm',
+            described === '' ? 'break-all text-muted' : 'text-ink',
+          )}
+        >
+          {described === '' ? fileName(media.storageKey) : described}
+        </span>
+        <span className="text-label uppercase tracking-[0.14em] text-muted">
+          {media.width ?? '—'}×{media.height ?? '—'} · {Math.round(media.sizeBytes / 1024)} КБ
+        </span>
+      </span>
+    </button>
+  );
 }
 
 function MediaDetails({ media, onClose }: { media: AdminMedia; onClose: () => void }) {

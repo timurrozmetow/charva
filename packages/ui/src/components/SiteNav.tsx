@@ -39,6 +39,15 @@ export interface SiteNavProps {
   /** Renders one menu entry; the app supplies its router's link component. */
   renderLink: (item: NavItem, props: NavLinkProps) => ReactNode;
   labels: SiteNavLabels;
+  /**
+   * Floats the island over the page instead of standing above it.
+   *
+   * For the two homepages, whose first element is a full-bleed photograph. The prototype does
+   * this with `margin:-78px 0 0` on the hero — pulling the picture up under the island — which
+   * is the same result reached by measuring the island in pixels and hoping it never changes
+   * size. Taking the nav out of flow instead needs no number at all.
+   */
+  overlay?: boolean;
   className?: string;
 }
 
@@ -58,6 +67,9 @@ const ITEM_ACTIVE = 'bg-tint-strong font-semibold text-accent-active';
  * either way — they are single static frames — so that was a decision, and this is the
  * opposite one.
  *
+ * On the two homepages it floats over the photograph rather than standing on cream above it —
+ * see `overlay`.
+ *
  * Below `tab:` the menu collapses into a sheet, which the design describes in prose and does
  * not draw: the prototypes are fixed at `min-width: 1280px` with no media query anywhere in
  * the package. The sheet traps focus and closes on Escape, because a menu overlaying the page
@@ -71,6 +83,7 @@ export function SiteNav({
   langSwitcher,
   renderLink,
   labels,
+  overlay = false,
   className,
 }: SiteNavProps) {
   const [open, setOpen] = useState(false);
@@ -104,7 +117,13 @@ export function SiteNav({
     });
 
   return (
-    <div className={cn('relative z-[100] pt-[18px]', className)}>
+    <div
+      className={cn(
+        'z-[100] pt-[18px]',
+        overlay ? 'absolute inset-x-0 top-0' : 'relative',
+        className,
+      )}
+    >
       <Container width="island" className="px-10 tab:px-6 mob:px-4">
         <nav
           aria-label={labels.nav}

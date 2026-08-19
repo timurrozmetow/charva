@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { getAccessToken } from '../api/client';
 import { useSession } from '../auth/SessionProvider';
+import { Shell } from '../layout/Shell';
 import {
   OWNER,
   renderPage,
@@ -409,3 +410,83 @@ function LoginProbe() {
     </p>
   );
 }
+
+/** One resource per site, plus the table both of them edit. */
+const DEPARTMENT_RESOURCES = {
+  resources: [
+    TOURS,
+    { ...TOURS, name: 'umrah_trips', site: 'umrah' },
+    { ...TOURS, name: 'content_blocks', site: null, filters: ['site'] },
+    { ...TOURS, name: 'settings', site: null },
+  ],
+};
+
+describe('the departments', () => {
+  /*
+   * The sidebar used to show all twenty-one tables at once in four flat groups, and the
+   * complaint was the obvious one: somebody who only maintains the pilgrimage read past the
+   * tour catalogue every time. Grouping is not separating.
+   */
+  it('shows one site at a time and switches between them', async () => {
+    const user = userEvent.setup();
+    stubApi({ '/admin/auth/refresh': sessionFor(), '/admin/resources': DEPARTMENT_RESOURCES });
+
+    await renderPage(<Shell />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Туры' })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('link', { name: 'Рейсы' })).not.toBeInTheDocument();
+    // Global's inbox is its own; the pilgrimage's signups are not in the way.
+    expect(screen.getByRole('link', { name: 'Обращения' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Записи на умру' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Умра' }));
+
+    expect(screen.getByRole('link', { name: 'Рейсы' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Туры' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Записи на умру' })).toBeInTheDocument();
+  });
+
+  it('narrows the table the two sites share to the department that opened it', async () => {
+    const user = userEvent.setup();
+    stubApi({ '/admin/auth/refresh': sessionFor(), '/admin/resources': DEPARTMENT_RESOURCES });
+
+    await renderPage(<Shell />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Текстовые блоки' })).toBeInTheDocument();
+    });
+
+    // `content_blocks` holds Umrah's package composition beside Global's visa steps, so the
+    // link a department offers has to carry its own site or it opens the other one's rows.
+    expect(screen.getByRole('link', { name: 'Текстовые блоки' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('site=global'),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Умра' }));
+    expect(screen.getByRole('link', { name: 'Текстовые блоки' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('site=umrah'),
+    );
+  });
+
+  it('keeps what both sites share out of either of them', async () => {
+    const user = userEvent.setup();
+    stubApi({ '/admin/auth/refresh': sessionFor(), '/admin/resources': DEPARTMENT_RESOURCES });
+
+    await renderPage(<Shell />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Туры' })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('link', { name: 'Медиатека' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Общее' }));
+    expect(screen.getByRole('link', { name: 'Медиатека' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Настройки' })).toBeInTheDocument();
+    // And the shared table is not listed twice: the departments already reach it.
+    expect(screen.queryByRole('link', { name: 'Текстовые блоки' })).not.toBeInTheDocument();
+  });
+});

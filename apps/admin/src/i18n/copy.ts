@@ -28,14 +28,22 @@ export const copy = {
 
   nav: {
     overview: 'Обзор',
+    /** The switcher between the two sites' departments and everything they share. */
+    department: 'Отдел',
     global: 'Charva Travel',
     umrah: 'Charva Umrah',
     shared: 'Общее',
+    globalShort: 'Global',
+    umrahShort: 'Умра',
+    sharedShort: 'Общее',
+    content: 'Содержимое',
+    pages: 'Страницы',
     builder: 'Сборщик тура',
     media: 'Медиа',
     inbox: 'Заявки',
     library: 'Медиатека',
     slots: 'Фотографии по слотам',
+    allSlots: 'Слоты обоих сайтов',
     leads: 'Обращения',
     signups: 'Записи на умру',
     signOut: 'Выйти',

@@ -336,7 +336,6 @@
     "emailPlaceholder": "so we can send the itinerary",
     "guests": "Guests",
     "guestsPlaceholder": "2",
-    "topics": "Interested in",
     "message": "Message",
     "messagePlaceholder": "Where you want to go, when, and for how many days",
     "optional": "optional",
@@ -360,7 +359,9 @@
       "consent": "Without your consent we cannot call you back.",
       "failed": "That did not send. Check your connection and try again.",
       "rateLimited": "Too many attempts from this address. Try again in ten minutes."
-    }
+    },
+    "tripKind": "What you need",
+    "services": "Also needed"
   },
   "contact": {
     "breadcrumb": "Enquiry",

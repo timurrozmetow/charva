@@ -336,7 +336,6 @@
     "emailPlaceholder": "programı gönderebilmemiz için",
     "guests": "Kişi",
     "guestsPlaceholder": "2",
-    "topics": "İlgilendiğiniz konu",
     "message": "Mesaj",
     "messagePlaceholder": "Nereye, ne zaman ve kaç günlüğüne gitmek istiyorsunuz",
     "optional": "isteğe bağlı",
@@ -360,7 +359,9 @@
       "consent": "Onayınız olmadan sizi geri arayamayız.",
       "failed": "Gönderilemedi. Bağlantınızı kontrol edip tekrar deneyin.",
       "rateLimited": "Bu adresten çok fazla deneme yapıldı. On dakika sonra tekrar deneyin."
-    }
+    },
+    "tripKind": "Ne gerekiyor",
+    "services": "Ayrıca gerekli"
   },
   "contact": {
     "breadcrumb": "Talep formu",

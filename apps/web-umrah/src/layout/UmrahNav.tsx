@@ -8,6 +8,8 @@ import { path } from '../lib/routes';
 
 export interface UmrahNavProps {
   lang: Lang;
+  /** Floats the island over the homepage's hero photograph instead of standing above it. */
+  overlay?: boolean;
 }
 
 /**
@@ -18,7 +20,7 @@ export interface UmrahNavProps {
  * this site's without a single conditional. The prototypes write both palettes as literals in
  * both files, which is how the two navigations came to differ by a pixel of padding.
  */
-export function UmrahNav({ lang }: UmrahNavProps) {
+export function UmrahNav({ lang, overlay = false }: UmrahNavProps) {
   const copy = copyFor(lang);
   const { pathname } = useLocation();
 
@@ -38,6 +40,7 @@ export function UmrahNav({ lang }: UmrahNavProps) {
   return (
     <SiteNav
       items={items}
+      overlay={overlay}
       {...(activeKey === undefined ? {} : { activeKey })}
       labels={{
         nav: copy.nav.label,

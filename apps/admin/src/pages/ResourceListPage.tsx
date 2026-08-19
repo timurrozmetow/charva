@@ -25,7 +25,7 @@ import { useResource } from './useResource';
  */
 export function ResourceListPage({ resource: name }: { resource: string }) {
   const resource = useResource(name);
-  const search: { q?: string; page?: number } = useSearch({ strict: false });
+  const search: { q?: string; page?: number; site?: string } = useSearch({ strict: false });
   const navigate = useNavigate();
   const { can } = useSession();
   const queryClient = useQueryClient();
@@ -33,8 +33,22 @@ export function ResourceListPage({ resource: name }: { resource: string }) {
   const [term, setTerm] = useState(search.q ?? '');
   const page = search.page ?? 1;
 
+  /*
+   * `?site=umrah` narrows a shared table to one department's rows.
+   *
+   * Passed through only when the resource declares `site` as a filter, so an unrelated table
+   * cannot be sent a parameter the API would reject. `content_blocks` is the reason this
+   * exists: one table holding the Umrah package composition beside Global's visa steps.
+   */
+  const siteFilter = resource?.filters.includes('site') === true ? search.site : undefined;
+
   const rows = useQuery(
-    rowsQuery(name, { page, perPage: 25, ...(search.q === undefined ? {} : { q: search.q }) }),
+    rowsQuery(name, {
+      page,
+      perPage: 25,
+      ...(search.q === undefined ? {} : { q: search.q }),
+      ...(siteFilter === undefined ? {} : { site: siteFilter }),
+    }),
   );
 
   const reorder = useMutation({
@@ -87,7 +101,12 @@ export function ResourceListPage({ resource: name }: { resource: string }) {
             void navigate({
               to: '/data/$resource',
               params: { resource: name },
-              search: term.trim() === '' ? {} : { q: term.trim() },
+              // The department's narrowing survives a search: dropping it would quietly show
+              // the other site's rows to somebody who only ever asked for theirs.
+              search: {
+                ...(siteFilter === undefined ? {} : { site: siteFilter }),
+                ...(term.trim() === '' ? {} : { q: term.trim() }),
+              },
             });
           }}
         >

@@ -41,15 +41,28 @@ export const HONEYPOT_FIELD = 'website';
  * The schema below stays a permissive `string`: the inbox has to keep whatever a lead was
  * filed under, including codes retired since. This list is what the site *offers*.
  */
-export const LEAD_TOPICS = [
-  'ready_tour',
-  'custom_route',
-  'hotel_only',
-  'visa',
-  'transfer',
-] as const;
+/**
+ * How the trip itself is asked for. **One of these**, never several.
+ *
+ * They are three answers to one question — «готовый маршрут, свой, или только отель» — and the
+ * form offered all three as independent toggles, so a lead could arrive asking for a ready tour
+ * and a custom route and a hotel on its own at the same time. That is not a preference anybody
+ * holds; it is a question the form failed to ask.
+ */
+export const LEAD_TRIP_TOPICS = ['ready_tour', 'custom_route', 'hotel_only'] as const;
+
+/**
+ * Services that go on top of whichever of the above was chosen. Any number, including none.
+ *
+ * A visa and a transfer are needed *as well as* a trip, not instead of one, which is why they
+ * are a separate question rather than two more chips in the first row.
+ */
+export const LEAD_SERVICE_TOPICS = ['visa', 'transfer'] as const;
+
+export const LEAD_TOPICS = [...LEAD_TRIP_TOPICS, ...LEAD_SERVICE_TOPICS] as const;
 
 export type LeadTopic = (typeof LEAD_TOPICS)[number];
+export type LeadTripTopic = (typeof LEAD_TRIP_TOPICS)[number];
 
 const honeypot = z.string().max(200).optional();
 

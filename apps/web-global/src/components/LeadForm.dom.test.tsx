@@ -143,6 +143,35 @@ describe('the lead form', () => {
     // The prototype's two tabs change nothing at all — same fields either way — and
     // `SCREENS.md` leaves the question open. A question about visas has no party size.
     expect(screen.queryByLabelText(/^Гостей/)).not.toBeInTheDocument();
-    expect(screen.queryByText('Интересует')).not.toBeInTheDocument();
+    expect(screen.queryByText('Что нужно')).not.toBeInTheDocument();
+    expect(screen.queryByText('Дополнительно')).not.toBeInTheDocument();
+  });
+
+  it('lets one kind of trip be asked for at a time, and any number of services', async () => {
+    /*
+     * The five chips used to be five independent toggles, so a lead could arrive asking for a
+     * ready tour *and* a custom route *and* a hotel on its own — three answers to one question.
+     * The kind is now a radio group; the visa and the transfer stay free and, crucially, ride
+     * through a change of kind untouched.
+     */
+    const user = userEvent.setup();
+    const { calls } = await render({ kind: 'tour', showTopics: true });
+
+    await user.click(screen.getByRole('radio', { name: 'Готовый тур' }));
+    await user.click(screen.getByRole('button', { name: 'Виза' }));
+    await user.click(screen.getByRole('radio', { name: 'Свой маршрут' }));
+
+    expect(screen.getByRole('radio', { name: 'Свой маршрут' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Готовый тур' })).not.toBeChecked();
+    expect(screen.getByRole('button', { name: 'Виза' })).toHaveAttribute('aria-pressed', 'true');
+
+    await fillIn(user);
+    await user.click(screen.getByRole('button', { name: 'Отправить заявку' }));
+
+    await waitFor(() => {
+      expect(calls.some((call) => call.method === 'POST')).toBe(true);
+    });
+    const sent = calls.find((call) => call.method === 'POST')?.body as { topics?: string[] };
+    expect(sent.topics).toEqual(['custom_route', 'visa']);
   });
 });

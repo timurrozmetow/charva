@@ -5,9 +5,19 @@ import {
   type Lang,
   type LeadRequest,
   leadRequest,
-  LEAD_TOPICS,
+  LEAD_SERVICE_TOPICS,
+  LEAD_TRIP_TOPICS,
 } from '@charva/contracts';
-import { Button, Checkbox, Chip, Field, FormError, Input, Textarea } from '@charva/ui';
+import {
+  Button,
+  Checkbox,
+  Chip,
+  Field,
+  FormError,
+  Input,
+  RadioChipGroup,
+  Textarea,
+} from '@charva/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
@@ -285,41 +295,76 @@ export function LeadForm({
         )}
       </div>
 
+      {/*
+        Two questions, not one row of five chips.
+
+        All five used to be independent toggles, so «Готовый тур», «Свой маршрут» and «Только
+        отель» could be on together — three answers to one question, held at once. The first
+        three are now a single choice and the other two stay free, because a visa is something
+        you need *as well as* a trip. The grouping itself lives in `contracts`, so the rule is
+        one list rather than a convention each form remembers.
+
+        Codes throughout, never the labels beside them: a lead filed under «Виза» could not be
+        read once the page is Turkish, and a chip could not be renamed without rewriting what
+        people asked for. Decision D-10.
+      */}
       {showTopics && (
         <Controller
           control={form.control}
           name="topics"
-          render={({ field }) => (
-            <fieldset className="mt-6 border-0 p-0">
-              <legend className="font-bold uppercase text-label text-muted">
-                {copy.form.topics}
-              </legend>
-              <div className="mt-3 flex flex-wrap gap-[9px]">
-                {LEAD_TOPICS.map((code) => {
-                  const chosen = field.value.includes(code);
-                  return (
-                    <Chip
-                      key={code}
-                      variant="tint"
-                      active={chosen}
-                      onClick={() => {
-                        // Codes, never the labels beside them: a lead filed under «Виза» could
-                        // not be read once the page is Turkish, and a chip could not be renamed
-                        // without rewriting what people asked for. Decision D-10.
-                        field.onChange(
-                          chosen
-                            ? field.value.filter((value) => value !== code)
-                            : [...field.value, code],
-                        );
-                      }}
-                    >
-                      {copy.topics[code]}
-                    </Chip>
-                  );
-                })}
+          render={({ field }) => {
+            const services = field.value.filter((code) =>
+              (LEAD_SERVICE_TOPICS as readonly string[]).includes(code),
+            );
+            const trip = field.value.find((code) =>
+              (LEAD_TRIP_TOPICS as readonly string[]).includes(code),
+            );
+
+            return (
+              <div className="mt-6 flex flex-col gap-5">
+                <RadioChipGroup
+                  name="lead-trip-kind"
+                  legend={copy.form.tripKind}
+                  options={LEAD_TRIP_TOPICS.map((code) => ({
+                    value: code,
+                    label: copy.topics[code],
+                  }))}
+                  value={trip ?? ''}
+                  onValueChange={(value) => {
+                    // The chosen kind replaces whichever was there; the services ride along
+                    // untouched, which is the whole point of keeping them in a second group.
+                    field.onChange([value, ...services]);
+                  }}
+                />
+
+                <fieldset className="m-0 border-0 p-0">
+                  <legend className="mb-3 font-bold uppercase text-label text-muted">
+                    {copy.form.services}
+                  </legend>
+                  <div className="flex flex-wrap gap-[10px]">
+                    {LEAD_SERVICE_TOPICS.map((code) => {
+                      const chosen = services.includes(code);
+                      return (
+                        <Chip
+                          key={code}
+                          variant="tint"
+                          active={chosen}
+                          onClick={() => {
+                            const next = chosen
+                              ? services.filter((value) => value !== code)
+                              : [...services, code];
+                            field.onChange(trip === undefined ? next : [trip, ...next]);
+                          }}
+                        >
+                          {copy.topics[code]}
+                        </Chip>
+                      );
+                    })}
+                  </div>
+                </fieldset>
               </div>
-            </fieldset>
-          )}
+            );
+          }}
         />
       )}
 

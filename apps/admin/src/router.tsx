@@ -56,9 +56,27 @@ const mediaRoute = createRoute({
   component: MediaPage,
 });
 
+/**
+ * `?site=umrah` is how the two departments reach the screens they share.
+ *
+ * The photograph briefs and the content blocks are one table each, spanning both sites, and the
+ * whole point of the departments is that somebody maintaining the pilgrimage never has to walk
+ * past the tour catalogue. Narrowing by URL rather than by a control the visitor has to find
+ * also makes each department's link a real link — bookmarkable, and the same view every time.
+ */
+interface SiteSearch {
+  site?: string;
+}
+
+function readSite(search: Record<string, unknown>): SiteSearch {
+  const site = search['site'];
+  return typeof site === 'string' && site !== '' ? { site } : {};
+}
+
 const slotsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/slots',
+  validateSearch: readSite,
   component: SlotsPage,
 });
 
@@ -75,7 +93,7 @@ const signupsRoute = createRoute({
 });
 
 /** The search a list keeps in the URL, so a filtered view is a link somebody can send. */
-interface ListSearch {
+interface ListSearch extends SiteSearch {
   q?: string;
   page?: number;
 }
@@ -86,6 +104,7 @@ const resourceListRoute = createRoute({
   validateSearch: (search: Record<string, unknown>): ListSearch => ({
     ...(typeof search['q'] === 'string' && search['q'] !== '' ? { q: search['q'] } : {}),
     ...(Number(search['page']) > 1 ? { page: Number(search['page']) } : {}),
+    ...readSite(search),
   }),
   component: ResourceList,
 });

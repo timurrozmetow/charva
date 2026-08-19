@@ -1,6 +1,7 @@
 import { type AdminMedia, type AdminSlot, type Site } from '@charva/contracts';
 import { Badge, Button, EmptyState, Modal, ProgressBar, QueryState } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { attachSlot, mediaQuery, slotsQuery } from '../api/queries';
@@ -18,8 +19,23 @@ import { MediaThumb } from './MediaPage';
  * number that moves, each row carries the art direction the prototype wrote, and a page renders
  * at its real proportions in the meantime.
  */
+/** The URL is a string from outside; `?site=nonsense` narrows to nothing rather than crashing. */
+function isSite(value: string | undefined): value is Site {
+  return value === 'global' || value === 'umrah' || value === 'choice';
+}
+
 export function SlotsPage() {
-  const [site, setSite] = useState<Site | 'all'>('all');
+  /*
+   * The site lives in the URL, the status does not.
+   *
+   * The site is how a department reaches this screen — «Фотографии умры» is a link, not a
+   * filter somebody has to set after arriving — so it has to be part of the address. The
+   * status is a glance somebody takes while already here.
+   */
+  const search: { site?: string } = useSearch({ strict: false });
+  const navigate = useNavigate();
+  const site: Site | 'all' = isSite(search.site) ? search.site : 'all';
+
   const [status, setStatus] = useState<'all' | 'filled' | 'empty'>('all');
   const [picking, setPicking] = useState<AdminSlot | null>(null);
   const { can } = useSession();
@@ -62,7 +78,10 @@ export function SlotsPage() {
             size="sm"
             variant={site === option ? 'solid' : 'outline'}
             onClick={() => {
-              setSite(option);
+              void navigate({
+                to: '/slots',
+                search: option === 'all' ? {} : { site: option },
+              });
             }}
           >
             {option === 'all' ? copy.slots.all : option}
