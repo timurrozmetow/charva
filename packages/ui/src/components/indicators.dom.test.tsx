@@ -130,6 +130,28 @@ describe('StatStrip', () => {
     expect(definitions[0]).toHaveTextContent('68');
     expect(terms[0]).toHaveTextContent('групп');
   });
+
+  it('takes as many columns as it has numbers', () => {
+    /*
+     * It was four whatever it held. Three of the five strips carry three numbers, so a quarter
+     * of the width stood empty while «СРЕДНЯЯ ОЦЕНКА» wrapped onto two lines in the narrowed
+     * column beside it.
+     */
+    const strip = (count: number) =>
+      render(
+        <StatStrip
+          items={Array.from({ length: count }, (_, index) => ({
+            value: String(index),
+            label: `метрика ${String(index)}`,
+          }))}
+        />,
+      ).container.firstElementChild;
+
+    expect(strip(3)).toHaveClass('grid-cols-3');
+    expect(strip(3)).not.toHaveClass('grid-cols-4');
+    expect(strip(4)).toHaveClass('grid-cols-4');
+    expect(strip(2)).toHaveClass('grid-cols-2');
+  });
 });
 
 describe('Badge', () => {

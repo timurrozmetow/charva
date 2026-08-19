@@ -115,7 +115,9 @@ export const HeroSlider: Story = {
             <div data-surface="dark" className="relative h-full">
               <ImageSlot slotKey={slide.id} brief={slide.brief ?? ''} className="h-full" />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-scrim-strong to-transparent p-12">
-                <Heading level={2} size="hero" className="max-w-[900px] text-dark-on">
+                {/* No `text-dark-on`: the wrapper above is already a dark surface, and the
+                    class would only have joined the heading's own `text-ink` and lost to it. */}
+                <Heading level={2} size="hero" className="max-w-[900px]">
                   {slide.label}
                 </Heading>
               </div>

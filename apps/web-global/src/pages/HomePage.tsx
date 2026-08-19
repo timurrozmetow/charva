@@ -108,9 +108,20 @@ export function HomePage({ lang }: HomePageProps) {
         isError={query.isError}
         onRetry={() => void query.refetch()}
         skeletonCount={1}
-        skeletonClassName="h-[70vh] min-h-[520px] rounded-none"
+        skeletonClassName="h-dvh rounded-none"
       >
-        <section className="relative min-h-[720px] tab:min-h-[560px]">
+        {/*
+          The hero fills the window, rather than the 720px the mockup draws.
+
+          720 is what a canvas fixed at 1280×720 can express, not a decision: on any screen
+          taller than that the photograph became a letterbox strip with cream below it, and on a
+          21:9 monitor it was a fifth of the height. `dvh` rather than `vh` because mobile
+          browsers shrink the viewport as their chrome retracts, and `vh` there is the tall
+          value — the search bar would start below the fold and rise into it as the user
+          scrolled. Umrah's hero has been `min-h-dvh` since it was written; this is the one that
+          was left behind.
+        */}
+        <section className="relative min-h-dvh">
           {/*
             Positioned by a wrapper, not by a class on the carousel.
 
@@ -140,7 +151,7 @@ export function HomePage({ lang }: HomePageProps) {
             </div>
           )}
 
-          <Container className="relative flex min-h-[720px] flex-col justify-end pb-20 pt-40 tab:min-h-[560px] tab:pb-14">
+          <Container className="relative flex min-h-dvh flex-col justify-end pb-20 pt-40 tab:pb-14">
             <div data-surface="dark">
               <Eyebrow>{copy.home.heroEyebrow}</Eyebrow>
               <Heading level={1} size="hero" className="mt-5 max-w-[900px]">

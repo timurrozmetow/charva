@@ -102,7 +102,9 @@ export function HomePage({ lang }: HomePageProps) {
         isError={query.isError}
         onRetry={() => void query.refetch()}
         skeletonCount={1}
-        skeletonClassName="h-[80vh] min-h-[560px] rounded-none"
+        // The same height as the hero it stands in for — 80vh against a `min-h-dvh` hero was a
+        // fifth of the window jumping into place the moment the photograph arrived.
+        skeletonClassName="h-dvh rounded-none"
       >
         <section className="relative min-h-dvh">
           {/*
@@ -187,6 +189,9 @@ export function HomePage({ lang }: HomePageProps) {
               { value: String(data?.stats.places ?? 0), label: copy.home.stats.places },
               { value: String(data?.stats.programDays ?? 0), label: copy.home.stats.programDays },
             ]}
+            // The one strip the handoff draws at 40 rather than 22: it spans the full container
+            // here, so its four columns are 310px wide and the default would crowd them.
+            gap="wide"
           />
         </Container>
       </Section>

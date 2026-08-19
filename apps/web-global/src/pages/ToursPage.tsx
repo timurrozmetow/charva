@@ -217,9 +217,21 @@ export function ToursPage({ lang }: ToursPageProps) {
 
       <Section space="sm" className="pb-section">
         <Container>
-          <div className="grid grid-cols-[1.2fr_auto] items-center gap-[50px] rounded-block bg-dark p-14 tab:grid-cols-1 tab:gap-8 mob:p-8">
+          {/*
+            `data-surface="dark"` rather than a colour class on the heading.
+
+            `text-dark-on` was on the heading and did nothing: `cn` is clsx, so it joined the
+            `text-ink` that `Heading` already carries instead of replacing it, and `.text-ink`
+            is emitted after `.text-dark-on` — the headline rendered brown on brown and was
+            barely visible. The attribute re-points `--c-ink` itself, which is how every other
+            dark block on both sites is done, so there is nothing left to lose the race to.
+          */}
+          <div
+            data-surface="dark"
+            className="grid grid-cols-[1.2fr_auto] items-center gap-[50px] rounded-block bg-dark p-14 tab:grid-cols-1 tab:gap-8 mob:p-8"
+          >
             <div>
-              <Heading level={2} size="h2" className="text-dark-on">
+              <Heading level={2} size="h2">
                 {copy.tours.cta.title}
               </Heading>
               <p className="mt-4 max-w-[520px] text-bodySm font-light text-cream-body">

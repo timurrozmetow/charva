@@ -65,12 +65,11 @@ export function BuilderPanel({
         )}
       </div>
 
-      <Heading
-        id={`${groupId}-title`}
-        level={2}
-        size="h3"
-        className="mb-[26px] mt-1.5 text-dark-on"
-      >
+      {/* No colour class: the panel only ever renders inside `<Section tone="dark">`, where
+          `--c-ink` is already the cream. `text-dark-on` here joined the heading's own
+          `text-ink` rather than replacing it and lost to it — it happened to look right
+          because the value it lost to was the same colour. */}
+      <Heading id={`${groupId}-title`} level={2} size="h3" className="mb-[26px] mt-1.5">
         {step.title}
       </Heading>
 

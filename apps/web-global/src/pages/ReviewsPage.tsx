@@ -144,9 +144,14 @@ export function ReviewsPage({ lang }: ReviewsPageProps) {
 
       <Section space="sm" className="pb-section-lg">
         <Container>
-          <div className="grid grid-cols-[1.2fr_auto] items-center gap-[50px] rounded-block bg-dark p-13 tab:grid-cols-1 tab:gap-8 mob:p-8">
+          {/* The same dark block as the catalogue's, and dark the same way: the attribute
+              re-points `--c-ink`, so the heading needs no colour class to lose with. */}
+          <div
+            data-surface="dark"
+            className="grid grid-cols-[1.2fr_auto] items-center gap-[50px] rounded-block bg-dark p-13 tab:grid-cols-1 tab:gap-8 mob:p-8"
+          >
             <div>
-              <Heading level={2} size="h2Sm" className="text-dark-on">
+              <Heading level={2} size="h2Sm">
                 {copy.reviews.cta.title}
               </Heading>
               <p className="mt-4 max-w-[520px] text-bodySm font-light text-cream-body">
