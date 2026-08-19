@@ -118,6 +118,14 @@ export const copy = {
     notChosen: 'Не выбрано',
     viewOnSite: 'Посмотреть на сайте',
     unsaved: 'Есть несохранённые изменения',
+    /** Auto-save states. There is no button to press; this line is the whole feedback. */
+    autoSaved: 'Сохранено',
+    autoSaving: 'Сохраняем…',
+    autoFailed: 'Не сохранилось',
+    autoRetry: 'Повторить',
+    autoHint: 'Изменения сохраняются сами, как только вы уходите с поля.',
+    create: 'Создать',
+    leaveConfirm: 'Изменения ещё не сохранились. Уйти со страницы?',
   },
 
   media: {
@@ -126,6 +134,8 @@ export const copy = {
     upload: 'Загрузить файл',
     uploading: 'Загружаем…',
     duplicate: 'Такой файл уже был загружен — показан существующий.',
+    dropHint: 'Или перетащите файлы сюда. Можно несколько сразу.',
+    uploadingCount: 'Загружаем {done} из {total}…',
     alt: 'Описание для незрячих',
     altHint: 'Что на снимке. Это читает скринридер и видит поисковик.',
     placeholder: 'Временный файл',
@@ -319,3 +329,12 @@ export const FIELD_LABELS: Record<string, string> = {
 export function labelFor(dictionary: Record<string, string>, code: string): string {
   return dictionary[code] ?? code;
 }
+
+/**
+ * `{done} из {total}` filled in.
+ *
+ * Re-exported from `contracts` rather than written again: the public sites use the same
+ * function on the same brace syntax, and two implementations of one placeholder rule is one
+ * more than anybody needs.
+ */
+export { fill } from '@charva/contracts';

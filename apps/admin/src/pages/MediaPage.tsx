@@ -1,11 +1,12 @@
-import { type AdminMedia, ApiRequestError, imageUrl } from '@charva/contracts';
+import { type AdminMedia, imageUrl } from '@charva/contracts';
 import { Badge, Button, cn, EmptyState, Field, Input, Modal, QueryState } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
-import { mediaQuery, patchMedia, uploadMedia } from '../api/queries';
+import { mediaQuery, patchMedia } from '../api/queries';
 import { useSession } from '../auth/SessionProvider';
-import { copy } from '../i18n/copy';
+import { DropZone, useUpload } from '../components/Upload';
+import { copy, fill } from '../i18n/copy';
 import { PageHead } from '../layout/Shell';
 
 /**
@@ -22,23 +23,11 @@ import { PageHead } from '../layout/Shell';
 export function MediaPage() {
   const [kind, setKind] = useState<'all' | 'image' | 'video'>('all');
   const [selected, setSelected] = useState<AdminMedia | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const fileInput = useRef<HTMLInputElement>(null);
-  const queryClient = useQueryClient();
   const { can } = useSession();
 
   const media = useQuery(mediaQuery({ perPage: 48, ...(kind === 'all' ? {} : { kind }) }));
-
-  const upload = useMutation({
-    mutationFn: (file: File) => uploadMedia(file),
-    onSuccess: async (result) => {
-      setNotice(result.isDuplicate ? copy.media.duplicate : null);
-      await queryClient.invalidateQueries({ queryKey: ['media'] });
-    },
-    onError: (error) => {
-      setNotice(error instanceof ApiRequestError ? error.message : copy.errors.offline);
-    },
-  });
+  const upload = useUpload();
+  const writable = can('media.write');
 
   return (
     <>
@@ -46,35 +35,28 @@ export function MediaPage() {
         title={copy.media.title}
         lead={copy.media.lead}
         {...(media.data === undefined ? {} : { count: media.data.meta.total })}
-        action={
-          can('media.write') ? (
-            <>
-              <input
-                ref={fileInput}
-                type="file"
-                className="hidden"
-                accept="image/*,video/*"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file !== undefined) upload.mutate(file);
-                  event.target.value = '';
-                }}
-              />
-              <Button
-                busy={upload.isPending}
-                busyLabel={copy.media.uploading}
-                onClick={() => fileInput.current?.click()}
-              >
-                {copy.media.upload}
-              </Button>
-            </>
-          ) : undefined
-        }
       />
 
-      {notice !== null && (
+      {/* The drop zone is the whole action, at the top of the page rather than a button in the
+          corner: this screen exists to receive files. */}
+      {writable && (
+        <DropZone
+          className="mb-6"
+          label={copy.media.upload}
+          busy={upload.progress !== null}
+          onFiles={(files) => void upload.send(files)}
+        />
+      )}
+
+      {upload.progress !== null && (
+        <p className="mb-6 text-bodySm text-muted">
+          {fill(copy.media.uploadingCount, upload.progress)}
+        </p>
+      )}
+
+      {upload.notice !== null && (
         <p className="mb-6 rounded-panel-sm border border-tint-line bg-tint px-4 py-3 text-bodySm text-accent-text">
-          {notice}
+          {upload.notice}
         </p>
       )}
 

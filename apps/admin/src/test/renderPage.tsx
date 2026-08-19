@@ -139,9 +139,31 @@ export function stubApi(routes: Record<string, unknown>): StubbedCall[] {
        * first-match rule answers the reveal with the list — which looks, from the test, exactly
        * like the reveal button doing nothing.
        */
+      /*
+       * A key may name a method — `PATCH /admin/tours/7` — as well as a path fragment.
+       *
+       * Auto-save needs it: the same URL is read with `GET` and written with `PATCH`, and a
+       * test about a rejected write has to fail the write without also failing the read that
+       * puts the row on screen in the first place.
+       */
+      const method = init?.method ?? 'GET';
       const path = url.split('?')[0] ?? url;
-      const candidates = Object.entries(routes).filter(([fragment]) => url.includes(fragment));
-      const match = candidates.find(([fragment]) => path.endsWith(fragment)) ?? candidates[0];
+      const applies = ([key]: [string, unknown]): boolean => {
+        const [head, ...rest] = key.split(' ');
+        const fragment = rest.length === 0 ? key : rest.join(' ');
+        return (rest.length === 0 || head === method) && url.includes(fragment);
+      };
+      const fragmentOf = (key: string): string => {
+        const [head, ...rest] = key.split(' ');
+        return rest.length === 0 || head === undefined ? key : rest.join(' ');
+      };
+
+      const candidates = Object.entries(routes).filter(applies);
+      // A method-qualified key wins over a bare one for the same path, and an exact path ending
+      // wins over a fragment that merely appears in the middle.
+      const qualified = candidates.filter(([key]) => key.includes(' '));
+      const ranked = qualified.length > 0 ? qualified : candidates;
+      const match = ranked.find(([key]) => path.endsWith(fragmentOf(key))) ?? ranked[0];
 
       if (match === undefined) {
         return Promise.resolve(

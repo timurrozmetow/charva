@@ -7,6 +7,8 @@ import { mediaByIdsQuery, mediaQuery } from '../api/queries';
 import { copy } from '../i18n/copy';
 import { MediaThumb } from '../pages/MediaPage';
 
+import { DropZone, useUpload } from './Upload';
+
 /**
  * Choosing a photograph by looking at photographs.
  *
@@ -38,6 +40,15 @@ export function MediaPickerDialog({
   extra,
 }: MediaPickerDialogProps) {
   const [term, setTerm] = useState('');
+
+  // A freshly uploaded file is the answer to the question the dialog is asking, so it is picked
+  // rather than merely added to the wall of thumbnails behind the dialog.
+  const upload = useUpload({
+    onUploaded: (result) => {
+      onPick(result.media);
+    },
+  });
+
   const media = useQuery(
     mediaQuery({
       perPage: 60,
@@ -49,6 +60,26 @@ export function MediaPickerDialog({
   return (
     <Modal open onClose={onClose} title={title} closeLabel={copy.form.cancel} size="wide">
       {hint !== undefined && <p className="mb-5 text-bodySm text-muted">{hint}</p>}
+
+      {/*
+        Uploading from inside the picker.
+
+        Somebody who needs a photograph that is not in the library yet had to leave the tour,
+        go to the library, upload, come back and find the file — six movements, five of which
+        existed only because the upload lived on another screen. Here the file it uploads is
+        chosen straight away: a person who uploads a picture while choosing one has already
+        said which one they want.
+      */}
+      <DropZone
+        className="mb-5"
+        label={copy.media.upload}
+        busy={upload.progress !== null}
+        onFiles={(files) => void upload.send(files)}
+      />
+
+      {upload.notice !== null && (
+        <p className="mb-4 text-bodySm text-accent-text">{upload.notice}</p>
+      )}
 
       <div className="mb-5 flex items-center gap-3">
         <Input

@@ -211,7 +211,9 @@ describe('the form screen', () => {
     const slug = await screen.findByLabelText(/Слаг/);
     await userEvent.clear(slug);
     await userEvent.type(slug, 'darvaza-crater');
-    await userEvent.click(screen.getByRole('button', { name: 'Сохранить' }));
+    // Leaving the field is the save: there is no button any more. See «saving without a save
+    // button» below for the rule and its edges.
+    await userEvent.tab();
 
     await waitFor(() => {
       expect(callsTo(calls, '/admin/tours/7').some((call) => call.method === 'PATCH')).toBe(true);
@@ -659,5 +661,119 @@ describe('a row as a person reads it', () => {
     expect(details).not.toBeNull();
     expect(details).toHaveTextContent('Служебное');
     expect(details?.open).toBe(false);
+  });
+});
+
+describe('saving without a save button', () => {
+  /*
+   * «Не нужно нажимать сохранить». The rule the form follows is that a control decides when its
+   * edit is finished: a checkbox or a chosen file the instant it changes, a line of text when
+   * the cursor leaves it. Never on a keystroke — that would send half-typed slugs to be
+   * rejected and put a row in the audit log for every pause in somebody's typing.
+   */
+  it('writes a text field when the cursor leaves it, and not before', async () => {
+    const user = userEvent.setup();
+    const calls = stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': RESOURCES,
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' }, priceFromMinor: 54000 },
+    });
+
+    await renderPage(<ResourceFormPage resource="tours" id={7} />);
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^Слаг/)).toBeInTheDocument();
+    });
+
+    await user.clear(screen.getByLabelText(/^Слаг/));
+    await user.type(screen.getByLabelText(/^Слаг/), 'darvaza-night');
+
+    // Nothing yet: the word is still being typed.
+    expect(calls.filter((call) => call.method === 'PATCH')).toHaveLength(0);
+
+    await user.tab();
+
+    await waitFor(() => {
+      expect(calls.filter((call) => call.method === 'PATCH')).toHaveLength(1);
+    });
+    // And only the column that changed, so a one-word edit is a one-word diff in the log.
+    expect(calls.find((call) => call.method === 'PATCH')?.body).toEqual({ slug: 'darvaza-night' });
+  });
+
+  it('writes a checkbox the moment it is ticked', async () => {
+    const user = userEvent.setup();
+    const calls = stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': RESOURCES,
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' }, isPublished: false },
+    });
+
+    await renderPage(<ResourceFormPage resource="tours" id={7} />);
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: 'Опубликовано' })).toBeInTheDocument();
+    });
+
+    // A checkbox has no half-way state, so there is nothing to wait for.
+    await user.click(screen.getByRole('checkbox', { name: 'Опубликовано' }));
+
+    await waitFor(() => {
+      expect(calls.find((call) => call.method === 'PATCH')?.body).toEqual({ isPublished: true });
+    });
+  });
+
+  it('offers no save button on a row that saves itself, and one on a row that does not exist yet', async () => {
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': RESOURCES,
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' } },
+    });
+
+    const existing = await renderPage(<ResourceFormPage resource="tours" id={7} />);
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^Слаг/)).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: 'Сохранить' })).not.toBeInTheDocument();
+    existing.unmount();
+
+    // A new row has nothing to patch, and creating one on the first keystroke would leave the
+    // table full of empty drafts — so creation stays an explicit act.
+    await renderPage(<ResourceFormPage resource="tours" id={null} />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Создать' })).toBeInTheDocument();
+    });
+  });
+
+  it('keeps a rejected edit pending instead of dropping it', async () => {
+    const user = userEvent.setup();
+    const calls = stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': RESOURCES,
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' } },
+      // The slug is taken. Without auto-save this was a visible failure beside a button the
+      // editor was already looking at; with it, a silently discarded edit would be far worse.
+      'PATCH /admin/tours/7': new StubFailure(409, 'conflict'),
+    });
+
+    await renderPage(<ResourceFormPage resource="tours" id={7} />);
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^Слаг/)).toBeInTheDocument();
+    });
+
+    await user.clear(screen.getByLabelText(/^Слаг/));
+    await user.type(screen.getByLabelText(/^Слаг/), 'merv');
+    await user.tab();
+
+    await waitFor(() => {
+      expect(screen.getByText('Не сохранилось')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Повторить' }));
+
+    await waitFor(() => {
+      expect(calls.filter((call) => call.method === 'PATCH')).toHaveLength(2);
+    });
   });
 });

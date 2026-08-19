@@ -26,11 +26,34 @@ export interface FieldControlProps {
   site: Site | null;
   value: unknown;
   onChange: (value: unknown) => void;
+  /**
+   * «This edit is finished» — the moment auto-save writes it.
+   *
+   * Every control decides for itself when that is, because the answer differs by kind. A
+   * checkbox or a chosen file is finished the instant it changes; a line of text is finished
+   * when the cursor leaves it, not on every keystroke. Saving mid-word would send a dozen
+   * half-typed slugs to be rejected and would fill the audit log with a row per pause.
+   */
+  onCommit?: (() => void) | undefined;
   error?: string | undefined;
 }
 
-export function FieldControl({ field, site, value, onChange, error }: FieldControlProps) {
+export function FieldControl({ field, site, value, onChange, onCommit, error }: FieldControlProps) {
   const label = labelFor(FIELD_LABELS, field.name);
+
+  /** Changed and finished in one movement: a discrete control has no half-way state. */
+  const set = (next: unknown): void => {
+    onChange(next);
+    onCommit?.();
+  };
+
+  /** Finished when the cursor leaves, for anything typed a character at a time. */
+  const onBlur =
+    onCommit === undefined
+      ? undefined
+      : () => {
+          onCommit();
+        };
 
   /*
    * Two columns are integers in the database and are not numbers to a person.
@@ -45,7 +68,7 @@ export function FieldControl({ field, site, value, onChange, error }: FieldContr
         label={label}
         required={field.required}
         value={typeof value === 'number' ? value : null}
-        onChange={onChange}
+        onChange={set}
         {...(error === undefined ? {} : { error })}
       />
     );
@@ -59,7 +82,7 @@ export function FieldControl({ field, site, value, onChange, error }: FieldContr
         resource={foreign}
         required={field.required}
         value={typeof value === 'number' ? value : null}
-        onChange={onChange}
+        onChange={set}
         {...(error === undefined ? {} : { error })}
       />
     );
@@ -89,6 +112,7 @@ export function FieldControl({ field, site, value, onChange, error }: FieldContr
           site={site}
           value={asRecord(value)}
           onChange={onChange}
+          {...(onBlur === undefined ? {} : { onBlur })}
           long={field.name === 'body' || field.name === 'description' || field.name === 'answer'}
         />
       );
@@ -100,7 +124,7 @@ export function FieldControl({ field, site, value, onChange, error }: FieldContr
         <Checkbox
           checked={value === true}
           onChange={(event) => {
-            onChange(event.target.checked);
+            set(event.target.checked);
           }}
           {...(error === undefined ? {} : { error })}
         >
@@ -114,7 +138,7 @@ export function FieldControl({ field, site, value, onChange, error }: FieldContr
           <Select
             value={typeof value === 'string' ? value : ''}
             onChange={(event) => {
-              onChange(event.target.value === '' ? null : event.target.value);
+              set(event.target.value === '' ? null : event.target.value);
             }}
           >
             {!field.required && <option value="">—</option>}
@@ -135,6 +159,7 @@ export function FieldControl({ field, site, value, onChange, error }: FieldContr
             type="number"
             step={1}
             value={typeof value === 'number' ? String(value) : ''}
+            {...(onBlur === undefined ? {} : { onBlur })}
             onChange={(event) => {
               const raw = event.target.value;
               onChange(raw === '' ? null : Number(raw));
@@ -151,14 +176,21 @@ export function FieldControl({ field, site, value, onChange, error }: FieldContr
             type="datetime-local"
             value={toLocalInput(value)}
             onChange={(event) => {
-              onChange(fromLocalInput(event.target.value));
+              set(fromLocalInput(event.target.value));
             }}
           />
         </Field>
       );
 
     case 'json':
-      return <JsonField {...common} value={value} onChange={onChange} />;
+      return (
+        <JsonField
+          {...common}
+          value={value}
+          onChange={onChange}
+          {...(onBlur === undefined ? {} : { onBlur })}
+        />
+      );
 
     case 'text':
       return (
@@ -166,6 +198,7 @@ export function FieldControl({ field, site, value, onChange, error }: FieldContr
           <Textarea
             rows={6}
             value={typeof value === 'string' ? value : ''}
+            {...(onBlur === undefined ? {} : { onBlur })}
             onChange={(event) => {
               onChange(event.target.value);
             }}
@@ -180,6 +213,7 @@ export function FieldControl({ field, site, value, onChange, error }: FieldContr
             type="text"
             {...(field.maxLength === null ? {} : { maxLength: field.maxLength })}
             value={typeof value === 'string' ? value : ''}
+            {...(onBlur === undefined ? {} : { onBlur })}
             onChange={(event) => {
               onChange(event.target.value === '' && field.nullable ? null : event.target.value);
             }}
@@ -219,6 +253,7 @@ function LocalizedField({
   site,
   value,
   onChange,
+  onBlur,
   long,
 }: {
   label: string;
@@ -227,6 +262,7 @@ function LocalizedField({
   site: Site | null;
   value: Record<string, string>;
   onChange: (value: Record<string, string>) => void;
+  onBlur?: (() => void) | undefined;
   long: boolean;
 }) {
   const langs: readonly Lang[] =
@@ -267,6 +303,7 @@ function LocalizedField({
 
         <Control
           {...(long ? { rows: 8 } : {})}
+          {...(onBlur === undefined ? {} : { onBlur })}
           value={value[active] ?? ''}
           onChange={(event: React.ChangeEvent<HTMLInputElement & HTMLTextAreaElement>) => {
             onChange({ ...value, [active]: event.target.value });
@@ -284,12 +321,14 @@ function JsonField({
   error,
   value,
   onChange,
+  onBlur,
 }: {
   label: string;
   required: boolean;
   error?: string;
   value: unknown;
   onChange: (value: unknown) => void;
+  onBlur?: (() => void) | undefined;
 }) {
   const [draft, setDraft] = useState(() =>
     value === null || value === undefined ? '' : JSON.stringify(value, null, 2),
@@ -305,6 +344,7 @@ function JsonField({
       <Textarea
         rows={5}
         value={draft}
+        {...(onBlur === undefined ? {} : { onBlur })}
         onChange={(event) => {
           const next = event.target.value;
           setDraft(next);

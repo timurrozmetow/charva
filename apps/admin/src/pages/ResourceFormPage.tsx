@@ -2,7 +2,7 @@ import { type AdminField, ApiRequestError } from '@charva/contracts';
 import { Button, EmptyState, FormError, QueryState } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { createRow, deleteRow, type Row, rowQuery, updateRow } from '../api/queries';
 import { useSession } from '../auth/SessionProvider';
@@ -37,20 +37,56 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
 
   const existing = useQuery({ ...rowQuery(name, id ?? 0), enabled: id !== null });
   const [draft, setDraft] = useState<Row>({});
-  const [touched, setTouched] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
+  /*
+   * What the server is believed to hold, and what has changed since.
+   *
+   * Refs rather than state because auto-save reads them from inside an event handler that must
+   * see the current value, not the one captured when the handler was created. `saved` starts as
+   * the loaded row and is updated with each accepted patch — comparing against `existing.data`
+   * instead would mean that editing a field, saving it, and then typing the original value back
+   * looks like «no change» and never reaches the server.
+   */
+  const saved = useRef<Row>({});
+  const pending = useRef(new Set<string>());
+  const draftRef = useRef<Row>({});
+
   useEffect(() => {
-    if (existing.data !== undefined) setDraft(existing.data);
+    if (existing.data !== undefined) {
+      setDraft(existing.data);
+      draftRef.current = existing.data;
+      saved.current = existing.data;
+      pending.current.clear();
+    }
   }, [existing.data]);
+
+  /*
+   * A tab closed mid-edit.
+   *
+   * Auto-save fires when a field is left, so the one moment work can still be lost is the one
+   * where somebody types into the last field and closes the window without leaving it. The
+   * browser shows its own wording; all this does is ask for the prompt.
+   */
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent): void => {
+      if (pending.current.size > 0) event.preventDefault();
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => {
+      window.removeEventListener('beforeunload', warn);
+    };
+  }, []);
 
   const save = useMutation({
     mutationFn: (body: Row) => (id === null ? createRow(name, body) : updateRow(name, id, body)),
-    onSuccess: async (row) => {
-      setTouched(false);
+    onSuccess: async (row, body) => {
       setFailure(null);
       setFieldErrors({});
+      // Accepted, so this is what the server holds now. The row query itself is deliberately
+      // not invalidated: refetching would overwrite the field somebody is typing into.
+      saved.current = { ...saved.current, ...body };
       await queryClient.invalidateQueries({ queryKey: ['rows', name] });
 
       if (id === null) {
@@ -60,7 +96,10 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
         });
       }
     },
-    onError: (error) => {
+    onError: (error, body) => {
+      // Left pending, so leaving another field — or pressing «Повторить» — tries again rather
+      // than quietly dropping the edit.
+      for (const key of Object.keys(body)) pending.current.add(key);
       if (error instanceof ApiRequestError) {
         setFieldErrors(error.fieldErrors);
         setFailure(error.code === 'conflict' ? copy.form.conflict : error.message);
@@ -69,6 +108,34 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
       }
     },
   });
+
+  /**
+   * Writes whatever has changed since the last accepted patch.
+   *
+   * Called when a control says its edit is finished — immediately for a checkbox or a chosen
+   * file, on blur for anything typed a character at a time. Never on a keystroke: that would
+   * send half-typed slugs to be rejected and would put a row in the audit log for every pause
+   * in somebody's typing, which is the opposite of what an audit log is for.
+   *
+   * Only on an existing row. A new one has nothing to patch, and creating a row the moment
+   * somebody types the first letter of a title would leave the table full of empty drafts.
+   */
+  function flush(): void {
+    if (id === null || pending.current.size === 0 || save.isPending) return;
+
+    const body: Row = {};
+    for (const key of pending.current) {
+      const value = draftRef.current[key];
+      if (value === undefined) continue;
+      if (JSON.stringify(saved.current[key] ?? null) === JSON.stringify(value)) continue;
+      body[key] = value;
+    }
+
+    pending.current.clear();
+    if (Object.keys(body).length === 0) return;
+
+    save.mutate(body);
+  }
 
   const remove = useMutation({
     mutationFn: () => deleteRow(name, id ?? 0),
@@ -109,24 +176,38 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
         value={draft[field.name] ?? null}
         error={fieldErrors[field.name]}
         onChange={(value) => {
-          setTouched(true);
-          setDraft((previous) => ({ ...previous, [field.name]: value }));
+          pending.current.add(field.name);
+          /*
+           * The ref is written first, and it is what `flush` reads.
+           *
+           * A discrete control changes and commits in one movement, so `flush` runs before
+           * React has re-rendered — reading `draft` there would see the value from *before* the
+           * click, decide nothing had changed, and silently save nothing. Every checkbox and
+           * every chosen photograph would have done that.
+           */
+          draftRef.current = { ...draftRef.current, [field.name]: value };
+          setDraft(draftRef.current);
         }}
+        // Only an existing row saves itself; a new one is created by the button below.
+        {...(id === null ? {} : { onCommit: flush })}
       />
     );
   }
 
+  /** Creating the row. An existing one never reaches here — it has already saved itself. */
   function submit(event: React.FormEvent): void {
     event.preventDefault();
+    if (id !== null) {
+      flush();
+      return;
+    }
 
-    // Only what the form actually holds. Sending every column back on every save would make a
-    // one-word edit look, in the audit log, like a rewrite of the whole row.
+    // Only what the form actually holds. Sending every column back would make a one-word edit
+    // look, in the audit log, like a rewrite of the whole row.
     const body: Row = {};
     for (const field of writable) {
       const value = draft[field.name];
-      if (value === undefined) continue;
-      if (id !== null && sameAsLoaded(existing.data, field.name, value)) continue;
-      body[field.name] = value;
+      if (value !== undefined) body[field.name] = value;
     }
 
     save.mutate(body);
@@ -212,19 +293,41 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
             thing they had changed was saveable at all.
           */}
           <div className="sticky bottom-0 mt-8 flex items-center gap-3 border-t border-line bg-bg py-4">
-            <Button
-              type="submit"
-              busy={save.isPending}
-              busyLabel={copy.form.saving}
-              disabled={!canWrite || (!touched && id !== null)}
-            >
-              {copy.form.save}
-            </Button>
+            {/*
+              No save button on an existing row.
 
-            {save.isSuccess && !touched && (
-              <span className="text-bodySm text-accent-text">{copy.form.saved}</span>
+              It saves itself when a field is finished, so the button would have exactly one
+              job: to be pressed by somebody who does not know that. This line is the whole
+              feedback, and it says which of the three states the row is in.
+            */}
+            {id === null ? (
+              <Button
+                type="submit"
+                busy={save.isPending}
+                busyLabel={copy.form.saving}
+                disabled={!canWrite}
+              >
+                {copy.form.create}
+              </Button>
+            ) : (
+              <span className="flex items-center gap-3 text-bodySm">
+                {save.isPending && <span className="text-muted">{copy.form.autoSaving}</span>}
+                {!save.isPending && failure !== null && (
+                  <>
+                    <span className="font-medium text-danger">{copy.form.autoFailed}</span>
+                    <Button size="sm" variant="outline" onClick={flush}>
+                      {copy.form.autoRetry}
+                    </Button>
+                  </>
+                )}
+                {!save.isPending && failure === null && save.isSuccess && (
+                  <span className="text-accent-text">{copy.form.autoSaved}</span>
+                )}
+                {!save.isPending && failure === null && !save.isSuccess && (
+                  <span className="text-muted">{copy.form.autoHint}</span>
+                )}
+              </span>
             )}
-            {touched && <span className="text-bodySm text-muted">{copy.form.unsaved}</span>}
 
             {id !== null && canWrite && (
               <Button
@@ -287,10 +390,4 @@ function Section({
       {body}
     </section>
   );
-}
-
-/** Unchanged since it was loaded, by value — a JSON column rewritten identically is not an edit. */
-function sameAsLoaded(loaded: Row | undefined, key: string, value: unknown): boolean {
-  if (loaded === undefined) return false;
-  return JSON.stringify(loaded[key] ?? null) === JSON.stringify(value ?? null);
 }
