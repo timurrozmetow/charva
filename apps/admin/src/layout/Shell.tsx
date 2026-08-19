@@ -2,7 +2,6 @@ import { type AdminResourceMeta, type Site } from '@charva/contracts';
 import { Badge, buttonClass, cn } from '@charva/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
-import { useState } from 'react';
 
 import { resourcesQuery } from '../api/queries';
 import { useSession } from '../auth/SessionProvider';
@@ -23,8 +22,10 @@ import { copy, labelFor, RESOURCE_LABELS } from '../i18n/copy';
  * catalogue every time. Grouping is not the same as separating: the sidebar was already grouped
  * by site and it still asked the reader to do the filtering.
  *
- * The department is read from the route, so a link into somebody's own area opens with that
- * area's menu; the switcher only overrides it while the route says nothing either way.
+ * The department is read from the route and from nothing else, and the switcher navigates. Any
+ * other arrangement has two sources for one fact: the first version remembered a choice and
+ * used it only when the URL was silent — which it is on exactly one screen — so the switcher
+ * did nothing anywhere else, and «не нажимается» was the correct description of it.
  */
 
 type Department = Site | 'shared';
@@ -62,9 +63,7 @@ export function Shell() {
   });
 
   const all = resources.data?.resources ?? [];
-  const routed = departmentOf(pathname, searchSite, all);
-  const [chosen, setChosen] = useState<Department>('global');
-  const department = routed ?? chosen;
+  const department = departmentOf(pathname, searchSite, all);
 
   const of = (site: Site | null, predicate: (name: string) => boolean = () => true) =>
     all.filter(
@@ -162,12 +161,7 @@ export function Shell() {
             <NavLink to="/" label={copy.nav.overview} pathname={pathname} exact />
           </ul>
 
-          <DepartmentSwitcher
-            value={department}
-            onChange={(next) => {
-              setChosen(next);
-            }}
-          />
+          <DepartmentSwitcher current={department} homeOf={(next) => homeOf(next, all, can)} />
 
           {groups.map((group) => (
             <NavSection key={group.title} title={group.title}>
@@ -197,66 +191,112 @@ export function Shell() {
 }
 
 /**
- * Which department the open screen belongs to, or `null` when the URL does not say.
+ * Which department the open screen belongs to.
  *
- * The overview belongs to nobody, and neither does a resource whose table both sites share
- * unless the URL narrowed it — so on those the switcher's own choice stands rather than the
- * menu snapping to a department the visitor did not pick.
+ * Read from the URL and nothing else. It used to fall back to a remembered choice when the URL
+ * said nothing, which meant the URL won whenever it *did* say something — and it says something
+ * on every screen but the overview, so the switcher was inert almost everywhere. One source
+ * decides, the address bar, and choosing a department is a navigation like any other.
  */
 function departmentOf(
   pathname: string,
   site: string | undefined,
   resources: readonly AdminResourceMeta[],
-): Department | null {
+): Department {
   if (site === 'global' || site === 'umrah') return site;
-  if (pathname.startsWith('/inbox/leads')) return 'global';
   if (pathname.startsWith('/inbox/signups')) return 'umrah';
   if (pathname.startsWith('/media')) return 'shared';
 
   const name = /^\/data\/([^/?]+)/.exec(pathname)?.[1];
-  if (name === undefined || SHARED_BY_SITE.has(name)) return null;
+  if (name !== undefined && !SHARED_BY_SITE.has(name)) {
+    const found = resources.find((resource) => resource.name === name);
+    if (found !== undefined) return found.site ?? 'shared';
+  }
 
-  return resources.find((resource) => resource.name === name)?.site ?? null;
+  // The overview and the un-narrowed shared table belong to nobody; Global is the larger site
+  // and the more likely reason somebody opened the panel.
+  return 'global';
+}
+
+/**
+ * Where a department opens.
+ *
+ * Its inbox, when the account may read one — that is what somebody signing in to work on a site
+ * usually wants — and otherwise its first table. Never a dead link: an account with no
+ * capability for either lands on the overview rather than on a screen that would refuse it.
+ */
+function homeOf(
+  department: Department,
+  resources: readonly AdminResourceMeta[],
+  can: (capability: 'leads.read') => boolean,
+): DepartmentLink {
+  if (department === 'shared') return { to: '/media' };
+
+  if (can('leads.read')) {
+    return { to: department === 'global' ? '/inbox/leads' : '/inbox/signups' };
+  }
+
+  const first = resources.find(
+    (resource) => resource.site === department && !SHARED_BY_SITE.has(resource.name),
+  );
+
+  return first === undefined
+    ? { to: '/' }
+    : { to: '/data/$resource', params: { resource: first.name } };
+}
+
+interface DepartmentLink {
+  to: string;
+  params?: Record<string, string>;
 }
 
 function DepartmentSwitcher({
-  value,
-  onChange,
+  current,
+  homeOf: targetOf,
 }: {
-  value: Department;
-  onChange: (next: Department) => void;
+  current: Department;
+  homeOf: (department: Department) => DepartmentLink;
 }) {
   return (
     <div>
       <p className="text-label font-bold uppercase tracking-[0.24em] text-muted">
         {copy.nav.department}
       </p>
-      {/* Buttons rather than links: choosing a department is choosing what the menu shows, not
-          navigating — the screen in front of the visitor stays where it is. */}
-      <div
-        role="group"
-        aria-label={copy.nav.department}
-        className="mt-3 flex gap-1 rounded-full border border-line p-1"
-      >
-        {DEPARTMENTS.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            aria-pressed={value === item.key}
-            onClick={() => {
-              onChange(item.key);
-            }}
-            className={cn(
-              'flex-1 truncate rounded-full px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em]',
-              'transition-colors duration-colour',
-              value === item.key
-                ? 'bg-accent text-accent-on'
-                : 'text-muted hover:bg-cream-fill hover:text-ink',
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
+      {/*
+        Links, not buttons.
+
+        As buttons they only changed what the menu listed, which left the visitor looking at one
+        department's screen under another's menu and — because the menu was really driven by the
+        URL — usually did nothing visible at all. A department is a place; going there is a
+        navigation, and as links these also carry `aria-current`, open in a tab, and survive
+        being bookmarked.
+
+        No letter-spacing and 11px: «GLOBAL» tracked out at 0.1em did not fit a third of a
+        260px column and rendered as «GLOB…».
+      */}
+      <div className="mt-3 flex gap-1 rounded-full border border-line p-1">
+        {DEPARTMENTS.map((item) => {
+          const target = targetOf(item.key);
+          return (
+            <Link
+              key={item.key}
+              to={target.to}
+              {...(target.params === undefined ? {} : { params: target.params })}
+              aria-current={current === item.key ? 'true' : undefined}
+              className={cn(
+                'flex-1 rounded-full px-1.5 py-1.5 text-center text-[11px] font-bold uppercase',
+                'no-underline transition-colors duration-colour',
+                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                'focus-visible:outline-accent',
+                current === item.key
+                  ? 'bg-accent text-accent-on'
+                  : 'text-muted hover:bg-cream-fill hover:text-ink',
+              )}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

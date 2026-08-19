@@ -441,11 +441,39 @@ describe('the departments', () => {
     expect(screen.getByRole('link', { name: 'Обращения' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Записи на умру' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Умра' }));
+    await user.click(screen.getByRole('link', { name: 'Умра' }));
 
     expect(screen.getByRole('link', { name: 'Рейсы' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Туры' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Записи на умру' })).toBeInTheDocument();
+  });
+
+  it('switches from a screen that already belongs to a department', async () => {
+    /*
+     * The reported failure, exactly: «не нажимается».
+     *
+     * The switcher used to remember a choice and use it only when the URL said nothing about a
+     * department — and the URL says something on every screen but the overview, so on any real
+     * screen the click changed a variable nobody read. Now it navigates, and the menu follows
+     * the address.
+     */
+    const user = userEvent.setup();
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': DEPARTMENT_RESOURCES,
+      '/admin/tours': { items: [], meta: emptyMeta },
+    });
+
+    await renderPage(<Shell />, { path: '/data/tours' });
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Туры' })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('link', { name: 'Умра' }));
+
+    expect(screen.getByRole('link', { name: 'Рейсы' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Туры' })).not.toBeInTheDocument();
   });
 
   it('narrows the table the two sites share to the department that opened it', async () => {
@@ -465,7 +493,7 @@ describe('the departments', () => {
       expect.stringContaining('site=global'),
     );
 
-    await user.click(screen.getByRole('button', { name: 'Умра' }));
+    await user.click(screen.getByRole('link', { name: 'Умра' }));
     expect(screen.getByRole('link', { name: 'Текстовые блоки' })).toHaveAttribute(
       'href',
       expect.stringContaining('site=umrah'),
@@ -483,7 +511,7 @@ describe('the departments', () => {
     });
     expect(screen.queryByRole('link', { name: 'Медиатека' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Общее' }));
+    await user.click(screen.getByRole('link', { name: 'Общее' }));
     expect(screen.getByRole('link', { name: 'Медиатека' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Настройки' })).toBeInTheDocument();
     // And the shared table is not listed twice: the departments already reach it.
