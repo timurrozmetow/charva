@@ -66,6 +66,28 @@ export function mediaQuery(params: ListParams) {
   });
 }
 
+/**
+ * Exactly the files a page needs, keyed by the ids it is holding.
+ *
+ * A list of tours carries cover ids; turning them into photographs takes one more request for
+ * the page's own handful rather than the whole library. Disabled when there are none, so a
+ * table with no media column costs nothing.
+ */
+export function mediaByIdsQuery(ids: readonly number[]) {
+  const unique = [...new Set(ids)].sort((a, b) => a - b);
+  const params: ListParams = { ids: unique.join(','), perPage: 50 };
+
+  // Built here rather than spread over `mediaQuery`: spreading its return value and adding a
+  // key produces a type TypeScript cannot name without pointing inside `@tanstack/query-core`.
+  return queryOptions({
+    queryKey: ['media', params] as const,
+    queryFn: ({ signal }) =>
+      adminApi.get<{ items: AdminMedia[]; meta: RowsPage['meta'] }>('/admin/media', params, signal),
+    staleTime: FRESH,
+    enabled: unique.length > 0,
+  });
+}
+
 export function slotsQuery(params: ListParams) {
   return queryOptions({
     queryKey: ['slots', params] as const,

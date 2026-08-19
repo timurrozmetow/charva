@@ -3,6 +3,10 @@ import { Checkbox, cn, Field, Input, Select, Textarea } from '@charva/ui';
 import { useState } from 'react';
 
 import { copy, FIELD_LABELS, labelFor } from '../i18n/copy';
+import { FOREIGN_KEYS, isMediaField } from '../lib/present';
+
+import { MediaPickerField } from './MediaPicker';
+import { RowSelectField } from './RowSelect';
 
 /**
  * One column, rendered as whatever control it deserves.
@@ -27,6 +31,39 @@ export interface FieldControlProps {
 
 export function FieldControl({ field, site, value, onChange, error }: FieldControlProps) {
   const label = labelFor(FIELD_LABELS, field.name);
+
+  /*
+   * Two columns are integers in the database and are not numbers to a person.
+   *
+   * A `*MediaId` is a photograph and a `*Id` naming another table is a row with a name. Both
+   * used to render as a number box, which meant looking the value up somewhere else and typing
+   * it in — the single clearest case of this admin showing the schema rather than the work.
+   */
+  if (isMediaField(field)) {
+    return (
+      <MediaPickerField
+        label={label}
+        required={field.required}
+        value={typeof value === 'number' ? value : null}
+        onChange={onChange}
+        {...(error === undefined ? {} : { error })}
+      />
+    );
+  }
+
+  const foreign = FOREIGN_KEYS[field.name];
+  if (foreign !== undefined) {
+    return (
+      <RowSelectField
+        label={label}
+        resource={foreign}
+        required={field.required}
+        value={typeof value === 'number' ? value : null}
+        onChange={onChange}
+        {...(error === undefined ? {} : { error })}
+      />
+    );
+  }
 
   if (field.readOnly) {
     return (

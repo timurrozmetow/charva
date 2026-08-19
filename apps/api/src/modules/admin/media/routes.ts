@@ -8,7 +8,19 @@ import {
   adminUploadResponse,
 } from '@charva/contracts';
 import multipart from '@fastify/multipart';
-import { and, asc, desc, eq, isNotNull, isNull, like, or, sql, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  or,
+  sql,
+  type SQL,
+} from 'drizzle-orm';
 import { type FastifyInstance, type FastifyRequest } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
@@ -142,15 +154,40 @@ export async function registerMediaRoutes(instance: FastifyInstance): Promise<vo
             /** Only the ones that must not reach production — decision D-25. */
             placeholders: z.enum(['true', 'false']).optional(),
             q: z.string().max(120).optional(),
+            /**
+             * `?ids=3,17,42` — exactly these files.
+             *
+             * A list of tours carries cover ids and nothing else, and a screen that showed the
+             * number rather than the picture was the complaint. Asking for the page's own
+             * handful is what makes a thumbnail possible without embedding media in every
+             * response or holding the whole library in the browser.
+             */
+            ids: z
+              .string()
+              .max(400)
+              .optional()
+              .transform((value) =>
+                value === undefined
+                  ? undefined
+                  : value
+                      .split(',')
+                      .map((part) => Number(part.trim()))
+                      .filter((id) => Number.isInteger(id) && id > 0)
+                      .slice(0, 50),
+              ),
           })
           .strict(),
         response: { 200: adminMediaListResponse },
       },
     },
     async (request) => {
-      const { page, perPage, kind, placeholders, q } = request.query;
+      const { page, perPage, kind, placeholders, q, ids } = request.query;
       const conditions: SQL[] = [];
 
+      // An empty list means «these none», not «everything»: a page whose rows carry no cover
+      // must not be answered with the whole library.
+      if (ids !== undefined)
+        conditions.push(ids.length === 0 ? sql`1 = 0` : inArray(t.media.id, ids));
       if (kind !== undefined) conditions.push(like(t.media.mime, `${kind}/%`));
       if (placeholders !== undefined)
         conditions.push(eq(t.media.isPlaceholder, placeholders === 'true'));

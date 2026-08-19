@@ -2,10 +2,12 @@ import { type AdminResourceMeta, type Site } from '@charva/contracts';
 import { Badge, buttonClass, cn } from '@charva/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
+import { Fragment } from 'react';
 
 import { resourcesQuery } from '../api/queries';
 import { useSession } from '../auth/SessionProvider';
 import { copy, labelFor, RESOURCE_LABELS } from '../i18n/copy';
+import { PARENT_OF } from '../lib/present';
 
 /**
  * The frame every screen sits in.
@@ -302,20 +304,46 @@ function DepartmentSwitcher({
   );
 }
 
+/**
+ * The tables of one section, with children under their parent.
+ *
+ * «Дни тура» and «Галерея тура» are parts of a tour, and listed flat beside «Отели» they read
+ * as three unrelated things — «непонятно, куда идти». Indenting them says what belongs to what
+ * without moving where they are edited: the relation is drawn, the screens stay put.
+ */
 function ResourceLinks({ resources }: { resources: readonly AdminResourceMeta[] }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
 
+  const parents = resources.filter((resource) => PARENT_OF[resource.name] === undefined);
+  const childrenOf = (parent: string) =>
+    resources.filter((resource) => PARENT_OF[resource.name] === parent);
+
+  // A child whose parent is not in this section would otherwise vanish from the menu entirely.
+  const orphans = resources.filter((resource) => {
+    const parent = PARENT_OF[resource.name];
+    return parent !== undefined && !resources.some((other) => other.name === parent);
+  });
+
+  const link = (resource: AdminResourceMeta, nested: boolean) => (
+    <NavLink
+      key={resource.name}
+      to="/data/$resource"
+      params={{ resource: resource.name }}
+      label={labelFor(RESOURCE_LABELS, resource.name)}
+      pathname={pathname}
+      nested={nested}
+    />
+  );
+
   return (
     <>
-      {resources.map((resource) => (
-        <NavLink
-          key={resource.name}
-          to="/data/$resource"
-          params={{ resource: resource.name }}
-          label={labelFor(RESOURCE_LABELS, resource.name)}
-          pathname={pathname}
-        />
+      {parents.map((resource) => (
+        <Fragment key={resource.name}>
+          {link(resource, false)}
+          {childrenOf(resource.name).map((child) => link(child, true))}
+        </Fragment>
       ))}
+      {orphans.map((resource) => link(resource, false))}
     </>
   );
 }
@@ -339,6 +367,8 @@ interface NavLinkProps {
   activeSite?: string | undefined;
   /** What `?site=` has to be for this link to count as open. `null` means «no site at all». */
   expectSite?: Site | null;
+  /** A child table, drawn under its parent so the relation is visible. */
+  nested?: boolean;
   exact?: boolean;
 }
 
@@ -350,6 +380,7 @@ function NavLink({
   search,
   activeSite,
   expectSite,
+  nested = false,
   exact = false,
 }: NavLinkProps) {
   const href =
@@ -377,6 +408,7 @@ function NavLink({
         aria-current={active ? 'page' : undefined}
         className={cn(
           'block rounded-panel-sm px-3 py-2 text-bodySm transition-colors duration-colour',
+          nested && 'ml-3 border-l border-line pl-3 text-muted',
           active ? 'bg-tint text-accent-active' : 'text-body hover:text-accent-text',
         )}
       >

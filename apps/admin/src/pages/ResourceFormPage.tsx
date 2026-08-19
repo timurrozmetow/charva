@@ -1,4 +1,4 @@
-import { ApiRequestError } from '@charva/contracts';
+import { type AdminField, ApiRequestError } from '@charva/contracts';
 import { Button, EmptyState, FormError, QueryState } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -9,6 +9,7 @@ import { useSession } from '../auth/SessionProvider';
 import { FieldControl } from '../components/FieldControl';
 import { copy, labelFor, RESOURCE_LABELS } from '../i18n/copy';
 import { PageHead } from '../layout/Shell';
+import { groupFields, publicUrl, titleOf } from '../lib/present';
 
 import { useResource } from './useResource';
 
@@ -20,6 +21,13 @@ import { useResource } from './useResource';
  * the same table. The client checks what it can see (a required field left empty) and lets the
  * database say the rest: a taken slug, a hotel with no stars, a language the site does not
  * speak. Those arrive as a 400 naming the constraint, and the message is shown as it is.
+ *
+ * **The columns are grouped.** They used to arrive in table order — id, slug, title, summary,
+ * price, cover id, published, sort order, created at — which is the order the migration happens
+ * to declare them in and no order at all to the person filling them. `lib/present.ts` sorts
+ * them into what the row *says*, what is *true* about it, its photographs, what it belongs to,
+ * and whether it is live; the last two sit in a rail beside the text rather than under it,
+ * because they are the things somebody scans for rather than writes.
  */
 export function ResourceFormPage({ resource: name, id }: { resource: string; id: number | null }) {
   const resource = useResource(name);
@@ -74,6 +82,39 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
 
   const canWrite = can(resource.capability);
   const writable = resource.fields.filter((field) => !field.readOnly);
+  const groups = groupFields(resource.fields);
+
+  /*
+   * The heading names the row, not its primary key.
+   *
+   * «Туры — #7» told the editor which table they were in and nothing about what was in front of
+   * them. The draft is used rather than the loaded row, so renaming something updates the
+   * heading as it is typed.
+   */
+  const heading =
+    id === null
+      ? copy.form.createTitle
+      : Object.keys(draft).length === 0
+        ? `#${String(id)}`
+        : titleOf(draft, resource);
+
+  const href = id === null ? null : publicUrl(name, draft);
+
+  function control(field: AdminField): React.ReactNode {
+    return (
+      <FieldControl
+        key={field.name}
+        field={field}
+        site={resource?.site ?? null}
+        value={draft[field.name] ?? null}
+        error={fieldErrors[field.name]}
+        onChange={(value) => {
+          setTouched(true);
+          setDraft((previous) => ({ ...previous, [field.name]: value }));
+        }}
+      />
+    );
+  }
 
   function submit(event: React.FormEvent): void {
     event.preventDefault();
@@ -94,15 +135,29 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
   return (
     <>
       <PageHead
-        title={`${labelFor(RESOURCE_LABELS, name)} — ${id === null ? copy.form.createTitle.toLowerCase() : `#${String(id)}`}`}
+        title={heading}
+        lead={labelFor(RESOURCE_LABELS, name)}
         action={
-          <Link
-            to="/data/$resource"
-            params={{ resource: name }}
-            className="text-bodySm text-accent-text underline underline-offset-4"
-          >
-            {copy.form.cancel}
-          </Link>
+          <span className="flex items-center gap-4">
+            {href !== null && (
+              // «Не видно результата»: what was just saved, as a visitor meets it.
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className="text-bodySm text-accent-text underline underline-offset-4"
+              >
+                {copy.form.viewOnSite} ↗
+              </a>
+            )}
+            <Link
+              to="/data/$resource"
+              params={{ resource: name }}
+              className="text-bodySm text-muted underline underline-offset-4"
+            >
+              {copy.form.cancel}
+            </Link>
+          </span>
         }
       />
 
@@ -120,26 +175,43 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
         skeletonClassName="h-[76px] rounded-panel-sm"
         gridClassName="flex flex-col gap-4"
       >
-        <form onSubmit={submit} className="max-w-[720px]">
-          <div className="flex flex-col gap-6">
-            {resource.fields.map((field) => (
-              <FieldControl
-                key={field.name}
-                field={field}
-                site={resource.site}
-                value={draft[field.name] ?? null}
-                error={fieldErrors[field.name]}
-                onChange={(value) => {
-                  setTouched(true);
-                  setDraft((previous) => ({ ...previous, [field.name]: value }));
-                }}
+        <form onSubmit={submit}>
+          <div className="grid grid-cols-[minmax(0,1fr)_320px] items-start gap-7 lap:grid-cols-1">
+            <div className="flex flex-col gap-6">
+              <Section title={copy.form.sections.main} fields={groups.main} render={control} />
+              <Section title={copy.form.sections.facts} fields={groups.facts} render={control} />
+            </div>
+
+            {/* The rail: what this belongs to, what it looks like, whether anyone can see it.
+                Short answers, scanned rather than written, and out of the way of the text. */}
+            <div className="flex flex-col gap-6">
+              <Section title={copy.form.sections.links} fields={groups.links} render={control} />
+              <Section title={copy.form.sections.media} fields={groups.media} render={control} />
+              <Section
+                title={copy.form.sections.publication}
+                fields={groups.publication}
+                render={control}
               />
-            ))}
+              <Section
+                title={copy.form.sections.system}
+                hint={copy.form.systemHint}
+                fields={groups.system}
+                render={control}
+                collapsed
+              />
+            </div>
           </div>
 
           {failure !== null && <FormError className="mt-6">{failure}</FormError>}
 
-          <div className="mt-8 flex items-center gap-3">
+          {/*
+            The actions stay on screen.
+
+            These forms run to a dozen fields and more, and the save button used to be below all
+            of them — so on a long row an editor scrolled to the bottom to find out whether the
+            thing they had changed was saveable at all.
+          */}
+          <div className="sticky bottom-0 mt-8 flex items-center gap-3 border-t border-line bg-bg py-4">
             <Button
               type="submit"
               busy={save.isPending}
@@ -152,6 +224,7 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
             {save.isSuccess && !touched && (
               <span className="text-bodySm text-accent-text">{copy.form.saved}</span>
             )}
+            {touched && <span className="text-bodySm text-muted">{copy.form.unsaved}</span>}
 
             {id !== null && canWrite && (
               <Button
@@ -169,6 +242,50 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
         </form>
       </QueryState>
     </>
+  );
+}
+
+/** A titled block of controls. Renders nothing at all when the table has no such columns. */
+function Section({
+  title,
+  hint,
+  fields,
+  render,
+  collapsed = false,
+}: {
+  title: string;
+  hint?: string;
+  fields: AdminField[];
+  render: (field: AdminField) => React.ReactNode;
+  collapsed?: boolean;
+}) {
+  if (fields.length === 0) return null;
+
+  const body = (
+    <div className="flex flex-col gap-5">
+      {hint !== undefined && <p className="m-0 text-label text-muted">{hint}</p>}
+      {fields.map((field) => render(field))}
+    </div>
+  );
+
+  if (collapsed) {
+    return (
+      <details className="rounded-panel border border-line bg-surface px-5 py-4">
+        <summary className="cursor-pointer text-label font-bold uppercase tracking-[0.2em] text-muted">
+          {title}
+        </summary>
+        <div className="mt-4">{body}</div>
+      </details>
+    );
+  }
+
+  return (
+    <section className="rounded-panel border border-line bg-surface px-5 py-5">
+      <h2 className="m-0 mb-4 text-label font-bold uppercase tracking-[0.2em] text-muted">
+        {title}
+      </h2>
+      {body}
+    </section>
   );
 }
 

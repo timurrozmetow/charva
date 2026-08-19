@@ -79,6 +79,10 @@ export const copy = {
     down: 'Ниже',
     open: 'Открыть',
     id: 'ID',
+    draft: 'Черновик',
+    temporary: 'Временное',
+    viewOnSite: 'На сайте',
+    noPreview: 'Без фото',
   },
 
   form: {
@@ -100,6 +104,20 @@ export const copy = {
     pickMedia: 'Выбрать файл',
     clearMedia: 'Убрать',
     noMedia: 'Файл не выбран',
+    replaceMedia: 'Заменить',
+    /** The four headings the generated form is divided into. */
+    sections: {
+      main: 'Содержание',
+      facts: 'Параметры',
+      media: 'Фотографии',
+      links: 'Принадлежность',
+      publication: 'Публикация',
+      system: 'Служебное',
+    },
+    systemHint: 'Заполняется базой. Нужно, чтобы сослаться на запись.',
+    notChosen: 'Не выбрано',
+    viewOnSite: 'Посмотреть на сайте',
+    unsaved: 'Есть несохранённые изменения',
   },
 
   media: {

@@ -1,11 +1,12 @@
-import { type AdminMedia, type AdminSlot, type Site } from '@charva/contracts';
-import { Badge, Button, EmptyState, Modal, ProgressBar, QueryState } from '@charva/ui';
+import { type AdminSlot, type Site } from '@charva/contracts';
+import { Badge, Button, EmptyState, ProgressBar, QueryState } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 
-import { attachSlot, mediaQuery, slotsQuery } from '../api/queries';
+import { attachSlot, slotsQuery } from '../api/queries';
 import { useSession } from '../auth/SessionProvider';
+import { MediaPickerDialog } from '../components/MediaPicker';
 import { copy } from '../i18n/copy';
 import { PageHead } from '../layout/Shell';
 
@@ -186,9 +187,15 @@ export function SlotsPage() {
   );
 }
 
+/**
+ * The same grid the forms use.
+ *
+ * It had its own copy — a bare wall of thumbnails with no search and no captions — while the
+ * cover picker on a tour had another. One dialog, so a photograph is found the same way
+ * wherever it is being attached.
+ */
 function SlotPicker({ slot, onClose }: { slot: AdminSlot; onClose: () => void }) {
   const queryClient = useQueryClient();
-  const media = useQuery(mediaQuery({ perPage: 60, kind: 'image' }));
 
   const attach = useMutation({
     mutationFn: (mediaId: number | null) => attachSlot(slot.id, mediaId),
@@ -199,38 +206,28 @@ function SlotPicker({ slot, onClose }: { slot: AdminSlot; onClose: () => void })
   });
 
   return (
-    <Modal open onClose={onClose} title={slot.slotKey} closeLabel={copy.form.cancel} size="wide">
-      <p className="mb-5 text-bodySm text-muted">{slot.brief}</p>
-
-      {slot.media !== null && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="mb-5"
-          onClick={() => {
-            attach.mutate(null);
-          }}
-        >
-          {copy.slots.detach}
-        </Button>
-      )}
-
-      <ul className="grid max-h-[52vh] list-none grid-cols-5 gap-3 overflow-y-auto p-0 tab:grid-cols-3">
-        {(media.data?.items ?? []).map((item: AdminMedia) => (
-          <li key={item.id}>
-            <button
-              type="button"
-              disabled={attach.isPending}
-              onClick={() => {
-                attach.mutate(item.id);
-              }}
-              className="w-full overflow-hidden rounded-panel-sm border border-line"
-            >
-              <MediaThumb media={item} className="h-[90px] w-full object-cover" />
-            </button>
-          </li>
-        ))}
-      </ul>
-    </Modal>
+    <MediaPickerDialog
+      title={slot.slotKey}
+      hint={slot.brief}
+      kind="image"
+      onClose={onClose}
+      onPick={(picked) => {
+        attach.mutate(picked.id);
+      }}
+      extra={
+        slot.media !== null ? (
+          <Button
+            variant="outline"
+            size="sm"
+            busy={attach.isPending}
+            onClick={() => {
+              attach.mutate(null);
+            }}
+          >
+            {copy.slots.detach}
+          </Button>
+        ) : undefined
+      }
+    />
   );
 }

@@ -518,3 +518,146 @@ describe('the departments', () => {
     expect(screen.queryByRole('link', { name: 'Текстовые блоки' })).not.toBeInTheDocument();
   });
 });
+
+/** A field description, with the parts a test does not care about filled in. */
+function field(name: string, kind: string, extra: Record<string, unknown> = {}) {
+  return {
+    name,
+    kind,
+    required: false,
+    nullable: true,
+    readOnly: false,
+    maxLength: null,
+    enumValues: null,
+    ...extra,
+  };
+}
+
+const TOUR_DAYS = {
+  name: 'tour_days',
+  site: 'global',
+  capability: 'content.write',
+  search: [],
+  filters: [],
+  orderable: true,
+  fields: [
+    field('id', 'int', { readOnly: true }),
+    field('tourId', 'int', { required: true }),
+    field('dayNumber', 'int'),
+    field('title', 'localized'),
+    field('coverMediaId', 'int'),
+    field('isPublished', 'boolean'),
+    field('createdAt', 'timestamp', { readOnly: true }),
+  ],
+};
+
+describe('a row as a person reads it', () => {
+  /*
+   * The list printed the primary key and one title. For `tour_days` that is «День: 3» beside
+   * twenty other rows reading «День: 3» — true, and useless — and for a tour it was a name with
+   * nothing to tell two of them apart.
+   */
+  it('names the row and shows facts from its own columns', async () => {
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': RESOURCES,
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tours': {
+        items: [
+          {
+            id: 7,
+            slug: 'darvaza',
+            title: { ru: 'Дарваза' },
+            priceFromMinor: 54000,
+            priceCurrency: 'USD',
+            isPublished: false,
+            sortOrder: 1,
+          },
+        ],
+        meta: { ...emptyMeta, total: 1 },
+      },
+    });
+
+    await renderPage(<ResourceListPage resource="tours" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Дарваза' })).toBeInTheDocument();
+    });
+
+    // The money is money, with the site's currency, rather than 54000 minor units.
+    expect(screen.getByText(/540/)).toBeInTheDocument();
+    expect(screen.getByText('Черновик')).toBeInTheDocument();
+    // And it says where to look at the result — «не видно результата».
+    expect(screen.getByRole('link', { name: /На сайте/ })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/ru/tours/darvaza'),
+    );
+  });
+
+  it('titles the form with the row, not with its primary key', async () => {
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': RESOURCES,
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' }, priceFromMinor: 54000 },
+    });
+
+    await renderPage(<ResourceFormPage resource="tours" id={7} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1, name: /Дарваза/ })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('heading', { level: 1, name: /#7/ })).not.toBeInTheDocument();
+  });
+
+  it('offers a photograph and a parent by name, never their numbers', async () => {
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': { resources: [TOURS, TOUR_DAYS] },
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tours': {
+        items: [{ id: 7, slug: 'darvaza', title: { ru: 'Дарваза' } }],
+        meta: { ...emptyMeta, total: 1 },
+      },
+      '/admin/tour_days/3': { id: 3, tourId: 7, dayNumber: 2, title: { ru: 'Кратер' } },
+    });
+
+    await renderPage(<ResourceFormPage resource="tour_days" id={3} />);
+
+    // `tourId` was a number box: attaching a day to a tour meant knowing the tour was number 7.
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^Тур/)).toBeInTheDocument();
+    });
+    const parent = screen.getByLabelText(/^Тур/);
+    expect(parent.tagName).toBe('SELECT');
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Дарваза' })).toBeInTheDocument();
+    });
+
+    // And the cover is chosen from the library rather than typed as an id.
+    expect(screen.getByRole('button', { name: 'Выбрать файл' })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Обложка/)).not.toBeInTheDocument();
+  });
+
+  it('keeps the generated columns out of the way instead of in the middle of the form', async () => {
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': { resources: [TOURS, TOUR_DAYS] },
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tours': { items: [], meta: emptyMeta },
+      '/admin/tour_days/3': { id: 3, tourId: 7, dayNumber: 2, createdAt: '2026-08-01T10:00:00Z' },
+    });
+
+    const { container } = await renderPage(<ResourceFormPage resource="tour_days" id={3} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Содержание')).toBeInTheDocument();
+    });
+    // `id` and `createdAt` are still reachable — an editor sometimes needs the number — but
+    // folded away rather than sitting between the title and the price.
+    const details = container.querySelector('details');
+    expect(details).not.toBeNull();
+    expect(details).toHaveTextContent('Служебное');
+    expect(details?.open).toBe(false);
+  });
+});
