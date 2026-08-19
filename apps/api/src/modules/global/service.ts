@@ -322,14 +322,43 @@ export async function getHotel(context: Context, slug: string) {
 
   if (hotel === undefined) throw notFound(`Hotel «${slug}»`);
 
+  const rows = await db
+    .select({
+      code: t.roomTypes.code,
+      name: t.roomTypes.name,
+      description: t.hotelRooms.description,
+      capacity: t.hotelRooms.capacity,
+      sizeSqm: t.hotelRooms.sizeSqm,
+      priceMinor: t.hotelRooms.priceMinor,
+      coverMediaId: t.hotelRooms.coverMediaId,
+    })
+    .from(t.hotelRooms)
+    .innerJoin(t.roomTypes, eq(t.roomTypes.id, t.hotelRooms.roomTypeId))
+    .where(eq(t.hotelRooms.hotelId, hotel.id))
+    .orderBy(asc(t.hotelRooms.sortOrder), asc(t.roomTypes.sortOrder));
+
+  // One media context for the cover and every room photograph, so a hotel with six rooms is
+  // still two queries rather than eight.
   const [media, amenities] = await Promise.all([
-    mediaContext(context, [hotel.coverMediaId]),
+    mediaContext(context, [hotel.coverMediaId, ...rows.map((row) => row.coverMediaId)]),
     amenitiesByHotel(db, [hotel.id], lang),
   ]);
 
   return {
     ...hotelCard(hotel, media, lang, amenities.get(hotel.id) ?? []),
     body: text(hotel.body, lang),
+    rooms: rows.map((row) => ({
+      code: row.code,
+      name: text(row.name, lang),
+      description: text(row.description, lang),
+      capacity: row.capacity,
+      sizeSqm: row.sizeSqm,
+      // Null is «ask the hotel's own price», not «free»: the page falls back to the card's
+      // figure rather than printing a zero nobody meant.
+      price:
+        row.priceMinor === null ? null : { minor: row.priceMinor, currency: hotel.priceCurrency },
+      cover: mediaRef(row.coverMediaId, media),
+    })),
   };
 }
 

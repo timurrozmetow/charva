@@ -160,6 +160,60 @@ describe('hotels', () => {
       }
     }
   });
+
+  it('lists the kinds of room a hotel has, priced or falling back to its own rate', async () => {
+    /*
+     * A hotel used to say one number and nothing else — «от 96 $ за ночь» — which is the only
+     * figure a single price column can hold, and it said the same for the single room and the
+     * duplex.
+     *
+     * `price: null` means «this hotel quotes one rate», not «this room is free», and the seeds
+     * leave it null everywhere on purpose: what a duplex costs at a particular hotel is a
+     * commercial fact nobody in this repository knows, and an invented one would look
+     * researched. The operator fills them from the admin — that is what the feature is for.
+     */
+    const list = await get<{ items: { slug: string; category: string }[] }>('/global/hotels');
+    const camp = list.items.find((hotel) => hotel.category === 'camp');
+    const hotel = list.items.find((item) => item.category === 'hotel');
+    expect(hotel, 'a seeded hotel to read rooms from').toBeDefined();
+
+    const detail = await get<{
+      priceFrom: { minor: number; currency: string };
+      rooms: {
+        code: string;
+        name: string;
+        capacity: number;
+        sizeSqm: number | null;
+        price: { minor: number } | null;
+      }[];
+    }>(`/global/hotels/${String(hotel?.slug)}`);
+
+    expect(detail.rooms.length).toBeGreaterThan(0);
+    for (const room of detail.rooms) {
+      // A stable ASCII code and a translated name, the same rule the amenities follow (D-10).
+      expect(room.code).toMatch(/^[a-z0-9][a-z0-9_]*$/);
+      expect(room.name.length).toBeGreaterThan(0);
+      expect(room.capacity).toBeGreaterThan(0);
+      expect(room.price).toBeNull();
+    }
+
+    // The composition follows the category rather than being the same everywhere: a yurt camp
+    // has yurts and no suite.
+    if (camp !== undefined) {
+      const campDetail = await get<{ rooms: { code: string }[] }>(`/global/hotels/${camp.slug}`);
+      expect(campDetail.rooms.map((room) => room.code)).toContain('yurt');
+      expect(campDetail.rooms.map((room) => room.code)).not.toContain('suite');
+    }
+  });
+
+  it('never lets a room price reach a page in minor units', async () => {
+    // The same rule every money value follows: the serializer is the schema, and the schema
+    // says `{ minor, currency }` (D-12, D-24).
+    const detail = await get<{ rooms: { price: unknown }[] }>('/global/hotels/yyldyz-hotel');
+    for (const room of detail.rooms) {
+      expect(room.price === null || typeof room.price === 'object').toBe(true);
+    }
+  });
 });
 
 describe('reviews', () => {

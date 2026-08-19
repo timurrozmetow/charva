@@ -135,6 +135,46 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                       </>
                     )}
 
+                    {hotel.rooms.length > 0 && (
+                      <>
+                        <Heading level={2} size="h2Sm" className="mt-16">
+                          {copy.hotel.roomsTitle}
+                        </Heading>
+                        {/*
+                          What kind of room, for how many, at what price.
+
+                          The hotel used to say one number and nothing else — «от 96 $ за ночь» —
+                          which is the only figure a single price column can hold. A room without
+                          its own price shows the hotel's, because that is what the null means:
+                          «this hotel quotes one rate», not «this room is free».
+                        */}
+                        <ul className="mt-8 flex list-none flex-col gap-0 p-0">
+                          {hotel.rooms.map((room, index) => (
+                            <li
+                              key={`${room.code}-${String(index)}`}
+                              className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line py-4"
+                            >
+                              <span className="text-body font-medium text-ink">{room.name}</span>
+                              <span className="flex-1 text-bodySm font-light text-muted">
+                                {[
+                                  fill(copy.hotel.roomCapacity, { count: room.capacity }),
+                                  room.sizeSqm === null
+                                    ? null
+                                    : fill(copy.hotel.roomSize, { size: room.sizeSqm }),
+                                  room.description === '' ? null : room.description,
+                                ]
+                                  .filter((part) => part !== null)
+                                  .join(' · ')}
+                              </span>
+                              <span className="text-body font-medium text-accent-text">
+                                {copy.common.from} {formatMoney(room.price ?? hotel.priceFrom)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+
                     {hotel.amenities.length > 0 && (
                       <>
                         <Heading level={2} size="h2Sm" className="mt-16">

@@ -8,6 +8,7 @@ import {
   mysqlEnum,
   mysqlTable,
   primaryKey,
+  smallint,
   timestamp,
   tinyint,
   unique,
@@ -156,6 +157,59 @@ export const hotelAmenities = mysqlTable(
   (table) => [
     primaryKey({ columns: [table.hotelId, table.amenityId] }),
     index('hotel_amenities_amenity_idx').on(table.amenityId),
+  ],
+);
+
+/**
+ * The kinds of room a hotel can offer — «1-комнатный», «Дуплекс», «Люкс».
+ *
+ * A dictionary rather than free text on each hotel, for the same reason amenities are a table:
+ * the name is translated, and two editors typing «люкс» and «Люкс» produce two kinds of room
+ * that no filter and no comparison can put back together. The code is what the rest of the
+ * system holds, and it never changes after the first row references it (decision D-10).
+ */
+export const roomTypes = mysqlTable(
+  'room_types',
+  {
+    id: int().autoincrement().primaryKey(),
+    code: varchar({ length: 60 }).notNull(),
+    name: json().$type<LocalizedColumn>().notNull(),
+    sortOrder: int().notNull().default(0),
+  },
+  (table) => [unique('room_types_code_uq').on(table.code)],
+);
+
+/**
+ * One kind of room, in one hotel, at its own price.
+ *
+ * Not a bare join like `hotel_amenities`: a room carries what it costs, how many people fit in
+ * it and how big it is, and a hotel offering a duplex at one price and a suite at another is
+ * the ordinary case. It has a surrogate key because the CRUD frame addresses rows by `id` —
+ * `hotel_amenities` is excluded from the admin registry for lacking one — and because a hotel
+ * genuinely may list the same type twice at different sizes.
+ *
+ * `priceMinor` is nullable and means «the hotel's own nightly price»: most hotels quote one
+ * number, and forcing a price onto every room would make the catalogue's «от 96 $» disagree
+ * with the room list underneath it.
+ */
+export const hotelRooms = mysqlTable(
+  'hotel_rooms',
+  {
+    id: int().autoincrement().primaryKey(),
+    hotelId: int().notNull(),
+    roomTypeId: int().notNull(),
+    /** How many people sleep in it. The one number a guest always asks for. */
+    capacity: tinyint().notNull().default(2),
+    /** Per night, in the hotel's own currency. Null falls back to `hotels.price_from_minor`. */
+    priceMinor: bigint({ mode: 'number' }),
+    sizeSqm: smallint(),
+    description: json().$type<LocalizedColumn>(),
+    coverMediaId: int(),
+    sortOrder: int().notNull().default(0),
+  },
+  (table) => [
+    index('hotel_rooms_hotel_idx').on(table.hotelId, table.sortOrder),
+    index('hotel_rooms_type_idx').on(table.roomTypeId),
   ],
 );
 

@@ -132,6 +132,27 @@ const RESOURCES: AdminResource[] = [
     localized: ['name'],
     search: ['code'],
   }),
+  /**
+   * The vocabulary of rooms — «1-комнатный», «Дуплекс», «Люкс».
+   *
+   * Editable, because the list that ships is the list somebody guessed at: an operator adding
+   * «Апартаменты» must not need a deploy for it. The code is the part that must not move once a
+   * hotel references it, which is what the unique index is for.
+   */
+  define('room_types', {
+    table: t.roomTypes,
+    site: 'global',
+    localized: ['name'],
+    search: ['code'],
+  }),
+  define('hotel_rooms', {
+    table: t.hotelRooms,
+    site: 'global',
+    localized: ['description'],
+    money: ['priceMinor'],
+    filters: ['hotelId', 'roomTypeId'],
+    orderBy: ['sortOrder', 'id'],
+  }),
   define('articles', {
     table: t.articles,
     site: 'global',

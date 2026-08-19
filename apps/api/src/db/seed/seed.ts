@@ -53,6 +53,7 @@ export async function seedAll(db: Database): Promise<SeedCounts> {
   record('tours', await seedTours(db));
   record('hotels', await seedHotels(db));
   record('amenities', await seedAmenities(db));
+  record('hotel_rooms', await seedHotelRooms(db));
   record('articles', await seedArticles(db));
   record('gallery_items', await seedGallery(db));
   record('videos', await seedVideos(db));
@@ -217,6 +218,70 @@ async function seedAmenities(db: Database): Promise<number> {
   }
   if (links.length > 0) await db.insert(t.hotelAmenities).values(links);
 
+  return values.length;
+}
+
+/**
+ * Which kinds of room each hotel offers, and for how many people.
+ *
+ * **No prices.** `room_types` itself is inserted by the migration; what a duplex costs at a
+ * particular hotel is a commercial fact nobody in this repository knows, and inventing one
+ * would put a number on the page that looks researched and is not — the same trap the builder's
+ * rates are flagged for in question Q-10. `price_minor` stays null, which the API reads as «the
+ * hotel's own nightly price», so the page is correct until an operator fills the real figures
+ * in from the admin. That is what this feature is for.
+ *
+ * The composition follows the category, which is the one thing the seed does know: a yurt camp
+ * has yurts, a five-star hotel has a suite, a boutique has rooms rather than suites.
+ */
+const ROOMS_BY_CATEGORY: Record<string, { code: string; capacity: number; sizeSqm: number }[]> = {
+  camp: [{ code: 'yurt', capacity: 4, sizeSqm: 28 }],
+  boutique: [
+    { code: 'one_room', capacity: 2, sizeSqm: 24 },
+    { code: 'two_room', capacity: 3, sizeSqm: 38 },
+  ],
+  hotel: [
+    { code: 'single', capacity: 1, sizeSqm: 18 },
+    { code: 'double', capacity: 2, sizeSqm: 26 },
+    { code: 'one_room', capacity: 2, sizeSqm: 30 },
+  ],
+};
+
+/** What a hotel gains on top of the base set as the stars go up. */
+const ROOMS_BY_STARS: Record<number, { code: string; capacity: number; sizeSqm: number }[]> = {
+  4: [{ code: 'junior_suite', capacity: 2, sizeSqm: 42 }],
+  5: [
+    { code: 'junior_suite', capacity: 2, sizeSqm: 45 },
+    { code: 'duplex', capacity: 4, sizeSqm: 68 },
+    { code: 'suite', capacity: 2, sizeSqm: 74 },
+  ],
+};
+
+async function seedHotelRooms(db: Database): Promise<number> {
+  const types = await db.select().from(t.roomTypes);
+  const byCode = new Map(types.map((row) => [row.code, row.id]));
+  const hotels = await db.select().from(t.hotels);
+
+  const values: (typeof t.hotelRooms.$inferInsert)[] = [];
+
+  for (const hotel of hotels) {
+    const base = ROOMS_BY_CATEGORY[hotel.category] ?? [];
+    const extra = hotel.stars === null ? [] : (ROOMS_BY_STARS[hotel.stars] ?? []);
+
+    [...base, ...extra].forEach((room, index) => {
+      const roomTypeId = byCode.get(room.code);
+      if (roomTypeId === undefined) return;
+      values.push({
+        hotelId: hotel.id,
+        roomTypeId,
+        capacity: room.capacity,
+        sizeSqm: room.sizeSqm,
+        sortOrder: index + 1,
+      });
+    });
+  }
+
+  if (values.length > 0) await db.insert(t.hotelRooms).values(values);
   return values.length;
 }
 

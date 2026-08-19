@@ -415,7 +415,10 @@
       "city": "City",
       "category": "Class",
       "stars": "Stars"
-    }
+    },
+    "roomsTitle": "Rooms",
+    "roomCapacity": "sleeps {count}",
+    "roomSize": "{size} m²"
   },
   "article": {
     "breadcrumb": "Journal",

@@ -108,8 +108,29 @@ export const hotelCardSchema = z.object({
 
 export type HotelCard = z.infer<typeof hotelCardSchema>;
 
+/**
+ * One kind of room in one hotel.
+ *
+ * `price` is nullable and means «the hotel's own nightly price»: most hotels quote a single
+ * number, and a required price per room would let the card's «от 96 $» disagree with the list
+ * printed under it.
+ */
+export const hotelRoomSchema = z.object({
+  /** The dictionary's stable code — `duplex`, `suite`. Never the translated label. */
+  code: z.string(),
+  name: z.string(),
+  description: z.string(),
+  capacity: z.number().int(),
+  sizeSqm: z.number().int().nullable(),
+  price: moneySchema.nullable(),
+  cover: mediaRefSchema.nullable(),
+});
+
+export type HotelRoom = z.infer<typeof hotelRoomSchema>;
+
 export const hotelDetailSchema = hotelCardSchema.extend({
   body: z.string(),
+  rooms: z.array(hotelRoomSchema),
 });
 
 export const hotelsQuery = z.object({

@@ -141,7 +141,33 @@ export function hotel(overrides: Partial<HotelCard> = {}): HotelCard {
 }
 
 export function hotelDetail(overrides: Partial<HotelDetail> = {}): HotelDetail {
-  return { ...hotel(), body: 'Описание отеля.', ...overrides };
+  return {
+    ...hotel(),
+    body: 'Описание отеля.',
+    rooms: [
+      // One with its own price and one without, because the fallback to the hotel's nightly
+      // figure is the part of the room list most likely to be got wrong.
+      {
+        code: 'double',
+        name: 'Двухместный',
+        description: '',
+        capacity: 2,
+        sizeSqm: 26,
+        price: null,
+        cover: null,
+      },
+      {
+        code: 'suite',
+        name: 'Люкс',
+        description: 'Вид на площадь.',
+        capacity: 2,
+        sizeSqm: 74,
+        price: { minor: 32_000, currency: 'USD' },
+        cover: null,
+      },
+    ],
+    ...overrides,
+  };
 }
 
 export function articleDetail(overrides: Partial<ArticleDetail> = {}): ArticleDetail {

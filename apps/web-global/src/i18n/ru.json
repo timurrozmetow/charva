@@ -415,7 +415,10 @@
       "city": "Город",
       "category": "Класс",
       "stars": "Звёзд"
-    }
+    },
+    "roomsTitle": "Номера",
+    "roomCapacity": "{count} мест.",
+    "roomSize": "{size} м²"
   },
   "article": {
     "breadcrumb": "Журнал",

@@ -40,6 +40,7 @@ export const FOREIGN_KEYS: Record<string, string> = {
   hotelId: 'hotels',
   amenityId: 'amenities',
   stepId: 'builder_steps',
+  roomTypeId: 'room_types',
   groupId: 'umrah_groups',
   tripId: 'umrah_trips',
 };
@@ -48,6 +49,7 @@ export const FOREIGN_KEYS: Record<string, string> = {
 export const PARENT_OF: Record<string, string> = {
   tour_days: 'tours',
   tour_media: 'tours',
+  hotel_rooms: 'hotels',
   builder_options: 'builder_steps',
   umrah_program_days: 'umrah_trips',
   umrah_group_media: 'umrah_groups',

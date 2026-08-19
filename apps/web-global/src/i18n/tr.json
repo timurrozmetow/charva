@@ -415,7 +415,10 @@
       "city": "Şehir",
       "category": "Sınıf",
       "stars": "Yıldız"
-    }
+    },
+    "roomsTitle": "Odalar",
+    "roomCapacity": "{count} kişilik",
+    "roomSize": "{size} m²"
   },
   "article": {
     "breadcrumb": "Dergi",

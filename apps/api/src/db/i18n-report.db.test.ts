@@ -33,12 +33,22 @@ describe('coverage', () => {
     expect(umrah.percent.tm).toBe(100);
   });
 
-  it('reports the languages nobody has written yet as zero', async () => {
+  it('reports the languages nobody has written yet as all but empty', async () => {
     const global = await collectCoverage(context.app.db, 'global');
 
-    // Question Q-3. Not an approximation: no row in the catalogue has an English value.
-    expect(global.percent.en).toBe(0);
-    expect(global.percent.tr).toBe(0);
+    /*
+     * Question Q-3, and the number is a fact rather than an approximation.
+     *
+     * It is not quite zero: the nine room types — «Люкс», «Suite», «Suit» — ship translated
+     * from the migration that creates them, because nine words of hotel vocabulary is not the
+     * translation work Q-3 is about. Everything an operator writes is still Russian only, which
+     * is what a percentage in the low single digits says.
+     */
+    expect(global.percent.en).toBeLessThan(5);
+    expect(global.percent.tr).toBeLessThan(5);
+
+    const catalogue = global.fields.find((field) => field.table === 'tours');
+    expect(catalogue?.filled.en).toBe(0);
   });
 
   it('does not count an empty optional column as an untranslated one', async () => {
