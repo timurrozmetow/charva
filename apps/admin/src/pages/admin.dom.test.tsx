@@ -777,3 +777,118 @@ describe('saving without a save button', () => {
     });
   });
 });
+
+const GALLERY = {
+  name: 'gallery_items',
+  site: 'global',
+  capability: 'content.write',
+  search: [],
+  filters: [],
+  orderable: true,
+  fields: [
+    field('id', 'int', { readOnly: true }),
+    // The plain one. `coverMediaId` was recognised and this was not.
+    field('mediaId', 'int', { required: true }),
+    field('caption', 'localized'),
+    field('category', 'string', { required: true, maxLength: 40 }),
+    field('createdAt', 'timestamp', { readOnly: true }),
+  ],
+};
+
+describe('the columns that are not what their type says', () => {
+  it('recognises a plain mediaId, not only the ones with a prefix', async () => {
+    /*
+     * The bug this exists for.
+     *
+     * `endsWith('MediaId')` is true of `coverMediaId`, `posterMediaId` and `avatarMediaId` and
+     * false of `mediaId` — the plainest and most common of the four — so galleries, tour
+     * photographs and group media all kept the number box the picker was written to replace
+     * while the covers beside them did not. Half-working is harder to notice than broken.
+     */
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': { resources: [GALLERY] },
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/gallery_items': { items: [], meta: emptyMeta },
+      '/admin/gallery_items/1': {
+        id: 1,
+        mediaId: 4,
+        category: 'nature',
+        caption: { ru: 'Дарваза' },
+      },
+    });
+
+    await renderPage(<ResourceFormPage resource="gallery_items" id={1} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Заменить' })).toBeInTheDocument();
+    });
+    // Not a number box asking for the id of a file.
+    expect(screen.queryByLabelText(/^Файл/)).not.toBeInTheDocument();
+  });
+
+  it('suggests the words a settled vocabulary already uses', async () => {
+    // `category` is a VARCHAR holding five words in practice. Free text in the schema, a set on
+    // the screen — so «Nature» beside «nature» stops being possible by accident.
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': { resources: [GALLERY] },
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/gallery_items': {
+        items: [
+          { id: 1, category: 'nature' },
+          { id: 2, category: 'cities' },
+          { id: 3, category: 'nature' },
+        ],
+        meta: { ...emptyMeta, total: 3 },
+      },
+      '/admin/gallery_items/1': { id: 1, mediaId: 4, category: 'nature' },
+    });
+
+    const { container } = await renderPage(<ResourceFormPage resource="gallery_items" id={1} />);
+
+    await waitFor(() => {
+      expect(container.querySelector('datalist')).not.toBeNull();
+    });
+    const options = [...container.querySelectorAll('datalist option')].map(
+      (option) => (option as HTMLOptionElement).value,
+    );
+    // Distinct and sorted: the same word twice is one suggestion.
+    expect(options).toEqual(['cities', 'nature']);
+  });
+
+  it('shows a generated timestamp as a date rather than as a wire format', async () => {
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': { resources: [GALLERY] },
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/gallery_items': { items: [], meta: emptyMeta },
+      '/admin/gallery_items/1': { id: 1, mediaId: 4, createdAt: '2026-08-19T11:20:58.000Z' },
+    });
+
+    await renderPage(<ResourceFormPage resource="gallery_items" id={1} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('19.08.2026, 11:20')).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/2026-08-19T11:20/)).not.toBeInTheDocument();
+  });
+
+  it('offers a way back that does not promise to undo the saving it just did', async () => {
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': { resources: [GALLERY] },
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/gallery_items': { items: [], meta: emptyMeta },
+      '/admin/gallery_items/1': { id: 1, mediaId: 4 },
+    });
+
+    await renderPage(<ResourceFormPage resource="gallery_items" id={1} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Ко всем записям/ })).toBeInTheDocument();
+    });
+    // «Отмена» beside a form that has already written every edit is a promise it cannot keep.
+    expect(screen.queryByRole('link', { name: 'Отмена' })).not.toBeInTheDocument();
+  });
+});

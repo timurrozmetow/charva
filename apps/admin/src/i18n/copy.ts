@@ -116,6 +116,8 @@ export const copy = {
     },
     systemHint: 'Заполняется базой. Нужно, чтобы сослаться на запись.',
     notChosen: 'Не выбрано',
+    suggested: 'Начните печатать — предложит то, что уже используется',
+    backToList: 'Ко всем записям',
     viewOnSite: 'Посмотреть на сайте',
     unsaved: 'Есть несохранённые изменения',
     /** Auto-save states. There is no button to press; this line is the whole feedback. */

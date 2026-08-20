@@ -172,6 +172,7 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
       <FieldControl
         key={field.name}
         field={field}
+        resource={name}
         site={resource?.site ?? null}
         value={draft[field.name] ?? null}
         error={fieldErrors[field.name]}
@@ -231,12 +232,19 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
                 {copy.form.viewOnSite} ↗
               </a>
             )}
+            {/*
+              «Ко всем записям», not «Отмена».
+
+              It never cancelled anything — it navigated — and now that the row saves itself the
+              old label was an outright promise to undo work that is already written. A link
+              that lies about what it does is worse than no link.
+            */}
             <Link
               to="/data/$resource"
               params={{ resource: name }}
               className="text-bodySm text-muted underline underline-offset-4"
             >
-              {copy.form.cancel}
+              ← {copy.form.backToList}
             </Link>
           </span>
         }
@@ -257,7 +265,15 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
         gridClassName="flex flex-col gap-4"
       >
         <form onSubmit={submit}>
-          <div className="grid grid-cols-[minmax(0,1fr)_320px] items-start gap-7 lap:grid-cols-1">
+          {/*
+            The text column stops at 760px however wide the window is.
+
+            A title input stretched across a 3400px monitor is one line of text in a field eight
+            times longer than anything anybody types into it, and the eye has to travel the
+            whole way to check it. The rail keeps its place beside it; only the measure is
+            capped.
+          */}
+          <div className="grid max-w-[1120px] grid-cols-[minmax(0,760px)_320px] items-start gap-7 lap:max-w-none lap:grid-cols-1">
             <div className="flex flex-col gap-6">
               <Section title={copy.form.sections.main} fields={groups.main} render={control} />
               <Section title={copy.form.sections.facts} fields={groups.facts} render={control} />

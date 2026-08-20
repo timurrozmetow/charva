@@ -1,9 +1,11 @@
 import { type AdminField, type Lang, LANG_NAMES, type Site, SITE_LANGS } from '@charva/contracts';
 import { Checkbox, cn, Field, Input, Select, Textarea } from '@charva/ui';
-import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useId, useState } from 'react';
 
+import { rowsQuery } from '../api/queries';
 import { copy, FIELD_LABELS, labelFor } from '../i18n/copy';
-import { FOREIGN_KEYS, isMediaField } from '../lib/present';
+import { FOREIGN_KEYS, hasSuggestions, isMediaField, plain } from '../lib/present';
 
 import { MediaPickerField } from './MediaPicker';
 import { RowSelectField } from './RowSelect';
@@ -23,6 +25,8 @@ import { RowSelectField } from './RowSelect';
 
 export interface FieldControlProps {
   field: AdminField;
+  /** The table this column belongs to, so a settled vocabulary can be suggested from its rows. */
+  resource: string;
   site: Site | null;
   value: unknown;
   onChange: (value: unknown) => void;
@@ -38,8 +42,18 @@ export interface FieldControlProps {
   error?: string | undefined;
 }
 
-export function FieldControl({ field, site, value, onChange, onCommit, error }: FieldControlProps) {
+export function FieldControl({
+  field,
+  resource,
+  site,
+  value,
+  onChange,
+  onCommit,
+  error,
+}: FieldControlProps) {
   const label = labelFor(FIELD_LABELS, field.name);
+  const listId = useId();
+  const suggestions = useSuggestions(resource, field);
 
   /** Changed and finished in one movement: a discrete control has no half-way state. */
   const set = (next: unknown): void => {
@@ -89,10 +103,13 @@ export function FieldControl({ field, site, value, onChange, onCommit, error }: 
   }
 
   if (field.readOnly) {
+    // `2026-08-19T11:20:58.000Z` is a wire format, not a date somebody reads. `plain` is the
+    // same formatting the lists use, so one moment looks the same everywhere in the admin.
+    const shown = plain(value, field.name, site);
     return (
       <Field label={label} hint={copy.form.readOnly}>
         <p className="rounded-panel-sm border border-line bg-field px-4 py-3 text-bodySm text-muted">
-          {show(value)}
+          {shown === '' ? show(value) : shown}
         </p>
       </Field>
     );
@@ -208,16 +225,28 @@ export function FieldControl({ field, site, value, onChange, onCommit, error }: 
 
     case 'string':
       return (
-        <Field {...common}>
-          <Input
-            type="text"
-            {...(field.maxLength === null ? {} : { maxLength: field.maxLength })}
-            value={typeof value === 'string' ? value : ''}
-            {...(onBlur === undefined ? {} : { onBlur })}
-            onChange={(event) => {
-              onChange(event.target.value === '' && field.nullable ? null : event.target.value);
-            }}
-          />
+        <Field {...common} {...(suggestions.length === 0 ? {} : { hint: copy.form.suggested })}>
+          <>
+            <Input
+              type="text"
+              {...(field.maxLength === null ? {} : { maxLength: field.maxLength })}
+              {...(suggestions.length === 0 ? {} : { list: listId })}
+              value={typeof value === 'string' ? value : ''}
+              {...(onBlur === undefined ? {} : { onBlur })}
+              onChange={(event) => {
+                onChange(event.target.value === '' && field.nullable ? null : event.target.value);
+              }}
+            />
+            {suggestions.length > 0 && (
+              // A `datalist` rather than a `select`: the vocabulary is settled in practice and
+              // open in the schema, so a sixth category must stay typeable.
+              <datalist id={listId}>
+                {suggestions.map((option) => (
+                  <option key={option} value={option} />
+                ))}
+              </datalist>
+            )}
+          </>
         </Field>
       );
   }
@@ -380,4 +409,25 @@ function fromLocalInput(value: string): string | null {
   // The control gives wall-clock text with no zone; the API stores UTC, and every date this
   // admin edits is a departure or a publication moment that is defined in UTC (D-73).
   return `${value}:00.000Z`;
+}
+
+/**
+ * The values a column already holds, for the handful of columns that have a vocabulary.
+ *
+ * A hook rather than a lookup because it fetches, and unconditional because hooks are: the
+ * query decides for itself whether to run, so a form of twenty fields makes at most one request
+ * and only when one of them is a `category`-shaped column.
+ */
+function useSuggestions(resource: string, field: AdminField): string[] {
+  const enabled = hasSuggestions(field);
+  const rows = useQuery({ ...rowsQuery(resource, { perPage: 200 }), enabled });
+
+  if (!enabled) return [];
+
+  const seen = new Set<string>();
+  for (const row of rows.data?.items ?? []) {
+    const value = row[field.name];
+    if (typeof value === 'string' && value.trim() !== '') seen.add(value);
+  }
+  return [...seen].sort();
 }

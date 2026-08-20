@@ -56,13 +56,37 @@ export const PARENT_OF: Record<string, string> = {
   hotel_amenities: 'hotels',
 };
 
-/** A column holding a `media.id`. Rendered as the photograph, chosen from the library. */
+/**
+ * A column holding a `media.id`. Rendered as the photograph, chosen from the library.
+ *
+ * Matched without regard to case, and that is the whole point: the first version tested
+ * `endsWith('MediaId')`, which is true of `coverMediaId`, `posterMediaId` and `avatarMediaId`
+ * and **false of `mediaId`** — the plainest and most common of the four. So the galleries, the
+ * tour photographs and the group media all kept the number box the picker was written to
+ * replace, while the covers beside them did not, which is the kind of half-working that is
+ * harder to notice than nothing working at all.
+ */
 export function isMediaField(field: AdminField): boolean {
-  return field.kind === 'int' && field.name.endsWith('MediaId');
+  return field.kind === 'int' && field.name.toLowerCase().endsWith('mediaid');
 }
 
 export function isForeignKey(field: AdminField): boolean {
   return FOREIGN_KEYS[field.name] !== undefined;
+}
+
+/**
+ * Short text columns with a settled vocabulary, offered as a list of what is already in use.
+ *
+ * `gallery_items.category` is a `VARCHAR` holding `nature`, `cities`, `history`, `culture`,
+ * `food` — a set in practice and free text in the schema, so the form asked an editor to
+ * remember which of five words it was and to spell it the way the last person did. Suggesting
+ * the values already in the table costs one request and removes the whole class of «Nature»
+ * beside «nature», while still allowing a sixth.
+ */
+const SUGGESTED = new Set(['category', 'city', 'region', 'tag', 'blockCode', 'unit', 'icon']);
+
+export function hasSuggestions(field: AdminField): boolean {
+  return (field.kind === 'string' || field.kind === 'enum') && SUGGESTED.has(field.name);
 }
 
 export interface FieldGroups {
