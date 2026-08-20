@@ -322,6 +322,12 @@ export async function getHotel(context: Context, slug: string) {
 
   if (hotel === undefined) throw notFound(`Hotel «${slug}»`);
 
+  const pictures = await db
+    .select()
+    .from(t.hotelMedia)
+    .where(eq(t.hotelMedia.hotelId, hotel.id))
+    .orderBy(asc(t.hotelMedia.sortOrder));
+
   const rows = await db
     .select({
       code: t.roomTypes.code,
@@ -340,7 +346,11 @@ export async function getHotel(context: Context, slug: string) {
   // One media context for the cover and every room photograph, so a hotel with six rooms is
   // still two queries rather than eight.
   const [media, amenities] = await Promise.all([
-    mediaContext(context, [hotel.coverMediaId, ...rows.map((row) => row.coverMediaId)]),
+    mediaContext(context, [
+      hotel.coverMediaId,
+      ...rows.map((row) => row.coverMediaId),
+      ...pictures.map((picture) => picture.mediaId),
+    ]),
     amenitiesByHotel(db, [hotel.id], lang),
   ]);
 
@@ -359,6 +369,12 @@ export async function getHotel(context: Context, slug: string) {
         row.priceMinor === null ? null : { minor: row.priceMinor, currency: hotel.priceCurrency },
       cover: mediaRef(row.coverMediaId, media),
     })),
+    gallery: pictures.flatMap((picture) => {
+      const image = mediaRef(picture.mediaId, media);
+      // A row pointing at a file that no longer exists is a broken reference, not an empty
+      // frame — the same rule the tour gallery follows.
+      return image === null ? [] : [{ caption: text(picture.caption, lang), media: image }];
+    }),
   };
 }
 

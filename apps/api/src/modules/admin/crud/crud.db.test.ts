@@ -283,6 +283,89 @@ describe('writing', () => {
     await call('DELETE', `/hotels/${String(hotelId)}`);
   });
 
+  it('writes a gallery as a set, in the order it was sent, and stops at twelve', async () => {
+    /*
+     * The editor's act is «these photographs, in this order», not a sequence of row creations.
+     * Twelve is checked here because a CHECK constraint cannot count rows in another table.
+     */
+    const created = await call('POST', '/hotels', {
+      payload: {
+        slug: 'crud-gallery-host',
+        name: { ru: 'Отель для галереи' },
+        city: { ru: 'Ашхабад' },
+        stars: 4,
+        category: 'hotel',
+        priceFromMinor: 80_000,
+      },
+    });
+    expect(created.statusCode, created.body).toBe(201);
+    const hotelId = created.json<{ id: number }>().id;
+
+    /*
+     * Its own three files, inserted directly.
+     *
+     * The library is empty in a seeded database and will stay that way until question Q-1 is
+     * answered — the photographs are the owner's. Uploading here would mean running sharp and
+     * writing three files to disk to test an endpoint that only stores integers.
+     */
+    const rowsToLink = [1, 2, 3].map((index) => ({
+      storageKey: `2026/08/crud-gallery-${String(index)}.webp`,
+      mime: 'image/webp',
+      sizeBytes: 1024,
+      checksum: `crud-gallery-checksum-${String(index)}`,
+    }));
+    await context.app.db.insert(t.media).values(rowsToLink);
+
+    const stored = await context.app.db
+      .select({ id: t.media.id, checksum: t.media.checksum })
+      .from(t.media)
+      .where(like(t.media.storageKey, '2026/08/crud-gallery-%'));
+    const ids = stored.map((row) => row.id);
+    expect(ids.length, 'the three files this test just stored').toBe(3);
+
+    const url = `/hotels/${String(hotelId)}/gallery`;
+    const first = ids[0] ?? 0;
+    const second = ids[1] ?? 0;
+    const third = ids[2] ?? 0;
+
+    expect(
+      (
+        await call('PUT', url, {
+          payload: { items: [{ mediaId: third }, { mediaId: first }, { mediaId: second }] },
+        })
+      ).statusCode,
+    ).toBe(200);
+
+    const rows = await context.app.db
+      .select()
+      .from(t.hotelMedia)
+      .where(eq(t.hotelMedia.hotelId, hotelId))
+      .orderBy(t.hotelMedia.sortOrder);
+
+    // Position in the request is the order on the page: the editor arranged the tiles.
+    expect(rows.map((row) => row.mediaId)).toEqual([third, first, second]);
+
+    // Replaced, not merged — so removing the last photograph is a request that means something.
+    expect((await call('PUT', url, { payload: { items: [] } })).statusCode).toBe(200);
+    const emptied = await context.app.db
+      .select()
+      .from(t.hotelMedia)
+      .where(eq(t.hotelMedia.hotelId, hotelId));
+    expect(emptied).toHaveLength(0);
+
+    // Thirteen is refused by the schema, before anything is written.
+    const thirteen = Array.from({ length: 13 }, () => ({ mediaId: first }));
+    expect((await call('PUT', url, { payload: { items: thirteen } })).statusCode).toBe(400);
+
+    // A file that does not exist is a 400 rather than a row pointing at nothing.
+    expect(
+      (await call('PUT', url, { payload: { items: [{ mediaId: 999_999 }] } })).statusCode,
+    ).toBe(400);
+
+    await call('DELETE', `/hotels/${String(hotelId)}`);
+    await context.app.db.delete(t.media).where(like(t.media.storageKey, '2026/08/crud-gallery-%'));
+  });
+
   it('refuses a language the site does not speak', async () => {
     // Turkish on an Umrah row. The database would refuse it too — `JSON_SCHEMA_VALID` — but as
     // a 500 nobody can act on. Here it is a 400 naming the key.

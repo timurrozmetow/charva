@@ -418,7 +418,8 @@
     },
     "roomsTitle": "Номера",
     "roomCapacity": "{count} мест.",
-    "roomSize": "{size} м²"
+    "roomSize": "{size} м²",
+    "galleryTitle": "Фотографии"
   },
   "article": {
     "breadcrumb": "Журнал",

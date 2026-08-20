@@ -131,6 +131,8 @@ export type HotelRoom = z.infer<typeof hotelRoomSchema>;
 export const hotelDetailSchema = hotelCardSchema.extend({
   body: z.string(),
   rooms: z.array(hotelRoomSchema),
+  /** Beside the cover. The same shape a tour's gallery has, because it is the same thing. */
+  gallery: z.array(z.object({ caption: z.string(), media: mediaRefSchema })),
 });
 
 export const hotelsQuery = z.object({

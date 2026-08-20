@@ -126,6 +126,12 @@ const RESOURCES: AdminResource[] = [
     search: ['slug', 'name'],
     filters: ['category', 'stars', 'isPublished'],
   }),
+  define('hotel_media', {
+    table: t.hotelMedia,
+    site: 'global',
+    localized: ['caption'],
+    filters: ['hotelId'],
+  }),
   define('amenities', {
     table: t.amenities,
     site: 'global',

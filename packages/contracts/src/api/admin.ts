@@ -149,6 +149,43 @@ export const adminReorderRequest = z
 
 export type AdminReorderRequest = z.infer<typeof adminReorderRequest>;
 
+/**
+ * How many photographs one tour or one hotel may show beside its cover.
+ *
+ * A number rather than «as many as you like», because a gallery is a page somebody scrolls: at
+ * thirty the visitor stops looking and the page carries a megabyte nobody asked for. Twelve is
+ * three rows of four at the width the mosaic is drawn.
+ *
+ * Enforced by the endpoint, not by the database. A CHECK cannot count rows in another table,
+ * and a trigger would hide the rule where nobody reading this would find it.
+ */
+export const MAX_GALLERY_ITEMS = 12;
+
+/**
+ * A gallery, replaced whole.
+ *
+ * Not a row at a time: the request says what the gallery *is*, so removing the last photograph
+ * is a request that means something — which a `DELETE` per item can express only as a sequence
+ * that may stop halfway. The same reasoning as the hotel's amenities.
+ */
+export const adminGalleryRequest = z
+  .object({
+    items: z
+      .array(
+        z
+          .object({
+            mediaId: z.number().int().positive(),
+            /** Optional and translated; the row-by-row screen is still where prose is written. */
+            caption: z.record(z.string(), z.string()).nullable().optional(),
+          })
+          .strict(),
+      )
+      .max(MAX_GALLERY_ITEMS),
+  })
+  .strict();
+
+export type AdminGalleryRequest = z.infer<typeof adminGalleryRequest>;
+
 // --------------------------------------------------------------------------------------------
 // The media library
 // --------------------------------------------------------------------------------------------

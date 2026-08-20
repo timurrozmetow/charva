@@ -148,6 +148,20 @@ export function patchMedia(id: number, body: Record<string, unknown>): Promise<A
   return adminApi.patch<AdminMedia>(`/admin/media/${String(id)}`, body);
 }
 
+/**
+ * The whole gallery of one tour or one hotel, written at once.
+ *
+ * A set, not a row at a time: the request says what the gallery *is*, so removing the last
+ * photograph is a request that means something. The server caps it at twelve.
+ */
+export function putGallery(
+  resource: 'tours' | 'hotels',
+  id: number,
+  items: { mediaId: number; caption?: Record<string, string> | null }[],
+): Promise<{ ok: true }> {
+  return adminApi.put<{ ok: true }>(`/admin/${resource}/${String(id)}/gallery`, { items });
+}
+
 export function attachSlot(slotId: number, mediaId: number | null): Promise<{ ok: true }> {
   return adminApi.put<{ ok: true }>(`/admin/content_slots/${String(slotId)}/media`, { mediaId });
 }

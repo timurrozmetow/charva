@@ -418,7 +418,8 @@
     },
     "roomsTitle": "Rooms",
     "roomCapacity": "sleeps {count}",
-    "roomSize": "{size} m²"
+    "roomSize": "{size} m²",
+    "galleryTitle": "Photographs"
   },
   "article": {
     "breadcrumb": "Journal",

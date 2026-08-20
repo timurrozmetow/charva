@@ -166,6 +166,7 @@ export function hotelDetail(overrides: Partial<HotelDetail> = {}): HotelDetail {
         cover: null,
       },
     ],
+    gallery: [],
     ...overrides,
   };
 }

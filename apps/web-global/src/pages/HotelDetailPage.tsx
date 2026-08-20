@@ -135,6 +135,33 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                       </>
                     )}
 
+                    {/* The same gallery a tour has, because it is the same thing: a handful of
+                        photographs beside the cover. A hotel used to show one picture of a
+                        building and nothing of the rooms, the restaurant or the view. */}
+                    {hotel.gallery.length > 0 && (
+                      <>
+                        <Heading level={2} size="h2Sm" className="mt-16">
+                          {copy.hotel.galleryTitle}
+                        </Heading>
+                        <ul className="mt-8 grid list-none grid-cols-2 gap-6 p-0 mob:grid-cols-1">
+                          {hotel.gallery.map((shot) => (
+                            <li key={shot.media.url}>
+                              <ImageSlot
+                                slotKey={`hotel-gallery-${hotel.slug}`}
+                                brief={shot.caption}
+                                media={{ src: shot.media.url, alt: shot.media.alt }}
+                                ratio="4/3"
+                                className="h-[240px] w-full rounded-media"
+                              />
+                              {shot.caption !== '' && (
+                                <p className="mt-3 text-bodySm text-muted">{shot.caption}</p>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+
                     {hotel.rooms.length > 0 && (
                       <>
                         <Heading level={2} size="h2Sm" className="mt-16">

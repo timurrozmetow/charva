@@ -50,6 +50,7 @@ export const PARENT_OF: Record<string, string> = {
   tour_days: 'tours',
   tour_media: 'tours',
   hotel_rooms: 'hotels',
+  hotel_media: 'hotels',
   builder_options: 'builder_steps',
   umrah_program_days: 'umrah_trips',
   umrah_group_media: 'umrah_groups',

@@ -112,7 +112,14 @@ async function discoverAdminIds(app: TestApp): Promise<Map<string, number>> {
  * The assertion below is a subset check rather than an equality, so seeding any of them later
  * fixes the gap without failing a test, while a *new* empty table has to be explained here.
  */
-const EMPTY_BY_DESIGN = new Set(['tour_days', 'tour_media', 'umrah_group_media']);
+/**
+ * Tables the seeds leave empty, and why.
+ *
+ * All four hold photographs or the captions under them, and there are no photographs: question
+ * Q-1. `tour_days` is here for a different reason — the itinerary is written per tour by an
+ * editor, and inventing eight days of one would be inventing the product.
+ */
+const EMPTY_BY_DESIGN = new Set(['tour_days', 'tour_media', 'hotel_media', 'umrah_group_media']);
 const emptyTables = new Set<string>();
 
 /** Null when the table behind a detail route is empty — see `EMPTY_BY_DESIGN`. */

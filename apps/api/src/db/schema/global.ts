@@ -130,6 +130,28 @@ export const hotels = mysqlTable(
 );
 
 /**
+ * A hotel's photographs, beside its cover.
+ *
+ * The same shape as `tour_media`, and deliberately a second table rather than a shared one with
+ * a `kind` column: the foreign key is what makes «every photograph of this hotel» a single
+ * index lookup, and a polymorphic parent column cannot have one.
+ */
+export const hotelMedia = mysqlTable(
+  'hotel_media',
+  {
+    id: int().autoincrement().primaryKey(),
+    hotelId: int().notNull(),
+    mediaId: int().notNull(),
+    caption: json().$type<LocalizedColumn>(),
+    sortOrder: int().notNull().default(0),
+  },
+  (table) => [
+    unique('hotel_media_uq').on(table.hotelId, table.mediaId),
+    index('hotel_media_order_idx').on(table.hotelId, table.sortOrder),
+  ],
+);
+
+/**
  * Amenities as rows.
  *
  * The handoff proposes `hotels.amenities JSON` holding an array of Russian strings, which is

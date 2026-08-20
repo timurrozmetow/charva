@@ -154,6 +154,8 @@ describe('the form screen', () => {
     stubApi({
       '/admin/auth/refresh': sessionFor(),
       '/admin/resources': RESOURCES,
+      // The form now carries a gallery editor, which reads the tour's photographs.
+      '/admin/tour_media': { items: [], meta: emptyMeta },
       '/admin/tours/7': {
         id: 7,
         slug: 'darvaza',
@@ -181,6 +183,8 @@ describe('the form screen', () => {
     stubApi({
       '/admin/auth/refresh': sessionFor(),
       '/admin/resources': RESOURCES,
+      // The form now carries a gallery editor, which reads the tour's photographs.
+      '/admin/tour_media': { items: [], meta: emptyMeta },
       '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' } },
     });
 
@@ -196,6 +200,8 @@ describe('the form screen', () => {
     const calls = stubApi({
       '/admin/auth/refresh': sessionFor(),
       '/admin/resources': RESOURCES,
+      // The form now carries a gallery editor, which reads the tour's photographs.
+      '/admin/tour_media': { items: [], meta: emptyMeta },
       '/admin/tours/7': {
         id: 7,
         slug: 'darvaza',
@@ -601,6 +607,8 @@ describe('a row as a person reads it', () => {
       '/admin/auth/refresh': sessionFor(),
       '/admin/resources': RESOURCES,
       '/admin/media': { items: [], meta: emptyMeta },
+      // The form now carries a gallery editor, which reads the tour's photographs.
+      '/admin/tour_media': { items: [], meta: emptyMeta },
       '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' }, priceFromMinor: 54000 },
     });
 
@@ -677,6 +685,8 @@ describe('saving without a save button', () => {
       '/admin/auth/refresh': sessionFor(),
       '/admin/resources': RESOURCES,
       '/admin/media': { items: [], meta: emptyMeta },
+      // The form now carries a gallery editor, which reads the tour's photographs.
+      '/admin/tour_media': { items: [], meta: emptyMeta },
       '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' }, priceFromMinor: 54000 },
     });
 
@@ -706,6 +716,8 @@ describe('saving without a save button', () => {
       '/admin/auth/refresh': sessionFor(),
       '/admin/resources': RESOURCES,
       '/admin/media': { items: [], meta: emptyMeta },
+      // The form now carries a gallery editor, which reads the tour's photographs.
+      '/admin/tour_media': { items: [], meta: emptyMeta },
       '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' }, isPublished: false },
     });
 
@@ -727,6 +739,8 @@ describe('saving without a save button', () => {
       '/admin/auth/refresh': sessionFor(),
       '/admin/resources': RESOURCES,
       '/admin/media': { items: [], meta: emptyMeta },
+      // The form now carries a gallery editor, which reads the tour's photographs.
+      '/admin/tour_media': { items: [], meta: emptyMeta },
       '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' } },
     });
 
@@ -751,6 +765,8 @@ describe('saving without a save button', () => {
       '/admin/auth/refresh': sessionFor(),
       '/admin/resources': RESOURCES,
       '/admin/media': { items: [], meta: emptyMeta },
+      // The form now carries a gallery editor, which reads the tour's photographs.
+      '/admin/tour_media': { items: [], meta: emptyMeta },
       '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' } },
       // The slug is taken. Without auto-save this was a visible failure beside a button the
       // editor was already looking at; with it, a silently discarded edit would be far worse.
@@ -890,5 +906,68 @@ describe('the columns that are not what their type says', () => {
     });
     // «Отмена» beside a form that has already written every edit is a promise it cannot keep.
     expect(screen.queryByRole('link', { name: 'Отмена' })).not.toBeInTheDocument();
+  });
+});
+
+describe('the photographs of a tour', () => {
+  /*
+   * `tour_media` has been a table since phase 2 and was reachable only as a list of its own: to
+   * give a tour six photographs you created six rows, choosing the tour again in each and
+   * setting a position by hand. Nobody does that six times.
+   */
+  it('is edited where the tour is, and says how many more will fit', async () => {
+    stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': RESOURCES,
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tour_media': {
+        items: [
+          { id: 1, tourId: 7, mediaId: 11, sortOrder: 1 },
+          { id: 2, tourId: 7, mediaId: 12, sortOrder: 2 },
+        ],
+        meta: { ...emptyMeta, total: 2 },
+      },
+      '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' } },
+    });
+
+    await renderPage(<ResourceFormPage resource="tours" id={7} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Загружено 2 из 12/)).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: 'Добавить фотографии' })).toBeInTheDocument();
+  });
+
+  it('writes the whole set when one photograph is removed', async () => {
+    const user = userEvent.setup();
+    const calls = stubApi({
+      '/admin/auth/refresh': sessionFor(),
+      '/admin/resources': RESOURCES,
+      '/admin/media': { items: [], meta: emptyMeta },
+      '/admin/tour_media': {
+        items: [
+          { id: 1, tourId: 7, mediaId: 11, sortOrder: 1 },
+          { id: 2, tourId: 7, mediaId: 12, sortOrder: 2 },
+        ],
+        meta: { ...emptyMeta, total: 2 },
+      },
+      '/admin/tours/7': { id: 7, slug: 'darvaza', title: { ru: 'Дарваза' } },
+      'PUT /admin/tours/7/gallery': { ok: true },
+    });
+
+    await renderPage(<ResourceFormPage resource="tours" id={7} />);
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'Убрать фотографию' })).toHaveLength(2);
+    });
+
+    const remove = screen.getAllByRole('button', { name: 'Убрать фотографию' })[0];
+    if (remove !== undefined) await user.click(remove);
+
+    // The request says what the gallery *is*, so removing the last photograph would be a
+    // request that means something — which a DELETE per row could only express as a sequence.
+    await waitFor(() => {
+      const put = calls.find((call) => call.method === 'PUT');
+      expect(put?.body).toEqual({ items: [{ mediaId: 12, caption: null }] });
+    });
   });
 });

@@ -418,7 +418,8 @@
     },
     "roomsTitle": "Odalar",
     "roomCapacity": "{count} kişilik",
-    "roomSize": "{size} m²"
+    "roomSize": "{size} m²",
+    "galleryTitle": "Fotoğraflar"
   },
   "article": {
     "breadcrumb": "Dergi",

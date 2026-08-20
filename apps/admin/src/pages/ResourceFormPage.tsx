@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createRow, deleteRow, type Row, rowQuery, updateRow } from '../api/queries';
 import { useSession } from '../auth/SessionProvider';
 import { FieldControl } from '../components/FieldControl';
+import { GalleryEditor } from '../components/GalleryEditor';
 import { copy, labelFor, RESOURCE_LABELS } from '../i18n/copy';
 import { PageHead } from '../layout/Shell';
 import { groupFields, publicUrl, titleOf } from '../lib/present';
@@ -284,6 +285,14 @@ export function ResourceFormPage({ resource: name, id }: { resource: string; id:
             <div className="flex flex-col gap-6">
               <Section title={copy.form.sections.links} fields={groups.links} render={control} />
               <Section title={copy.form.sections.media} fields={groups.media} render={control} />
+
+              {/*
+                The photographs, where the thing they are of is.
+                Only on a saved row: there is no parent to hang them off until it has an id.
+              */}
+              {id !== null && (name === 'tours' || name === 'hotels') && (
+                <GalleryEditor parent={name} parentId={id} />
+              )}
               <Section
                 title={copy.form.sections.publication}
                 fields={groups.publication}
