@@ -357,6 +357,8 @@ export async function getHotel(context: Context, slug: string) {
   return {
     ...hotelCard(hotel, media, lang, amenities.get(hotel.id) ?? []),
     body: text(hotel.body, lang),
+    checkIn: hotel.checkIn,
+    checkOut: hotel.checkOut,
     rooms: rows.map((row) => ({
       code: row.code,
       name: text(row.name, lang),

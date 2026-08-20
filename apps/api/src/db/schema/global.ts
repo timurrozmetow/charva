@@ -119,6 +119,11 @@ export const hotels = mysqlTable(
     /** Per night. Kept apart from the builder's rates — decision D-22. */
     priceFromMinor: bigint({ mode: 'number' }).notNull(),
     priceCurrency: mysqlEnum(['USD', 'TMT']).notNull().default('USD'),
+    /**
+     * `14:00`. A wall-clock rule printed on a page, never a moment — so a string, not a TIME.
+     */
+    checkIn: varchar({ length: 5 }),
+    checkOut: varchar({ length: 5 }),
     coverMediaId: int(),
     ...publishable,
   },

@@ -76,7 +76,26 @@
     "errorHint": "Check the connection and try again.",
     "notFoundTitle": "Page not found",
     "notFoundHint": "The link may be out of date. Start from the home page — or write to us.",
-    "backHome": "Home page"
+    "backHome": "Home page",
+    "roomKinds": {
+      "one": "{count} room type",
+      "few": "{count} room types",
+      "many": "{count} room types",
+      "other": "{count} room types"
+    },
+    "guests": {
+      "one": "sleeps {count}",
+      "few": "sleeps {count}",
+      "many": "sleeps {count}",
+      "other": "sleeps {count}"
+    },
+    "starsFact": {
+      "one": "{count} star",
+      "few": "{count} stars",
+      "many": "{count} stars",
+      "other": "{count} stars"
+    },
+    "upToSize": "up to"
   },
   "categories": {
     "classic": "Classic",
@@ -414,12 +433,15 @@
     "facts": {
       "city": "City",
       "category": "Class",
-      "stars": "Stars"
+      "stars": "Stars",
+      "checkIn": "check-in",
+      "checkOut": "check-out"
     },
     "roomsTitle": "Rooms",
     "roomCapacity": "sleeps {count}",
     "roomSize": "{size} m²",
-    "galleryTitle": "Photographs"
+    "galleryTitle": "Photographs",
+    "perNight": "per night"
   },
   "article": {
     "breadcrumb": "Journal",

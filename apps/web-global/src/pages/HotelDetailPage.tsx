@@ -1,6 +1,5 @@
 import { formatMoney, type Lang } from '@charva/contracts';
 import {
-  Badge,
   buttonClass,
   Container,
   Eyebrow,
@@ -14,6 +13,7 @@ import { Link } from '@tanstack/react-router';
 
 import { hotelQuery } from '../api/queries';
 import { Breadcrumbs } from '../components/Breadcrumbs';
+import { HotelEquipment, HotelFacts, HotelShowcase } from '../components/HotelShowcase';
 import { LeadForm } from '../components/LeadForm';
 import { Prose } from '../components/Prose';
 import { QueryState } from '../components/QueryState';
@@ -80,13 +80,14 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
           >
             {hotel !== undefined && (
               <>
-                <Eyebrow>{hotel.city}</Eyebrow>
-                <Heading level={1} size="h1" className="mt-4 max-w-[900px]">
-                  {hotel.name}
-                </Heading>
+                {/* The class and the stars are the same fact twice, so the words carry the
+                    class and the stars are drawn: «АШХАБАД · ОТЕЛЬ» over ★★★★★. */}
+                <Eyebrow>
+                  {hotel.city} · {filters[hotel.filterKey] ?? hotel.filterKey}
+                </Eyebrow>
 
                 {hotel.stars !== null && (
-                  <div className="mt-5">
+                  <div className="mt-4">
                     <StarRating
                       value={hotel.stars}
                       label={fill(copy.common.stars, { count: hotel.stars })}
@@ -95,34 +96,41 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                 )}
 
                 {hotel.summary !== '' && (
-                  <p className="mt-6 max-w-[620px] text-lead font-light text-body">
+                  <p className="mt-5 max-w-[620px] text-lead font-light text-body">
                     {hotel.summary}
                   </p>
                 )}
 
-                <div className="relative mt-11">
-                  <ImageSlot
-                    slotKey={`hotel-cover-${hotel.slug}`}
-                    brief={hotel.name}
-                    media={
-                      hotel.cover === null
-                        ? null
-                        : {
-                            src: hotel.cover.url,
-                            alt: hotel.cover.alt,
-                            ...(hotel.cover.lqip === null ? {} : { lqip: hotel.cover.lqip }),
-                            ...(hotel.cover.width === null ? {} : { width: hotel.cover.width }),
-                            ...(hotel.cover.height === null ? {} : { height: hotel.cover.height }),
-                          }
-                    }
-                    ratio="16/9"
-                    priority
-                    className="h-[480px] w-full rounded-panel lap:h-[360px] mob:h-[220px]"
-                  />
-                  <Badge variant="scrim" className="absolute left-6 top-6">
-                    {filters[hotel.filterKey] ?? hotel.filterKey}
-                  </Badge>
+                {/*
+                  The photographs first, then the name and the price beside it, then the facts.
+
+                  A hotel is chosen by looking at it. The page used to open on one 480-pixel
+                  cover with everything else — the class, the city, the price — in a table
+                  further down, which is the order a database row happens to be in rather than
+                  the order a person asks the questions.
+                */}
+                <div className="mt-11">
+                  <HotelShowcase hotel={hotel} lang={lang} />
                 </div>
+
+                <div className="mt-9 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-b border-line pb-7">
+                  <Heading level={1} size="h2">
+                    {hotel.name}
+                  </Heading>
+                  <p className="m-0 text-body font-light text-muted">
+                    {copy.common.from}{' '}
+                    <span className="text-h3 font-medium text-accent-text">
+                      {formatMoney(hotel.priceFrom)}
+                    </span>{' '}
+                    {copy.hotel.perNight}
+                  </p>
+                </div>
+
+                <div className="py-9">
+                  <HotelFacts hotel={hotel} lang={lang} />
+                </div>
+
+                <HotelEquipment hotel={hotel} lang={lang} />
 
                 <div className="mt-12 grid grid-cols-[1fr_360px] items-start gap-16 lap:gap-10 tab:grid-cols-1">
                   <div>
@@ -201,32 +209,6 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                         </ul>
                       </>
                     )}
-
-                    {hotel.amenities.length > 0 && (
-                      <>
-                        <Heading level={2} size="h2Sm" className="mt-16">
-                          {copy.hotel.amenitiesTitle}
-                        </Heading>
-                        {/*
-                          All of them, as a list.
-
-                          The card shows three because a card has room for three; a page that
-                          also stopped at three would be hiding what the row actually says. The
-                          names come from the `amenities` table rather than from a JSON array of
-                          Russian strings, which is what makes them translatable at all.
-                        */}
-                        <ul className="mt-8 grid list-none grid-cols-2 gap-x-10 gap-y-0 p-0 mob:grid-cols-1">
-                          {hotel.amenities.map((amenity) => (
-                            <li
-                              key={amenity.code}
-                              className="border-b border-line py-4 text-body font-light text-body"
-                            >
-                              {amenity.name}
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    )}
                   </div>
 
                   <aside className="sticky top-28 rounded-block border border-line bg-surface p-8 tab:static mob:p-6">
@@ -238,26 +220,10 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                     </p>
                     <p className="mt-2 text-bodySm font-light text-muted">{copy.hotel.priceNote}</p>
 
-                    <dl className="mt-7">
-                      <div className="flex items-center justify-between gap-4 border-b border-line py-3">
-                        <dt className="text-bodySm text-muted">{copy.hotel.facts.city}</dt>
-                        <dd className="text-bodySm font-medium text-ink">{hotel.city}</dd>
-                      </div>
-                      <div className="flex items-center justify-between gap-4 border-b border-line py-3">
-                        <dt className="text-bodySm text-muted">{copy.hotel.facts.category}</dt>
-                        <dd className="text-bodySm font-medium text-ink">
-                          {filters[hotel.filterKey] ?? hotel.filterKey}
-                        </dd>
-                      </div>
-                      {hotel.stars !== null && (
-                        <div className="flex items-center justify-between gap-4 border-b border-line py-3">
-                          <dt className="text-bodySm text-muted">{copy.hotel.facts.stars}</dt>
-                          <dd className="text-bodySm font-medium text-ink">
-                            {String(hotel.stars)}
-                          </dd>
-                        </div>
-                      )}
-                    </dl>
+                    {/* No table of city, class and stars here any more: all three are above
+                        the fold now, and repeating them made the aside a second, worse copy of
+                        the page. What is left is what the aside is for — the price and the
+                        two ways to act on it. */}
 
                     <a
                       href="#enquiry"

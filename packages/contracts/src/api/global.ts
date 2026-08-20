@@ -130,6 +130,9 @@ export type HotelRoom = z.infer<typeof hotelRoomSchema>;
 
 export const hotelDetailSchema = hotelCardSchema.extend({
   body: z.string(),
+  /** `14:00`, or null while nobody has said. Printed, never compared — see the column's note. */
+  checkIn: z.string().nullable(),
+  checkOut: z.string().nullable(),
   rooms: z.array(hotelRoomSchema),
   /** Beside the cover. The same shape a tour's gallery has, because it is the same thing. */
   gallery: z.array(z.object({ caption: z.string(), media: mediaRefSchema })),

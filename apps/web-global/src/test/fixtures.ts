@@ -144,6 +144,8 @@ export function hotelDetail(overrides: Partial<HotelDetail> = {}): HotelDetail {
   return {
     ...hotel(),
     body: 'Описание отеля.',
+    checkIn: '14:00',
+    checkOut: '12:00',
     rooms: [
       // One with its own price and one without, because the fallback to the hotel's nightly
       // figure is the part of the room list most likely to be got wrong.

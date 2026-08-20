@@ -76,7 +76,26 @@
     "errorHint": "Проверьте соединение и попробуйте ещё раз.",
     "notFoundTitle": "Страница не найдена",
     "notFoundHint": "Возможно, ссылка устарела. Начните с главной — или напишите нам.",
-    "backHome": "На главную"
+    "backHome": "На главную",
+    "roomKinds": {
+      "one": "{count} вид номеров",
+      "few": "{count} вида номеров",
+      "many": "{count} видов номеров",
+      "other": "{count} видов номеров"
+    },
+    "guests": {
+      "one": "до {count} гостя",
+      "few": "до {count} гостей",
+      "many": "до {count} гостей",
+      "other": "до {count} гостей"
+    },
+    "starsFact": {
+      "one": "{count} звезда",
+      "few": "{count} звезды",
+      "many": "{count} звёзд",
+      "other": "{count} звёзд"
+    },
+    "upToSize": "до"
   },
   "categories": {
     "classic": "Классика",
@@ -414,12 +433,15 @@
     "facts": {
       "city": "Город",
       "category": "Класс",
-      "stars": "Звёзд"
+      "stars": "Звёзд",
+      "checkIn": "заезд с",
+      "checkOut": "выезд до"
     },
     "roomsTitle": "Номера",
     "roomCapacity": "{count} мест.",
     "roomSize": "{size} м²",
-    "galleryTitle": "Фотографии"
+    "galleryTitle": "Фотографии",
+    "perNight": "за ночь"
   },
   "article": {
     "breadcrumb": "Журнал",

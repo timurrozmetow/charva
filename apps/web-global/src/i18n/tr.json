@@ -76,7 +76,26 @@
     "errorHint": "Bağlantıyı kontrol edip tekrar deneyin.",
     "notFoundTitle": "Sayfa bulunamadı",
     "notFoundHint": "Bağlantı eski olabilir. Ana sayfadan başlayın — ya da bize yazın.",
-    "backHome": "Ana sayfa"
+    "backHome": "Ana sayfa",
+    "roomKinds": {
+      "one": "{count} oda tipi",
+      "few": "{count} oda tipi",
+      "many": "{count} oda tipi",
+      "other": "{count} oda tipi"
+    },
+    "guests": {
+      "one": "{count} kişilik",
+      "few": "{count} kişilik",
+      "many": "{count} kişilik",
+      "other": "{count} kişilik"
+    },
+    "starsFact": {
+      "one": "{count} yıldız",
+      "few": "{count} yıldız",
+      "many": "{count} yıldız",
+      "other": "{count} yıldız"
+    },
+    "upToSize": "en fazla"
   },
   "categories": {
     "classic": "Klasik",
@@ -414,12 +433,15 @@
     "facts": {
       "city": "Şehir",
       "category": "Sınıf",
-      "stars": "Yıldız"
+      "stars": "Yıldız",
+      "checkIn": "giriş",
+      "checkOut": "çıkış"
     },
     "roomsTitle": "Odalar",
     "roomCapacity": "{count} kişilik",
     "roomSize": "{size} m²",
-    "galleryTitle": "Fotoğraflar"
+    "galleryTitle": "Fotoğraflar",
+    "perNight": "gecelik"
   },
   "article": {
     "breadcrumb": "Dergi",

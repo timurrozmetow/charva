@@ -35,12 +35,42 @@ const paths = {
    * five seconds, and both of these run indefinitely.
    */
   pause: 'M8 5h3v14H8V5zm5 0h3v14h-3V5z',
+
+  /*
+   * The hotel fact row: what the room sleeps, how big it is, when you may arrive.
+   *
+   * Drawn here for the same reason as everything above — the alternative is a dependency
+   * shipping six hundred glyphs to show five (decision D-26). All five are stroked, so they
+   * take the weight of the text beside them rather than sitting as black blobs in a line of
+   * light grey.
+   */
+  /** A bed, seen from the side. «1 двуспальная кровать». */
+  bed: 'M3 7v11M3 12h18v6M21 18v-5a3 3 0 0 0-3-3h-7v5M7.5 10.5h.01',
+  /** A person. The guest count. */
+  guest: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0',
+  /** Three arcs and a dot. Wi-Fi, and by extension anything the hotel simply has. */
+  wifi: 'M2.5 9a15 15 0 0 1 19 0M5.5 12.5a10 10 0 0 1 13 0M8.5 16a5.5 5.5 0 0 1 7 0M12 19.5h.01',
+  /** A square with corner ticks: floor area in square metres. */
+  area: 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4',
+  /** A clock face. Check-in and check-out. */
+  clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3.5 2',
 } as const;
 
 export type IconName = keyof typeof paths | 'starHalf' | 'globe';
 
-type Stroked = Extract<IconName, 'check' | 'caretDown'>;
-const STROKED = new Set<string>(['check', 'caretDown'] satisfies Stroked[]);
+type Stroked = Extract<
+  IconName,
+  'check' | 'caretDown' | 'bed' | 'guest' | 'wifi' | 'area' | 'clock'
+>;
+const STROKED = new Set<string>([
+  'check',
+  'caretDown',
+  'bed',
+  'guest',
+  'wifi',
+  'area',
+  'clock',
+] satisfies Stroked[]);
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'children'> {
   name: IconName;

@@ -63,3 +63,71 @@ describe('a hotel detail page', () => {
     expect(screen.queryByText('Номера')).not.toBeInTheDocument();
   });
 });
+
+describe('the photographs and the facts above the fold', () => {
+  const picture = (url: string) => ({
+    url,
+    alt: 'Отель',
+    width: 1600,
+    height: 1000,
+    lqip: null,
+    focalX: null,
+    focalY: null,
+  });
+
+  it('leads with the cover and offers the rest as thumbnails', async () => {
+    await render(
+      hotelDetail({
+        cover: picture('/api/v1/uploads/cover.webp'),
+        gallery: [
+          { caption: 'Ванная', media: picture('/api/v1/uploads/bath.webp') },
+          { caption: 'Завтрак', media: picture('/api/v1/uploads/breakfast.webp') },
+        ],
+      }),
+    );
+
+    // The cover is the first thumbnail rather than a separate thing above them: treating it as
+    // a different kind of picture is what made the page show it twice.
+    const thumbs = await screen.findAllByRole('button', { name: /Открыть фотографию/ });
+    expect(thumbs.length).toBeGreaterThan(0);
+    const images = screen.getAllByRole('img');
+    expect(images.some((image) => image.getAttribute('src')?.includes('cover.webp'))).toBe(true);
+    expect(images.some((image) => image.getAttribute('src')?.includes('bath.webp'))).toBe(true);
+  });
+
+  it('says when a guest may arrive and when they must leave', async () => {
+    // Two facts every hotel page in the world carries and this one did not, so a visitor
+    // choosing between a morning flight and an evening one had to write and ask.
+    await render();
+
+    expect(await screen.findByText(/заезд с 14:00/)).toBeInTheDocument();
+    expect(screen.getByText(/выезд до 12:00/)).toBeInTheDocument();
+  });
+
+  it('states the class once, not three times in four centimetres', async () => {
+    /*
+     * The first version put it in the line above the photographs, in the stars beside it, and
+     * again in the icon row. A fact repeated is a fact the reader stops trusting the layout
+     * about.
+     */
+    const { container } = await render();
+
+    await screen.findByText(/заезд с 14:00/);
+
+    // «5 ★» belongs to the line above the photographs, where it sits beside the city. The icon
+    // row must not say it again — the stars beside it are already the same fact drawn.
+    const factRow = container.querySelector('ul.grid-cols-5');
+    expect(factRow).not.toBeNull();
+    expect(factRow?.textContent).not.toContain('5 ★');
+  });
+
+  it('counts the kinds of room and the largest of them', async () => {
+    await render();
+
+    // From the rooms themselves — «2 вида номеров» is a COUNT, not a number anybody typed, and
+    // the plural form follows the count rather than being «2 видов».
+    expect(await screen.findByText('2 вида номеров')).toBeInTheDocument();
+    // The largest room, not the sum and not the first: «до 74 м²» beside the room that is 74.
+    expect(screen.getByText('до 74 м²')).toBeInTheDocument();
+  });
+});
