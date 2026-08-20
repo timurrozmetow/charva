@@ -1,4 +1,5 @@
 import { DEFAULT_PRICING_RULES, formatMoney, quote } from '@charva/contracts';
+import { eq } from 'drizzle-orm';
 import mysql from 'mysql2/promise';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -62,9 +63,11 @@ afterAll(async () => {
 });
 
 describe('the catalogue', () => {
-  it('holds the nine tours the design describes', async () => {
+  it('holds the nine tours the design describes, and the one that is real', async () => {
     const tours = await db.select().from(t.tours);
-    expect(tours).toHaveLength(9);
+    // Nine invented to fill a layout, plus the operator's own tour sheet. The demo rows are
+    // meant to be deleted the week the site goes live; the tenth is not — see `owner-content.ts`.
+    expect(tours).toHaveLength(10);
 
     const classic = tours.find((tour) => tour.slug === 'klassicheskiy-turkmenistan');
     expect(classic?.title).toEqual({ ru: 'Классический Туркменистан' });
@@ -73,6 +76,49 @@ describe('the catalogue', () => {
     expect(classic?.cities).toBe(5);
     expect(classic?.priceFromMinor).toBe(119_000);
     expect(formatMoney({ minor: classic?.priceFromMinor ?? 0, currency: 'USD' })).toBe('1 190 $');
+  });
+
+  it('carries the operator’s own tour sheet whole, price tiers and all', async () => {
+    /*
+     * The first content in this repository that somebody is actually selling.
+     *
+     * Worth a test of its own because a mistake here does not look like a bug — it looks like a
+     * tour that quietly costs the wrong money, or a day that lost three of its five lines.
+     */
+    const [tour] = await db.select().from(t.tours).where(eq(t.tours.slug, 'turkmenistan-5-days'));
+    expect(tour).toBeDefined();
+    expect(tour?.days).toBe(5);
+    // The sheet says «Hotel, camp» and never names a class, so neither does the row.
+    expect(tour?.hotelStars).toBeNull();
+
+    const days = await db.select().from(t.tourDays).where(eq(t.tourDays.tourId, tour!.id));
+    expect(days).toHaveLength(5);
+    // Five days written as lists: the newlines are the list, and losing them turns a day into
+    // one run-on sentence.
+    const first = days.find((day) => day.dayNumber === 1);
+    expect(first?.description?.ru?.split('\n')).toHaveLength(5);
+
+    const lines = await db
+      .select()
+      .from(t.tourInclusions)
+      .where(eq(t.tourInclusions.tourId, tour!.id));
+    expect(lines.filter((line) => line.kind === 'included')).toHaveLength(6);
+    expect(lines.filter((line) => line.kind === 'excluded')).toHaveLength(4);
+
+    const prices = await db.select().from(t.tourPrices).where(eq(t.tourPrices.tourId, tour!.id));
+    expect(prices.map((tier) => [tier.pax, tier.priceMinor])).toEqual([
+      [1, 100_000],
+      [2, 93_000],
+      [3, 87_000],
+      [4, 83_000],
+    ]);
+
+    // «от 830 $» is the cheapest tier rather than a number below every tier — a price nobody
+    // can pay would be the worst of the three possible readings.
+    expect(tour?.priceFromMinor).toBe(Math.min(...prices.map((tier) => tier.priceMinor)));
+    // Matched rather than compared: the separator `formatMoney` puts before the sign is a
+    // non-breaking space, and pinning an invisible character here would test the wrong thing.
+    expect(formatMoney({ minor: tour?.priceFromMinor ?? 0, currency: 'USD' })).toMatch(/^830\s\$$/);
   });
 
   it('keeps the camp and the boutique out of the star ratings', async () => {

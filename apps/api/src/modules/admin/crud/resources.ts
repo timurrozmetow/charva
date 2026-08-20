@@ -118,6 +118,21 @@ const RESOURCES: AdminResource[] = [
     localized: ['caption'],
     filters: ['tourId'],
   }),
+  define('tour_inclusions', {
+    table: t.tourInclusions,
+    site: 'global',
+    localized: ['text'],
+    filters: ['tourId', 'kind'],
+  }),
+  define('tour_prices', {
+    table: t.tourPrices,
+    site: 'global',
+    money: ['priceMinor'],
+    filters: ['tourId'],
+    // Read in the order a party grows. A hand-sortable column here could only be sorted wrong.
+    orderBy: ['tourId', 'pax'],
+    orderable: false,
+  }),
   define('hotels', {
     table: t.hotels,
     site: 'global',

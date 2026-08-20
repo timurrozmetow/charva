@@ -2,9 +2,11 @@ import { formatMoney, type Lang } from '@charva/contracts';
 import {
   Badge,
   buttonClass,
+  cn,
   Container,
   Eyebrow,
   Heading,
+  Icon,
   ImageSlot,
   Section,
   StarRating,
@@ -39,11 +41,14 @@ export interface TourDetailPageProps {
  * were, which is why it reads as a longer version of the catalogue card rather than as a new
  * kind of page.
  *
- * What it deliberately does **not** show is a breakdown of what the price includes. The API has
- * no such field and no row anywhere holds one: a list of what a tour operator includes for
- * $1,290 is a commercial commitment, and writing a plausible one here would be inventing a
- * promise on the owner's behalf. Question Q-20 asks for it; until it is answered the page shows
- * the figure, says what it is per, and says the manager confirms the rest.
+ * For a long time it deliberately did **not** show what the price includes: no row anywhere held
+ * one, and a list of what a tour operator provides for $1,290 is a commercial commitment that
+ * nobody here was entitled to invent. Question Q-20 asked the owner for it and the answer arrived
+ * as a tour sheet, so the page now prints the sheet — the two lists and the price per party size.
+ *
+ * A tour without them prints neither, and neither does it apologise for it. Eight of the nine
+ * demo rows have no composition, and a heading over an empty column reads as a page that failed
+ * to load rather than as a tour whose sheet has not been typed in yet.
  */
 export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
   const copy = copyFor(lang);
@@ -154,11 +159,7 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
                               </div>
                               <div>
                                 <h3 className="text-cardTitle font-medium text-ink">{day.title}</h3>
-                                {day.description !== '' && (
-                                  <p className="mt-2 text-bodySm font-light text-body">
-                                    {day.description}
-                                  </p>
-                                )}
+                                {day.description !== '' && <DayLines text={day.description} />}
                               </div>
                             </li>
                           ))}
@@ -181,7 +182,30 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
                     <p className="mt-2 text-h2Sm font-medium text-ink">
                       {copy.common.from} {formatMoney(tour.priceFrom)}
                     </p>
-                    <p className="mt-2 text-bodySm font-light text-muted">{copy.tour.priceNote}</p>
+                    {/* The hedge gives way to the table. «Итог зависит от числа гостей» is what
+                        a page says when it cannot say what the number is; once the tiers exist,
+                        saying it as well would be an apology for an answer already on screen. */}
+                    <p className="mt-2 text-bodySm font-light text-muted">
+                      {tour.prices.length > 0 ? copy.tour.pricesNote : copy.tour.priceNote}
+                    </p>
+
+                    {tour.prices.length > 0 && (
+                      <ul className="mt-6 flex list-none flex-col gap-0 p-0">
+                        {tour.prices.map((tier) => (
+                          <li
+                            key={tier.pax}
+                            className="flex items-baseline justify-between gap-4 border-b border-line py-3"
+                          >
+                            <span className="text-bodySm text-muted">
+                              {plural(copy.common.people, tier.pax, lang)}
+                            </span>
+                            <span className="text-body font-medium text-ink">
+                              {formatMoney(tier.price)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
 
                     <dl className="mt-7">
                       <Fact label={copy.tour.facts.days}>
@@ -224,6 +248,38 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
           </QueryState>
         </Container>
       </Section>
+
+      {/*
+        The two lists a tour sheet prints side by side, and this page could not print at all: it
+        showed one figure and said the manager confirms the rest.
+
+        Full width rather than in the column beside the price panel, for the reason the sheet
+        does it that way — «Что входит в стоимость» does not fit on one line in 370 pixels, and a
+        heading that wraps while the one next to it does not leaves the two lists starting at
+        different heights. A tick against a cross rather than two shades of the same tick:
+        «included» against «not included» is the one distinction here a reader must not have to
+        infer from a colour.
+      */}
+      {tour !== undefined && (tour.included.length > 0 || tour.excluded.length > 0) && (
+        <Section space="md">
+          <Container>
+            <div className="grid grid-cols-2 gap-x-16 gap-y-10 tab:grid-cols-1">
+              <Checklist
+                title={copy.tour.includedTitle}
+                items={tour.included}
+                icon="check"
+                tone="accent"
+              />
+              <Checklist
+                title={copy.tour.excludedTitle}
+                items={tour.excluded}
+                icon="cross"
+                tone="muted"
+              />
+            </div>
+          </Container>
+        </Section>
+      )}
 
       {tour !== undefined && tour.gallery.length > 0 && (
         <Section space="md">
@@ -291,6 +347,70 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
         </Section>
       )}
     </>
+  );
+}
+
+/**
+ * A day's programme, which is a list far more often than it is a paragraph.
+ *
+ * The seeded days are one sentence each and the first real tour's are five bullets each, so the
+ * shape follows the text rather than the other way round: run them together into a paragraph and
+ * «Обед.» ends up in the middle of a sentence about a canyon.
+ */
+function DayLines({ text }: { text: string }) {
+  const lines = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '');
+
+  if (lines.length < 2) {
+    return <p className="mt-2 text-bodySm font-light text-body">{text}</p>;
+  }
+
+  return (
+    <ul className="mt-3 flex list-none flex-col gap-2 p-0">
+      {lines.map((line, index) => (
+        <li key={`${String(index)}-${line.slice(0, 24)}`} className="flex items-start gap-3">
+          <span aria-hidden className="mt-[9px] size-[5px] shrink-0 rounded-full bg-accent" />
+          <span className="text-bodySm font-light text-body">{line}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** «Что входит в стоимость» and its opposite — the same list twice, marked differently. */
+function Checklist({
+  title,
+  items,
+  icon,
+  tone,
+}: {
+  title: string;
+  items: string[];
+  icon: 'check' | 'cross';
+  tone: 'accent' | 'muted';
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <div>
+      <Heading level={2} size="h2Sm">
+        {title}
+      </Heading>
+      <ul className="mt-6 flex list-none flex-col gap-3 p-0">
+        {items.map((item) => (
+          <li key={item} className="flex items-start gap-3">
+            <Icon
+              name={icon}
+              size={16}
+              className={cn('mt-1 shrink-0', tone === 'accent' ? 'text-accent' : 'text-muted')}
+            />
+            <span className="text-bodySm font-light text-body">{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

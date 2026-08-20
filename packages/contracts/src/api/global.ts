@@ -51,10 +51,24 @@ export const tourDaySchema = z.object({
   media: mediaRefSchema.nullable(),
 });
 
+export const tourPriceSchema = z.object({
+  /** The size of the party the figure is for, never a number of rooms. */
+  pax: z.number().int(),
+  price: moneySchema,
+});
+
 export const tourDetailSchema = tourCardSchema.extend({
   body: z.string(),
   /** The day-by-day programme. Named apart from `days`, which is the trip's length. */
   itinerary: z.array(tourDaySchema),
+  /** What the price covers, and what it does not. Empty on a tour nobody has written them for. */
+  included: z.array(z.string()),
+  excluded: z.array(z.string()),
+  /**
+   * Per person, falling as the party grows — a guide and a car cost the same for one traveller
+   * or four. Empty means the tour quotes the one figure in `priceFrom` and nothing finer.
+   */
+  prices: z.array(tourPriceSchema),
   gallery: z.array(z.object({ caption: z.string(), media: mediaRefSchema })),
   /** Same category, published, excluding this one. Three at most. */
   related: z.array(tourCardSchema),
@@ -352,6 +366,7 @@ export const globalHomeResponse = z.object({
  * an annotation. Contracts owns the schema, so contracts owns the type.
  */
 export type TourDay = z.infer<typeof tourDaySchema>;
+export type TourPrice = z.infer<typeof tourPriceSchema>;
 export type TourDetail = z.infer<typeof tourDetailSchema>;
 export type ToursQuery = z.infer<typeof toursQuery>;
 export type ToursResponse = z.infer<typeof toursResponse>;

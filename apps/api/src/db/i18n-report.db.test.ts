@@ -39,16 +39,25 @@ describe('coverage', () => {
     /*
      * Question Q-3, and the number is a fact rather than an approximation.
      *
-     * It is not quite zero: the nine room types — «Люкс», «Suite», «Suit» — ship translated
-     * from the migration that creates them, because nine words of hotel vocabulary is not the
-     * translation work Q-3 is about. Everything an operator writes is still Russian only, which
-     * is what a percentage in the low single digits says.
+     * Neither is zero any more, for two unrelated reasons. The nine room types — «Люкс»,
+     * «Suite», «Suit» — ship translated from the migration that creates them, because nine words
+     * of hotel vocabulary is not the translation work Q-3 is about. And the first real tour
+     * arrived from the owner as an English tour sheet, so it is the one row in the catalogue
+     * that is bilingual by origin rather than by translation.
+     *
+     * Everything else an operator has written is still Russian only, which is what a percentage
+     * this far below the publication threshold says.
      */
-    expect(global.percent.en).toBeLessThan(5);
+    expect(global.percent.en).toBeLessThan(20);
     expect(global.percent.tr).toBeLessThan(5);
 
     const catalogue = global.fields.find((field) => field.table === 'tours');
-    expect(catalogue?.filled.en).toBe(0);
+    expect(catalogue).toBeDefined();
+    // Bounded on both sides on purpose: at zero the real tour has lost its English, and at
+    // `values` somebody has bulk-filled the column and the report has stopped measuring Q-3.
+    expect(catalogue!.filled.en).toBeGreaterThan(0);
+    expect(catalogue!.filled.en).toBeLessThan(catalogue!.values);
+    expect(catalogue!.filled.tr).toBe(0);
   });
 
   it('does not count an empty optional column as an untranslated one', async () => {

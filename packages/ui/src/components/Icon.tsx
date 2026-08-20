@@ -21,6 +21,14 @@ const paths = {
   star: 'M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4 6.2 20.5l1.1-6.5L2.6 9.4l6.5-.9L12 2.6z',
   /** The dropdown tick next to the active language. */
   check: 'M4.5 12.5l5 5 10-11',
+  /**
+   * The tick's opposite, against a line the price does *not* cover.
+   *
+   * A muted tick would have done the same job in half the code and is exactly the wrong choice:
+   * «included» and «not included» is the one distinction on that page a reader must not have to
+   * infer from a shade of grey.
+   */
+  cross: 'M6.5 6.5l11 11M17.5 6.5l-11 11',
   /** The four-pointed bullet in the Umrah package composition. */
   diamond: 'M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4L12 2z',
   /** The caret on the language switcher. */
@@ -60,10 +68,11 @@ export type IconName = keyof typeof paths | 'starHalf' | 'globe';
 
 type Stroked = Extract<
   IconName,
-  'check' | 'caretDown' | 'bed' | 'guest' | 'wifi' | 'area' | 'clock'
+  'check' | 'cross' | 'caretDown' | 'bed' | 'guest' | 'wifi' | 'area' | 'clock'
 >;
 const STROKED = new Set<string>([
   'check',
+  'cross',
   'caretDown',
   'bed',
   'guest',

@@ -5,6 +5,7 @@ import { type Database } from '../client';
 import * as t from '../schema';
 
 import { loadContent, rows, SCREEN_PAGES, type SlottedRow } from './content';
+import { seedOwnerTours } from './owner-content';
 import {
   codeFromLabel,
   GALLERY_CATEGORIES,
@@ -51,6 +52,8 @@ export async function seedAll(db: Database): Promise<SeedCounts> {
 
   record('content_slots', await seedContentSlots(db));
   record('tours', await seedTours(db));
+  // Real content, kept apart from the demo catalogue above it — see `owner-content.ts`.
+  record('tours_owner', await seedOwnerTours(db));
   record('hotels', await seedHotels(db));
   record('amenities', await seedAmenities(db));
   record('hotel_rooms', await seedHotelRooms(db));

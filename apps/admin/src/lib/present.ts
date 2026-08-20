@@ -49,6 +49,8 @@ export const FOREIGN_KEYS: Record<string, string> = {
 export const PARENT_OF: Record<string, string> = {
   tour_days: 'tours',
   tour_media: 'tours',
+  tour_inclusions: 'tours',
+  tour_prices: 'tours',
   hotel_rooms: 'hotels',
   hotel_media: 'hotels',
   builder_options: 'builder_steps',
@@ -187,7 +189,7 @@ export function titleOf(row: Row, resource: AdminResourceMeta): string {
     if (typeof value === 'string' && value !== '') return value;
   }
 
-  for (const key of ['departAt', 'dayNumber', 'createdAt']) {
+  for (const key of ['departAt', 'dayNumber', 'pax', 'createdAt']) {
     const value = row[key];
     if (value !== null && value !== undefined) {
       return `${labelFor(FIELD_LABELS, key)}: ${plain(value, key, resource.site)}`;

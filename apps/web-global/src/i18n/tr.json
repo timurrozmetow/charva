@@ -89,6 +89,12 @@
       "many": "{count} kişilik",
       "other": "{count} kişilik"
     },
+    "people": {
+      "one": "{count} kişi",
+      "few": "{count} kişi",
+      "many": "{count} kişi",
+      "other": "{count} kişi"
+    },
     "starsFact": {
       "one": "{count} yıldız",
       "few": "{count} yıldız",
@@ -413,6 +419,9 @@
     "formLead": "Numaranızı bırakın — tarihleri netleştirip günlük programı gönderelim.",
     "priceLabel": "Fiyat",
     "priceNote": "İki kişilik odada kişi başı. Kesin tutar tarihlere ve kişi sayısına göre değişir.",
+    "pricesNote": "Kişi başı. Grup büyüdükçe fiyat düşer.",
+    "includedTitle": "Fiyata dahil olanlar",
+    "excludedTitle": "Fiyata dahil olmayanlar",
     "builderCta": "Kendime göre değiştir",
     "facts": {
       "days": "Süre",

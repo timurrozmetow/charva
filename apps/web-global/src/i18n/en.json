@@ -89,6 +89,12 @@
       "many": "sleeps {count}",
       "other": "sleeps {count}"
     },
+    "people": {
+      "one": "{count} person",
+      "few": "{count} people",
+      "many": "{count} people",
+      "other": "{count} people"
+    },
     "starsFact": {
       "one": "{count} star",
       "few": "{count} stars",
@@ -413,6 +419,9 @@
     "formLead": "Leave a number — we will confirm the dates and send the day-by-day itinerary.",
     "priceLabel": "Price",
     "priceNote": "Per person sharing a double room. The final figure depends on the dates and the party size.",
+    "pricesNote": "Per person. The larger the party, the lower the rate.",
+    "includedTitle": "What’s included",
+    "excludedTitle": "What’s not included",
     "builderCta": "Adapt it to me",
     "facts": {
       "days": "Length",

@@ -66,6 +66,8 @@ async function ensureSeeded(pool: mysql.Pool): Promise<void> {
     'amenities',
     'tour_media',
     'tour_days',
+    'tour_inclusions',
+    'tour_prices',
     'tours',
     'hotels',
     'articles',

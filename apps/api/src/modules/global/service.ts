@@ -125,6 +125,18 @@ export async function listTours(context: Context, query: ToursQuery) {
   };
 }
 
+/** One of the two lists, in reading order, with anything untranslated left out. */
+function inclusionsOf(
+  rows: (typeof t.tourInclusions.$inferSelect)[],
+  kind: 'included' | 'excluded',
+  lang: Lang,
+): string[] {
+  return rows
+    .filter((row) => row.kind === kind)
+    .map((row) => text(row.text, lang))
+    .filter((line) => line !== '');
+}
+
 export async function getTour(context: Context, slug: string) {
   const { db, lang } = context;
 
@@ -136,7 +148,7 @@ export async function getTour(context: Context, slug: string) {
 
   if (tour === undefined) throw notFound(`Tour «${slug}»`);
 
-  const [days, gallery, related] = await Promise.all([
+  const [days, gallery, related, inclusions, prices] = await Promise.all([
     db
       .select()
       .from(t.tourDays)
@@ -153,6 +165,18 @@ export async function getTour(context: Context, slug: string) {
       .where(and(published, eq(t.tours.category, tour.category), ne(t.tours.id, tour.id)))
       .orderBy(asc(t.tours.sortOrder))
       .limit(3),
+    db
+      .select()
+      .from(t.tourInclusions)
+      .where(eq(t.tourInclusions.tourId, tour.id))
+      .orderBy(asc(t.tourInclusions.sortOrder), asc(t.tourInclusions.id)),
+    // By party size, which is also the order a reader compares them in — there is no hand-sorted
+    // column here that could be sorted wrong.
+    db
+      .select()
+      .from(t.tourPrices)
+      .where(eq(t.tourPrices.tourId, tour.id))
+      .orderBy(asc(t.tourPrices.pax)),
   ]);
 
   const media = await mediaContext(context, [
@@ -171,6 +195,20 @@ export async function getTour(context: Context, slug: string) {
       description: text(day.description, lang),
       city: text(day.city, lang),
       media: mediaRef(day.mediaId, media),
+    })),
+    /*
+     * One query, two lists.
+     *
+     * A row whose text is empty in this language is dropped rather than printed as a bullet with
+     * nothing after it: a checklist with a blank line in it reads as a page that failed to load.
+     */
+    included: inclusionsOf(inclusions, 'included', lang),
+    excluded: inclusionsOf(inclusions, 'excluded', lang),
+    prices: prices.map((row) => ({
+      pax: row.pax,
+      // The tour's currency, never the tier's — `tour_prices` deliberately has no column that
+      // could disagree with it.
+      price: { minor: row.priceMinor, currency: tour.priceCurrency },
     })),
     gallery: gallery.flatMap((item) => {
       const picture = mediaRef(item.mediaId, media);

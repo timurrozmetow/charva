@@ -114,6 +114,12 @@ export function tourDetail(overrides: Partial<TourDetail> = {}): TourDetail {
         media: null,
       },
     ],
+    included: ['Профессиональный англоговорящий гид', 'Транспорт'],
+    excluded: ['Визовый сбор', 'Страховка'],
+    prices: [
+      { pax: 1, price: { minor: 100000, currency: 'USD' } },
+      { pax: 2, price: { minor: 93000, currency: 'USD' } },
+    ],
     gallery: [],
     related: [],
     ...overrides,

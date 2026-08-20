@@ -32,8 +32,9 @@ describe('the tour catalogue', () => {
   it('counts what it has rather than claiming thirty-two', async () => {
     const body = await get<{ items: unknown[]; meta: { total: number } }>('/global/tours');
 
-    expect(body.meta.total).toBe(9);
-    expect(body.items).toHaveLength(9);
+    // Nine from the prototype's demo catalogue and one the owner actually sells.
+    expect(body.meta.total).toBe(10);
+    expect(body.items).toHaveLength(10);
   });
 
   it('builds its chips from the categories that actually have tours', async () => {
@@ -83,6 +84,53 @@ describe('the tour catalogue', () => {
     expect(body.slug).toBe('klassicheskiy-turkmenistan');
     expect(body.related.length).toBeLessThanOrEqual(3);
     expect(body.related.map((tour) => tour.slug)).not.toContain(body.slug);
+  });
+
+  it('answers what the price covers, what it does not, and what a party of four pays', async () => {
+    /*
+     * The one tour in the catalogue that is a real commercial offer rather than a demo row.
+     *
+     * Question Q-20 asked the owner for the composition of a tour price and the answer arrived as
+     * a tour sheet, so the page that used to print one figure and defer the rest to a manager now
+     * prints the sheet. The tiers fall as the party grows because a guide and a car cost the same
+     * for one traveller as for four.
+     */
+    const body = await get<{
+      priceFrom: { minor: number; currency: string };
+      included: string[];
+      excluded: string[];
+      prices: { pax: number; price: { minor: number; currency: string } }[];
+      itinerary: { dayNumber: number; description: string }[];
+    }>('/global/tours/turkmenistan-5-days');
+
+    expect(body.included).toContain('Профессиональный англоговорящий гид');
+    expect(body.excluded).toContain('Страховка');
+
+    expect(body.prices.map((tier) => tier.pax)).toEqual([1, 2, 3, 4]);
+    expect(body.prices.map((tier) => tier.price.minor)).toEqual([100000, 93000, 87000, 83000]);
+
+    // «от 830 $» is the last tier, not a number below every tier: a price nobody can pay is
+    // worse than no price at all.
+    expect(body.priceFrom.minor).toBe(83000);
+    // Every tier is quoted in the tour's own currency — `tour_prices` has no column that could
+    // disagree with it.
+    for (const tier of body.prices) expect(tier.price.currency).toBe(body.priceFrom.currency);
+
+    // Five days, and each one a list rather than a paragraph — the newlines survive the column.
+    expect(body.itinerary).toHaveLength(5);
+    expect(body.itinerary[0]?.description).toContain('\n');
+  });
+
+  it('sends empty lists for a tour nobody has written a price sheet for', async () => {
+    // Eight of the nine demo tours have neither, and the page has to read as a tour without a
+    // published composition rather than as one that failed to load.
+    const body = await get<{ included: string[]; excluded: string[]; prices: unknown[] }>(
+      '/global/tours/klassicheskiy-turkmenistan',
+    );
+
+    expect(body.included).toEqual([]);
+    expect(body.excluded).toEqual([]);
+    expect(body.prices).toEqual([]);
   });
 
   it('404s a slug nobody published, in the single error envelope', async () => {
@@ -319,7 +367,7 @@ describe('pagination', () => {
     expect(body.meta).toEqual({
       page: 1,
       perPage: 4,
-      total: 9,
+      total: 10,
       totalPages: 3,
       hasMore: true,
     });

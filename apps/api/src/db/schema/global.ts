@@ -97,6 +97,46 @@ export const tourMedia = mysqlTable(
 );
 
 /**
+ * What the price covers and what it does not.
+ *
+ * One table with a `kind` rather than two tables with the same three columns: the lists print
+ * side by side, are written in one sitting, and differ only in which heading they sit under.
+ */
+export const tourInclusions = mysqlTable(
+  'tour_inclusions',
+  {
+    id: int().autoincrement().primaryKey(),
+    tourId: int().notNull(),
+    kind: mysqlEnum(['included', 'excluded']).notNull(),
+    text: json().$type<LocalizedColumn>().notNull(),
+    sortOrder: int('sort_order').notNull().default(0),
+  },
+  (table) => [index('tour_inclusions_tour_idx').on(table.tourId, table.kind, table.sortOrder)],
+);
+
+/**
+ * What the tour costs a party of one, two, three or four.
+ *
+ * Per person, and falling as the party grows, because a guide and a car cost the same whether
+ * they carry one traveller or four. No currency column: the tour has one, and a tier able to
+ * disagree with it would eventually quote two people in dollars and three in manat.
+ */
+export const tourPrices = mysqlTable(
+  'tour_prices',
+  {
+    id: int().autoincrement().primaryKey(),
+    tourId: int().notNull(),
+    /** The size of the party, never a number of rooms. */
+    pax: tinyint().notNull(),
+    priceMinor: bigint({ mode: 'number' }).notNull(),
+  },
+  (table) => [
+    unique('tour_prices_pax_uq').on(table.tourId, table.pax),
+    index('tour_prices_tour_idx').on(table.tourId, table.pax),
+  ],
+);
+
+/**
  * Hotels.
  *
  * `stars` and `category` are separate columns because the design contradicts itself when they
