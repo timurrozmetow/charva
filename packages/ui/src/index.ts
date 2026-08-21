@@ -43,6 +43,9 @@ export * from './components/StarRating';
 export * from './components/StatStrip';
 export * from './components/Tabs';
 export * from './components/Toast';
+export * from './components/TopProgress';
+
+export * from './bootSplash';
 
 export * from './hooks/useCountdown';
 export * from './hooks/useFocusTrap';

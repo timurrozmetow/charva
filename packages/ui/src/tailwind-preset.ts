@@ -315,12 +315,24 @@ export const charvaPreset = {
           from: { opacity: '0', transform: 'translateY(16px)' },
           to: { opacity: '1', transform: 'none' },
         },
+        /**
+         * A page arriving after a navigation.
+         *
+         * Opacity only, and a very small rise. A larger translate reads well on a single card
+         * and badly on a whole document — the footer visibly slides up under the fold — and it
+         * fights scroll restoration, which has already put the window where it belongs.
+         */
+        pageIn: {
+          from: { opacity: '0', transform: 'translateY(4px)' },
+          to: { opacity: '1', transform: 'none' },
+        },
       },
 
       animation: {
         'drop-in': `dropIn ${String(duration.drop)}ms ${easing.drop} both`,
         pulse: 'pulse 2s ease-in-out infinite',
         'fade-up': '"fadeUp" 900ms ease both',
+        'page-in': 'pageIn 260ms ease-out both',
       },
 
       backdropBlur: {

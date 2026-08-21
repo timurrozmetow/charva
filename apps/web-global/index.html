@@ -7,8 +7,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Готовые туры и индивидуальные маршруты по Туркменистану." />
     <title>Charva Travel — Туркменистан</title>
+
+    <!--
+      The loading screen, inline because it has to be the first thing that paints.
+
+      Every colour here is a literal rather than a `var(--c-*)`: the token stylesheet is one of
+      the files being waited for, so a variable would resolve to nothing during the only moment
+      this element exists. They are `bg` and `sand` from `tokens.ts` and are checked by
+      `boot-splash.test.ts`, which is what stops them drifting from the palette.
+    -->
+    <style>
+      html {
+        background: #faf6ef;
+      }
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #faf6ef;
+        opacity: 1;
+        transition: opacity 360ms ease;
+        /* A pure-CSS giving-up, in case the script never arrives: better an empty page that
+           can be reloaded than a spinner that turns for ever. */
+        animation: boot-give-up 0s linear 12s forwards;
+      }
+      #boot[data-done] {
+        opacity: 0;
+      }
+      #boot i {
+        display: block;
+        width: 46px;
+        height: 46px;
+        border: 2px solid rgba(130, 109, 88, 0.18);
+        border-top-color: #dfa059;
+        border-radius: 50%;
+        animation: boot-spin 900ms linear infinite;
+      }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes boot-give-up {
+        to {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        /* Still a ring, still clearly not the page — but nothing turns. */
+        #boot i {
+          animation: none;
+          border-right-color: #dfa059;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="boot"><i></i></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

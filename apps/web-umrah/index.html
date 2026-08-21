@@ -7,8 +7,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Umra ziyaraty — turkmen topary bilen." />
     <title>Charva Umrah</title>
+
+    <!-- The loading screen. See the twin in `apps/web-global/index.html` for why the colours
+         are literals; these are Umrah's `bg` and the shared `sand`. -->
+    <style>
+      html {
+        background: #f7f4ee;
+      }
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f7f4ee;
+        opacity: 1;
+        transition: opacity 360ms ease;
+        animation: boot-give-up 0s linear 12s forwards;
+      }
+      #boot[data-done] {
+        opacity: 0;
+      }
+      #boot i {
+        display: block;
+        width: 46px;
+        height: 46px;
+        border: 2px solid rgba(102, 115, 108, 0.18);
+        border-top-color: #dfa059;
+        border-radius: 50%;
+        animation: boot-spin 900ms linear infinite;
+      }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes boot-give-up {
+        to {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot i {
+          animation: none;
+          border-right-color: #dfa059;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="boot"><i></i></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

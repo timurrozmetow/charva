@@ -1,4 +1,5 @@
 import { ApiRequestError } from '@charva/contracts';
+import { hideBootSplash } from '@charva/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
@@ -46,3 +47,6 @@ createRoot(container).render(
     </QueryClientProvider>
   </StrictMode>,
 );
+
+// The cover comes off once React has painted, not once it has been told to — see `bootSplash`.
+hideBootSplash();
