@@ -18,10 +18,10 @@ export interface ChoiceNavProps {
  * what it now sits on. Centred because this page is two halves and a nav belonging to neither
  * should straddle the seam rather than sit in one of them.
  *
- * It hugs its content instead of filling the rail. The public sites' island carries a logo, a
- * menu and a call to action and has something to fill 1440 pixels with; this one holds two
- * elements, and stretched to the same width it would be a long empty pill with a corner at each
- * end.
+ * It spans the rail, like the islands on the two public sites. It was built hugging its content
+ * first, on the reasoning that a logo and a language switcher have nothing to fill 1440 pixels
+ * with — but the owner has seen both and wants the long one, and consistency across the four
+ * sites is a better argument than my worry about the space between two elements.
  *
  * The wrapper does not take pointer events, so the two halves stay hoverable underneath it
  * across their full width — without that, a strip across the top of the screen would silently
@@ -42,7 +42,7 @@ export function ChoiceNav({ lang }: ChoiceNavProps) {
       <div className="mx-auto flex max-w-island-choice justify-center">
         <div
           className={[
-            'pointer-events-auto flex items-center gap-6 rounded-full',
+            'pointer-events-auto flex w-full items-center justify-between gap-6 rounded-full',
             'border border-line bg-island py-[10px] pl-[22px] pr-[14px]',
             'shadow-island backdrop-blur-island tab:gap-3 tab:pl-4',
           ].join(' ')}
