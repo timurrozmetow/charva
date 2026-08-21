@@ -58,6 +58,17 @@ export interface SectionProps extends HTMLAttributes<HTMLElement> {
  * light sections stack with 100px between them, and a section with a colour owns both edges
  * (`background:#33261B; padding:100px 0 110px`). Two stacked light sections that each claimed
  * top and bottom padding would sit 200px apart.
+ *
+ * The gap that rule leaves out is the one **above** a coloured band, and it is not nobody's: a
+ * painted section starts painting at its first pixel, so the light block above it ends flush
+ * against the colour — a card, a list or a heading fifteen pixels from the edge of a brown
+ * rectangle. Four pages had noticed and each had solved it differently: two put `mt-16` on the
+ * band, one put `pb-16` on the block above, and the homepage had nothing at all. So a painted
+ * section that keeps its own rhythm now carries that margin itself.
+ *
+ * `space="none"` is the opt-out, and it already means the right thing: every band that is
+ * deliberately flush — the dark heroes on `/video` and `/maksatnama`, the thin statistics strip
+ * on the Umrah homepage — sets its own padding and had already asked for no rhythm at all.
  */
 export function Section({
   as: Tag = 'section',
@@ -74,7 +85,13 @@ export function Section({
   return (
     <Tag
       data-surface={isDark ? 'dark' : undefined}
-      className={cn(TONE[tone], SPACE_TOP[space], paints && SPACE_BOTTOM[space], className)}
+      className={cn(
+        TONE[tone],
+        SPACE_TOP[space],
+        paints && SPACE_BOTTOM[space],
+        paints && space !== 'none' && 'mt-16 tab:mt-12 mob:mt-10',
+        className,
+      )}
       {...rest}
     >
       {bleed ? children : <Container>{children}</Container>}

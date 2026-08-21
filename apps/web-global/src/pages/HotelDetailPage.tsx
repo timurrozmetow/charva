@@ -249,7 +249,7 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
         </Container>
       </Section>
 
-      <Section tone="dark" space="md" id="enquiry" className="mt-16">
+      <Section tone="dark" space="md" id="enquiry">
         <Container>
           <div className="grid grid-cols-[1fr_1.1fr] items-start gap-16 tab:grid-cols-1 tab:gap-10">
             <div>

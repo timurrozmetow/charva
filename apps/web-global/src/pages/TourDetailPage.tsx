@@ -307,15 +307,8 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
         </Section>
       )}
 
-      {/*
-        `mt-16` because a dark section paints from its first pixel.
-
-        `Section` gives a light block padding at the top only — two stacked light blocks would
-        otherwise sit 200px apart — which works right up until the next block is a coloured band,
-        and then the last line of the page above it ends twenty pixels from the edge of the
-        colour. The hotel page already carries the same margin for the same reason.
-      */}
-      <Section tone="dark" space="md" id="enquiry" className="mt-16">
+      {/* The gap above the band is `Section`'s own doing now, not this page's. */}
+      <Section tone="dark" space="md" id="enquiry">
         <Container>
           <div className="grid grid-cols-[1fr_1.1fr] items-start gap-16 tab:grid-cols-1 tab:gap-10">
             <div>
