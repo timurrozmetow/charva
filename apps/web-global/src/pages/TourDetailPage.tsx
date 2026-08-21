@@ -263,7 +263,7 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
       {tour !== undefined && (tour.included.length > 0 || tour.excluded.length > 0) && (
         <Section space="md">
           <Container>
-            <div className="grid grid-cols-2 gap-x-16 gap-y-10 tab:grid-cols-1">
+            <div className="grid grid-cols-2 gap-x-16 gap-y-14 tab:grid-cols-1">
               <Checklist
                 title={copy.tour.includedTitle}
                 items={tour.included}
@@ -307,7 +307,15 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
         </Section>
       )}
 
-      <Section tone="dark" space="md" id="enquiry">
+      {/*
+        `mt-16` because a dark section paints from its first pixel.
+
+        `Section` gives a light block padding at the top only — two stacked light blocks would
+        otherwise sit 200px apart — which works right up until the next block is a coloured band,
+        and then the last line of the page above it ends twenty pixels from the edge of the
+        colour. The hotel page already carries the same margin for the same reason.
+      */}
+      <Section tone="dark" space="md" id="enquiry" className="mt-16">
         <Container>
           <div className="grid grid-cols-[1fr_1.1fr] items-start gap-16 tab:grid-cols-1 tab:gap-10">
             <div>
@@ -398,9 +406,14 @@ function Checklist({
       <Heading level={2} size="h2Sm">
         {title}
       </Heading>
-      <ul className="mt-6 flex list-none flex-col gap-3 p-0">
+      {/*
+        Loose on purpose. Several of these lines wrap to two and three — the visa paragraph is
+        four — and at a three-unit gap a wrapped item ran into the next one, so the column read
+        as prose rather than as a list somebody can count.
+      */}
+      <ul className="mt-8 flex list-none flex-col gap-5 p-0">
         {items.map((item) => (
-          <li key={item} className="flex items-start gap-3">
+          <li key={item} className="flex items-start gap-4">
             <Icon
               name={icon}
               size={16}
