@@ -1,3 +1,4 @@
+import { type MediaRef } from '@charva/contracts';
 import { ImageSlot } from '@charva/ui';
 import { type ReactNode } from 'react';
 
@@ -20,6 +21,13 @@ export interface ChoiceHalfProps {
   /** `content_slots` key and its art direction, until a photograph exists (D-21, Q-1). */
   slotKey: string;
   brief: string;
+  /**
+   * The photograph, once the slot has one.
+   *
+   * It used to be `null` written into the component, which meant the two pictures this page is
+   * mostly made of could never appear however full the database was.
+   */
+  media: MediaRef | null;
   /** The Umrah half is darkened from a cooler base and shifted six pixels up. */
   variant: 'global' | 'umrah';
   /** The badge, which only the Umrah half has. */
@@ -50,6 +58,7 @@ export function ChoiceHalf({
   href,
   slotKey,
   brief,
+  media,
   variant,
   badge,
   headingId,
@@ -71,7 +80,24 @@ export function ChoiceHalf({
       ].join(' ')}
     >
       <div className="absolute inset-0 z-0">
-        <ImageSlot slotKey={slotKey} brief={brief} media={null} className="size-full" />
+        <ImageSlot
+          slotKey={slotKey}
+          brief={brief}
+          media={
+            media === null
+              ? null
+              : {
+                  src: media.url,
+                  alt: media.alt,
+                  ...(media.lqip === null ? {} : { lqip: media.lqip }),
+                  ...(media.width === null ? {} : { width: media.width }),
+                  ...(media.height === null ? {} : { height: media.height }),
+                }
+          }
+          // Both halves are above the fold on every screen this page has, so neither waits.
+          priority
+          className="size-full"
+        />
       </div>
 
       {/*

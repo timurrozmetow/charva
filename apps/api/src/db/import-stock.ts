@@ -65,6 +65,53 @@ const ALLOWED = ['CC0', 'Public domain', 'CC BY'];
 const NOT_A_PHOTOGRAPH =
   /(\b(map|karte|flag|coat[ _]of[ _]arms|emblem|logo|stamp|coin|banknote|medal|meteorite|diagram|chart|scheme|seal|locator|plan|drawing|engraving|lithograph|poster|svg|icon)\b|LCCN\d|RR\d{4})/i;
 
+/**
+ * A photograph of the place being rebuilt rather than of the place.
+ *
+ * The Masjid al-Haram category is full of the expansion works, and the chooser's Umrah half came
+ * back as a pit of tower cranes — on the page that sells a pilgrimage. Nothing about the file
+ * says «wrong»: it is a good photograph, correctly categorised, of the right coordinates.
+ */
+const BUILDING_SITE = /\b(construction|expansion|crane|scaffold|renovation|demolition|excavat)/i;
+
+/**
+ * Files looked at and turned down by eye, because no rule above could have caught them.
+ *
+ * The two holy sites are where this matters most and where the heuristics are weakest: the
+ * categories are large, well-maintained and full of photographs that are correct, well-lit and
+ * completely unusable on a page selling a pilgrimage. Of the first eight fetched, four were —
+ * a wheelie bin beside an information screen, a steel footbridge at night, a pit of tower cranes
+ * shot by the contractor rebuilding the mosque, and a nineteenth-century engraving whose title
+ * carries no date for {@link HISTORICAL} to find.
+ *
+ * A list of names is the honest form for this. It says «somebody looked», it can be reviewed,
+ * and it grows one line at a time — unlike a regular expression, which would have to be guessed
+ * at and would quietly take good photographs with it.
+ */
+const REJECTED = new Set([
+  'Masjidil Haram (Umroh Ramadhan 2023)-1.jpg',
+  'Masjidil Haram (Umroh Ramadhan 2023)-2.jpg',
+  'Masjidil Haram (Umroh Ramadhan 2023)-3.jpg',
+  'Masjid-Al-Nabawi Madinah.jpg',
+  /*
+   * Not a bad photograph and not the wrong place — Jannat al-Baqi is a real ziyarat site and
+   * pilgrims do visit it. But nothing here knows that, so it can only ever be dealt out as
+   * generic Medina scenery, and it arrived as the hero of the half that sells the pilgrimage:
+   * a field of grave mounds, full width, under the headline. It belongs on a page of its own or
+   * nowhere, and there is no page of its own yet.
+   */
+  'Al-Baqi Cemetery 2021.jpg',
+]);
+
+/**
+ * Whole collections that are art about a place rather than photographs of it.
+ *
+ * The Khalili Collection is engravings, manuscripts and painted panoramas of the Hajj. Every
+ * file in it is beautiful, correctly licensed and wrong for this, and naming them one by one
+ * would be a list that grows for ever — its accession numbers run into the thousands.
+ */
+const REJECTED_PREFIXES = ['Khalili Collection'];
+
 /** A title carrying a year from before photography of this kind existed here. */
 const HISTORICAL = /\b(1[6-9]\d{2}|19[0-8]\d)\b/;
 
@@ -387,6 +434,10 @@ function collect(
     // «Karakum Desert» PNGs that got through the first pass were maps.
     if (info.mime !== 'image/jpeg') continue;
     if (NOT_A_PHOTOGRAPH.test(title) || HISTORICAL.test(title)) continue;
+    if (BUILDING_SITE.test(title)) continue;
+    const bare = title.replace(/^File:/, '');
+    if (REJECTED.has(bare)) continue;
+    if (REJECTED_PREFIXES.some((prefix) => bare.startsWith(prefix))) continue;
     if (!accept(title)) continue;
 
     const license = plainText(info.extmetadata?.['LicenseShortName']?.value);
@@ -590,9 +641,21 @@ async function assign(db: Db, stored: Stored[]): Promise<void> {
 
   const pick = (text: string, wide: boolean): number => {
     const haystack = text.toLowerCase();
-    const matched = SUBJECTS.find((subject) =>
-      subject.hints.some((hint) => haystack.includes(hint)),
-    );
+
+    /*
+     * The subject the brief mentions first wins, not the one listed first here.
+     *
+     * «Фон: каньон Йангыкала на закате или Ашхабад ночью» names two subjects and means the
+     * first one; matching in declaration order gave the chooser a hazy aerial of the Ashgabat
+     * suburbs, which under that page's heavy scrim is indistinguishable from an empty panel.
+     * A brief is a sentence, and the thing it opens with is the thing it is about.
+     */
+    const matched = SUBJECTS.map((subject) => {
+      const at = subject.hints.map((hint) => haystack.indexOf(hint)).filter((index) => index >= 0);
+      return { subject, at: at.length === 0 ? Infinity : Math.min(...at) };
+    })
+      .filter((entry) => entry.at !== Infinity)
+      .sort((a, b) => a.at - b.at)[0]?.subject;
 
     const candidates = matched
       ? stored.filter((photo) => photo.subject === matched.key && (!wide || photo.landscape))
@@ -614,9 +677,12 @@ async function assign(db: Db, stored: Stored[]): Promise<void> {
     .where(isNull(t.contentSlots.mediaId));
 
   for (const slot of slots) {
+    // The chooser's two panels are the only frames on any of the three sites that are taller
+    // than they are wide, so they are the only ones a portrait photograph suits.
+    const wide = !slot.key.startsWith('choice-');
     await db
       .update(t.contentSlots)
-      .set({ mediaId: pick(`${slot.brief} ${slot.key}`, true) })
+      .set({ mediaId: pick(`${slot.brief} ${slot.key}`, wide) })
       .where(eq(t.contentSlots.id, slot.id));
   }
   process.stdout.write(`filled ${String(slots.length)} content slots\n`);

@@ -50,6 +50,9 @@ export function ChoicePage({ lang }: ChoicePageProps) {
     { value: format(data?.stats.global.guestsPerYear), label: copy.global.stats.guests },
   ];
 
+  /** The photograph behind a half, once one exists; `ImageSlot` draws the brief until it does. */
+  const photo = (key: string) => data?.slots.find((slot) => slot.slotKey === key)?.media ?? null;
+
   const umrahStats: HalfStat[] = [
     { value: trip === null ? null : String(daysLeft), label: copy.umrah.stats.days },
     { value: format(data?.stats.umrah.seatsTotal), label: copy.umrah.stats.seats },
@@ -73,6 +76,7 @@ export function ChoicePage({ lang }: ChoicePageProps) {
         href={SITE_URLS.global}
         slotKey="choice-global"
         brief="Фон: каньон Йангыкала на закате или Ашхабад ночью — вертикальный кадр"
+        media={photo('choice-global')}
       />
 
       <ChoiceHalf
@@ -88,6 +92,7 @@ export function ChoicePage({ lang }: ChoicePageProps) {
         href={SITE_URLS.umrah}
         slotKey="choice-umrah"
         brief="Фон: паломники у Каабы или силуэт мечети Пророка — вертикальный кадр"
+        media={photo('choice-umrah')}
         badge={<SignupBadge trip={trip} lang={lang} />}
       />
 

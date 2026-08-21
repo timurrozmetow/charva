@@ -3,7 +3,7 @@ import { type FastifyPluginAsync } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import { localePlugin } from '../../plugins/locale';
-import { getSettings } from '../global/service';
+import { getSettings, listSlots } from '../global/service';
 import { currentTrip } from '../umrah/service';
 
 import { choiceStats } from './service';
@@ -44,11 +44,18 @@ export const choiceRoutes: FastifyPluginAsync = async (instance) => {
        * the fallback chain and answers in Turkmen or Russian rather than leaving a hotel name
        * blank, which is exactly the case that chain exists for.
        */
-      const [trip, global, umrah, stats] = await Promise.all([
+      const [trip, global, umrah, stats, slots] = await Promise.all([
         currentTrip(app.db, request.lang),
         getSettings(app.db, 'global', request.lang, SITE_LANGS.global, DEFAULT_LANG.global),
         getSettings(app.db, 'umrah', request.lang, SITE_LANGS.umrah, DEFAULT_LANG.umrah),
         choiceStats(app.db),
+        // The two photographs the page is mostly made of. They were missing from this response
+        // entirely, and the page had `media={null}` written into it to match.
+        listSlots(
+          { db: app.db, lang: request.lang, baseUrl: app.env.PUBLIC_MEDIA_BASE_URL },
+          'choice',
+          'home',
+        ),
       ]);
 
       return {
@@ -59,6 +66,7 @@ export const choiceRoutes: FastifyPluginAsync = async (instance) => {
         },
         contacts: { global: global.contacts, umrah: umrah.contacts },
         legal: global.legal,
+        slots,
       };
     },
   );

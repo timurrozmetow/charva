@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { siteSettingsSchema } from './common';
+import { contentSlotSchema } from './media';
 import { umrahTripSchema } from './umrah';
 
 /**
@@ -52,6 +53,16 @@ export const choiceResponse = z.object({
   }),
   /** The licence number, shown bottom left. Still `TM-1428` — question Q-12. */
   legal: siteSettingsSchema.shape.legal,
+  /**
+   * The photograph behind each half — `choice-global` and `choice-umrah`.
+   *
+   * Late, and the reason is worth keeping. The chooser is the one page whose pictures are its
+   * entire design, and its two `ImageSlot`s were written with `media={null}` hard-coded while
+   * the endpoint returned no slots at all. Both halves therefore drew the branded placeholder
+   * for ever: filling `content_slots` in the database could not have changed anything, and the
+   * whole path from a photograph to this page did not exist to be broken.
+   */
+  slots: z.array(contentSlotSchema),
 });
 
 /**

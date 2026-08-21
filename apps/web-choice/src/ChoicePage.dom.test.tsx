@@ -45,7 +45,29 @@ function payload(overrides: Partial<ChoiceResponse> = {}): ChoiceResponse {
       umrah: { phone: '', whatsapp: '', email: '', hours: '', address: '' },
     },
     legal: { license: 'TM-1428', unconfirmed: true },
+    // Empty by default, which is the state this page shipped in for months — see the slot test
+    // below, and `photographs behind the halves` for the other half of the story.
+    slots: [],
     ...overrides,
+  };
+}
+
+/** A slot with a photograph in it, shaped as the API returns one. */
+function slot(slotKey: string, url: string): ChoiceResponse['slots'][number] {
+  return {
+    slotKey,
+    brief: 'бриф',
+    recommendedWidth: null,
+    recommendedHeight: null,
+    media: {
+      url,
+      alt: 'Туркменистан',
+      width: 1600,
+      height: 2000,
+      lqip: null,
+      focalX: null,
+      focalY: null,
+    },
   };
 }
 
@@ -198,6 +220,30 @@ describe('the chooser', () => {
     const { container } = await renderPage();
     expect(container.querySelector('[data-slot="choice-global"]')).not.toBeNull();
     expect(container.querySelector('[data-slot="choice-umrah"]')).not.toBeNull();
+  });
+
+  it('shows the photograph once the slot has one', async () => {
+    /*
+     * The gap this closes was total rather than partial.
+     *
+     * `ChoiceHalf` had `media={null}` written into it and `/choice` returned no slots at all, so
+     * the two pictures this page is mostly made of could not appear however full the database
+     * was. Nothing was broken — the path from a photograph to this page did not exist.
+     */
+    const { container } = await renderPage(
+      payload({
+        slots: [
+          slot('choice-global', '/api/v1/uploads/global.webp'),
+          slot('choice-umrah', '/api/v1/uploads/umrah.webp'),
+        ],
+      }),
+    );
+
+    const half = container.querySelector('[data-slot="choice-global"] img');
+    expect(half?.getAttribute('src')).toContain('global.webp');
+    expect(
+      container.querySelector('[data-slot="choice-umrah"] img')?.getAttribute('src'),
+    ).toContain('umrah.webp');
   });
 
   it('renders when the request fails', async () => {
