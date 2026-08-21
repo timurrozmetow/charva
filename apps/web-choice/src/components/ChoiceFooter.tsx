@@ -12,8 +12,9 @@ export interface ChoiceFooterProps {
  * The bottom line: licence on the left, a hint on the right.
  *
  * The element is in the prototype's markup and completely empty, with the content described
- * only in the README — the same signature as the missing numerals, and restored for the same
- * reason (D-1).
+ * only in the README — the same signature the missing numerals had, and restored for the same
+ * reason (D-1). The numerals themselves are gone at the owner's request (D-128); this line
+ * stays, because it carries the licence number rather than a decoration.
  *
  * Like the nav, it takes no pointer events. It spans both halves, and a strip that swallowed
  * the cursor would collapse whichever half it crossed.

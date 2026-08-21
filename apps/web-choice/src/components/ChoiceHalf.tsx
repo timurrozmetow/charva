@@ -9,8 +9,6 @@ export interface HalfStat {
 }
 
 export interface ChoiceHalfProps {
-  /** `01` / `02` — the oversized numeral the export dropped. Restored per decision D-1. */
-  numeral: string;
   eyebrow: string;
   title: string;
   lead: string;
@@ -48,7 +46,6 @@ export interface ChoiceHalfProps {
  * screen — the same affordance, reached a different way.
  */
 export function ChoiceHalf({
-  numeral,
   eyebrow,
   title,
   lead,
@@ -116,17 +113,13 @@ export function ChoiceHalf({
       />
 
       {/*
-        The numeral. Present in the README, absent from the export — the signature of a
-        truncated file rather than a design change, which is why D-1 restores it. Decorative,
-        so it is hidden from assistive technology: «01» read aloud before a heading is noise.
-      */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[2] flex select-none items-center justify-center text-[230px] font-medium leading-none text-cream-ghost lap:text-[180px] tab:text-[140px]"
-      >
-        {numeral}
-      </span>
+        The «01» / «02» numerals used to sit here.
 
+        Restored under D-1 because the README described them and the export had dropped them,
+        which read as a truncated file rather than a design change. The owner has since asked
+        for them gone, and that is their call to make: the numerals were a guess about intent
+        and the person whose brand it is has stated the intent. See D-128.
+      */}
       {badge}
 
       <div

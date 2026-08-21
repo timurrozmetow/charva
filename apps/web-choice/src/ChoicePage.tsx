@@ -65,7 +65,6 @@ export function ChoicePage({ lang }: ChoicePageProps) {
 
       <ChoiceHalf
         variant="global"
-        numeral="01"
         headingId="half-global"
         eyebrow={copy.global.eyebrow}
         title={copy.global.title}
@@ -81,7 +80,6 @@ export function ChoicePage({ lang }: ChoicePageProps) {
 
       <ChoiceHalf
         variant="umrah"
-        numeral="02"
         headingId="half-umrah"
         eyebrow={copy.umrah.eyebrow}
         title={copy.umrah.title}

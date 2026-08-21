@@ -184,14 +184,21 @@ describe('the chooser', () => {
     expect(halves[1]).toHaveAccessibleName('Умра с туркменской группой');
   });
 
-  it('restores the numerals the export dropped', async () => {
-    // Decision D-1: the arrays in the prototype are populated and the render bodies are empty,
-    // which is a truncated file rather than a design change.
+  it('does not print the «01» and «02» numerals', async () => {
+    /*
+     * They were here, under decision D-1: the prototype's data arrays were populated while its
+     * render bodies were empty, which reads as a truncated export rather than a design change,
+     * so the numerals were restored. The owner has since asked for them gone — see D-128.
+     *
+     * The assertion survives the removal rather than being deleted with it, because a restored
+     * decoration is exactly the kind of thing that comes back in a later «fixing the design»
+     * commit, and it would come back silently.
+     */
     const { container } = await renderPage();
     const numerals = [...container.querySelectorAll('[aria-hidden="true"]')]
       .map((node) => node.textContent)
       .filter((text) => text === '01' || text === '02');
-    expect(numerals).toEqual(['01', '02']);
+    expect(numerals).toEqual([]);
   });
 
   it('renders the section chips the export dropped', async () => {
