@@ -14,7 +14,7 @@
 | ---------------------------------- | ----------------------------------------------------------- | -------------------------- |
 | VPS, Ubuntu 24.04, 2 ГБ ОЗУ, 40 ГБ | всё ниже                                                    | Q-6                        |
 | Домен `charva-travel.com`          | четыре поддомена                                            | зарегистрирован            |
-| **API-доступ к DNS-провайдеру**    | wildcard выдаётся только через DNS-01; HTTP-01 его не умеет | есть                       |
+| **API-доступ к DNS-провайдеру**    | wildcard выдаётся только через DNS-01; HTTP-01 его не умеет | reg.ru — см. шаг 5         |
 | Публичный ключ на сервере          | `deploy.sh` ходит по ключу, пароль не спрашивает            | `~/.ssh/charva-deploy.pub` |
 
 **Диск — единственный параметр, который стоит проверить дважды.** Видео хостится на этой же
@@ -137,37 +137,83 @@ for i in 1 2 3 4; do node -e "console.log(require('crypto').randomBytes(32).toSt
 
 ---
 
-## 5. Сертификат
+## 5. Сертификат — DNS у reg.ru
 
 Wildcard выдаётся **только** через DNS-01. HTTP-01 wildcard не умеет в принципе — это
-ограничение ACME, а не настройки.
+ограничение ACME, а не настройки. Значит, что-то должно уметь само создавать TXT-запись в зоне
+и удалять её через минуту, каждые 60 дней, без человека.
 
 `*.charva-travel.com` **не покрывает сам `charva-travel.com`**, поэтому в сертификате должны
 быть оба имени.
 
+**Официального плагина certbot под reg.ru нет.** Есть ровно три рабочих пути, и выбор между
+ними стоит сделать сейчас, а не за неделю до истечения сертификата.
+
+### Вариант А — acme.sh (всё остаётся на reg.ru)
+
+`acme.sh` знает reg.ru «из коробки» — `dns_regru`, поддерживается в самом проекте, а не
+сторонним пакетом, который может остаться без сопровождающего.
+
+Сначала в личном кабинете reg.ru: **Настройки → Управление API**, включить доступ и **добавить
+IP сервера в белый список**. Без второго шага API отвечает отказом, и выглядит это как неверный
+пароль.
+
 ```bash
-snap install --classic certbot
-ln -sf /snap/bin/certbot /usr/bin/certbot
-snap set certbot trust-plugin-with-root=ok
-snap install certbot-dns-cloudflare   # или другой плагин под вашего провайдера
+curl https://get.acme.sh | sh -s email=ПОЧТА
+export REGRU_API_Username='ЛОГИН_REG_RU'
+export REGRU_API_Password='ПАРОЛЬ_ОТ_API'   # это отдельный пароль API, не пароль от кабинета
 
-mkdir -p /root/.secrets && chmod 700 /root/.secrets
-printf 'dns_cloudflare_api_token = ТОКЕН\n' > /root/.secrets/cloudflare.ini
-chmod 600 /root/.secrets/cloudflare.ini
-
-certbot certonly \
-  --dns-cloudflare --dns-cloudflare-credentials /root/.secrets/cloudflare.ini \
-  --dns-cloudflare-propagation-seconds 60 \
+~/.acme.sh/acme.sh --issue --dns dns_regru \
   -d 'charva-travel.com' -d '*.charva-travel.com' \
-  --agree-tos -m ПОЧТА --non-interactive
+  --server letsencrypt --dnssleep 120
+
+# Развернуть туда, откуда их читает nginx (пути — в snippets/charva-tls.conf)
+mkdir -p /etc/letsencrypt/live/charva-travel.com
+~/.acme.sh/acme.sh --install-cert -d 'charva-travel.com' \
+  --key-file       /etc/letsencrypt/live/charva-travel.com/privkey.pem \
+  --fullchain-file /etc/letsencrypt/live/charva-travel.com/fullchain.pem \
+  --ca-file        /etc/letsencrypt/live/charva-travel.com/chain.pem \
+  --reloadcmd      "systemctl reload nginx"
 ```
 
-Провайдер не Cloudflare — плагин другой (`certbot-dns-route53`, `certbot-dns-digitalocean`,
-`certbot-dns-namecheap`), остальное то же.
+`acme.sh` ставит свой cron при установке, а `--reloadcmd` перечитывает nginx после каждого
+продления. Переменные `REGRU_*` он сохраняет у себя, так что повторно их задавать не нужно.
 
-DNS: `A` для `charva-travel.com` и `A` либо `CNAME` для `www`, `global`, `umra`, `admin`, `api`.
+**`--dnssleep 120`, а не значение по умолчанию.** У reg.ru запись расходится по серверам зоны не
+мгновенно, а Let's Encrypt проверяет её один раз: слишком короткая пауза даёт отказ, который
+выглядит как неправильный токен.
 
-**Проверка:** `certbot certificates` показывает оба имени; `certbot renew --dry-run` проходит.
+### Вариант Б — DNS на Cloudflare, регистратор остаётся reg.ru
+
+Домен остаётся у reg.ru, меняются только NS. Дальше всё как в любой инструкции: официальный
+`certbot-dns-cloudflare`, токен с правом `Zone:DNS:Edit`, ноль экзотики. Бесплатно.
+
+Стоит этого, если DNS придётся править часто или если не хочется зависеть от одного
+интеграционного скрипта. Минус один и настоящий: ещё один сторонний сервис на пути к сайту.
+
+### Вариант В — четыре отдельных сертификата, HTTP-01
+
+Без wildcard и без DNS API вообще:
+
+```bash
+apt install -y certbot python3-certbot-nginx
+certbot --nginx -d charva-travel.com -d www.charva-travel.com \
+  -d global.charva-travel.com -d umra.charva-travel.com \
+  -d admin.charva-travel.com -d api.charva-travel.com
+```
+
+Работает и продлевается само. Плата за это — каждый новый поддомен требует ручного шага, а
+`/.well-known/acme-challenge/` обязан оставаться доступным по HTTP (в конфиге nginx он уже
+исключён из редиректа именно ради этого).
+
+### Записи в зоне
+
+`A` на IP сервера для `charva-travel.com`, и `A` либо `CNAME` для `www`, `global`, `umra`,
+`admin`, `api`.
+
+**Проверка:** `openssl s_client -connect charva-travel.com:443 -servername global.charva-travel.com
+</dev/null 2>/dev/null | openssl x509 -noout -text | grep -A1 'Subject Alternative Name'` —
+в списке должны быть оба имени: и апекс, и звёздочка.
 
 ---
 
