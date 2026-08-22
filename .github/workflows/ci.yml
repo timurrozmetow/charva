@@ -1,0 +1,67 @@
+name: CI
+
+# Every push and every pull request. Deployment is deliberately not here: it needs a key with
+# write access to the server, and a workflow that can deploy is a workflow whose secrets are
+# worth stealing. `scripts/deploy.sh` runs from a laptop, where the key already lives.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+
+    # A real MySQL 8, not a mock — the same decision the database tests are built on. Every
+    # rule worth testing is enforced by the server: STRICT_TRANS_TABLES truncation, unique
+    # indexes, CHECK constraints and JSON_SCHEMA_VALID. None of them exist in a fake.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: charva_dev_only
+          MYSQL_DATABASE: charva_test
+        ports: ["3308:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pcharva_dev_only"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      TEST_DATABASE_URL: mysql://root:charva_dev_only@127.0.0.1:3308/charva_test
+      DATABASE_URL: mysql://root:charva_dev_only@127.0.0.1:3308/charva
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # sharp and @node-rs/argon2 ship platform binaries, and pnpm 10 does not run install
+      # scripts unless a package is named in `onlyBuiltDependencies`. They are named in
+      # package.json; this is the step where that matters.
+      - run: pnpm install --frozen-lockfile
+
+      # The same gate as a local `pnpm verify`, split so a failure names itself in the run
+      # summary rather than as «verify failed» over six possible causes.
+      - run: pnpm format:check
+      - run: pnpm design:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+      # 200 KB gzip of script and style per site. Fonts are printed beside it and counted
+      # separately — three weights of Stolzl are 67.9 KB before the first line of code.
+      - run: pnpm budget
