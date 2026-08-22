@@ -7,7 +7,7 @@ import { createDb } from '../client';
 import * as t from '../schema';
 import { TEST_DATABASE_URL } from '../test-setup';
 
-import { isEmpty, seedAll } from './seed';
+import { isEmpty, seedAll, SEEDED_TABLES } from './seed';
 
 /**
  * What the seed produced, checked against what the design says.
@@ -25,33 +25,9 @@ beforeAll(async () => {
   pool = mysql.createPool({ uri: TEST_DATABASE_URL, timezone: 'Z', connectionLimit: 5 });
   db = createDb(pool);
 
-  // The constraints suite leaves rows behind; start from a known-empty catalogue.
-  for (const table of [
-    'hotel_amenities',
-    'amenities',
-    'tour_media',
-    'tour_days',
-    'tours',
-    'hotels',
-    'articles',
-    'gallery_items',
-    'videos',
-    'reviews',
-    'faqs',
-    'places_to_see',
-    'content_blocks',
-    'content_slots',
-    'umrah_group_media',
-    'umrah_groups',
-    'ziyarat_places',
-    'umrah_program_days',
-    'umrah_trips',
-    'builder_options',
-    'builder_steps',
-    'pricing_rules',
-    'settings',
-    'media',
-  ]) {
+  // The constraints suite leaves rows behind; start from a known-empty catalogue. The list is
+  // the seeder's own, so a table added to it cannot be missed here — it was, once.
+  for (const table of SEEDED_TABLES) {
     await pool.query(`DELETE FROM \`${table}\``);
   }
 
@@ -172,13 +148,62 @@ describe('the catalogue', () => {
 
 describe('the missing photographs', () => {
   it('records every position one belongs in', async () => {
-    // 151 briefs and not one image. As rows they are a checklist rather than an absence —
-    // decision D-21, question Q-1.
+    // Briefs, and not one image. As rows they are a checklist rather than an absence —
+    // decision D-21, question Q-1. Seven fewer than there once were: the hero briefs moved to
+    // `hero_slides`, so that a photograph has one home rather than two.
     const slots = await db.select().from(t.contentSlots);
-    expect(slots.length).toBeGreaterThan(150);
+    expect(slots.length).toBeGreaterThan(140);
     for (const slot of slots) {
       expect(slot.brief.length, slot.slotKey).toBeGreaterThan(0);
       expect(slot.mediaId, slot.slotKey).toBeNull();
+    }
+  });
+
+  it('leaves no hero slot behind for an upload to disappear into', async () => {
+    /*
+     * The failure this guards against was invisible from the inside.
+     *
+     * While the hero read `place.cover ?? slot.media`, an editor could upload into `g-hero-1`
+     * and see nothing change, because the place above it in the chain already had a cover. The
+     * slot is gone rather than merely unread: a position in the admin's photograph checklist
+     * that no page renders is a trap, and it stays a trap for as long as it is listed.
+     */
+    const slots = await db.select().from(t.contentSlots);
+    const heroes = slots.filter((slot) => /^[gu]-hero-/.test(slot.slotKey));
+    expect(heroes).toEqual([]);
+  });
+
+  it('gives each homepage slide a caption and a brief of its own', async () => {
+    /*
+     * The list the design always had, and the first version of both homepages ignored.
+     *
+     * `SLIDES` sits in the export beside `places`, carrying a label and a photo brief per slide.
+     * Reading the hero out of `places_to_see` and `ziyarat_places` instead put the caption in a
+     * foreign entity — so a slide could not be renamed, reordered or repictured without editing
+     * another page — and it silently dropped Umrah's third slide, «Topar», which is a group in
+     * ihram and not a ziyarat place at all.
+     */
+    const slides = await db.select().from(t.heroSlides);
+
+    const global = slides.filter((slide) => slide.site === 'global');
+    const umrah = slides.filter((slide) => slide.site === 'umrah');
+    expect(global).toHaveLength(4);
+    expect(umrah).toHaveLength(3);
+
+    expect(global.map((slide) => slide.title.ru)).toEqual([
+      'Дарваза',
+      'Йангыкала',
+      'Ашхабад',
+      'Мерв',
+    ]);
+    // The slide that could not exist while the hero read from `ziyarat_places`.
+    expect(umrah.map((slide) => slide.title.tm)).toEqual(['Mekge', 'Medine', 'Topar']);
+
+    for (const slide of slides) {
+      expect(slide.brief ?? '', JSON.stringify(slide.title)).not.toBe('');
+      // Like every other seeded row: the position exists, the photograph does not (Q-1).
+      expect(slide.mediaId, JSON.stringify(slide.title)).toBeNull();
+      expect(slide.sortOrder).toBeGreaterThan(0);
     }
   });
 

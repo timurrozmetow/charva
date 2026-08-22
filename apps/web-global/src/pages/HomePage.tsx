@@ -1,4 +1,4 @@
-import { type ContentSlot, type Lang, type MediaRef } from '@charva/contracts';
+import { type Lang, type MediaRef } from '@charva/contracts';
 import {
   buttonClass,
   Carousel,
@@ -30,9 +30,6 @@ export interface HomePageProps {
   lang: Lang;
 }
 
-/** How many places become hero slides. Four, as the design draws. */
-const HERO_SLIDES = 4;
-
 /**
  * The homepage — ten sections, one request.
  *
@@ -55,30 +52,28 @@ export function HomePage({ lang }: HomePageProps) {
 
   useDocumentMeta({ route: 'home', pathAfterLang: '' }, lang);
 
-  const slotFor = (key: string): ContentSlot | undefined =>
-    data?.slots.find((slot) => slot.slotKey === key);
-
   /*
-   * The hero, from the places rather than from a fifth list.
+   * The hero, from the hero slides.
    *
-   * The prototype's four slides are Дарваза, Йангыкала, Ашхабад and Мерв — four rows that
-   * already exist in `places_to_see`, with a name, a region and a cover each. Reading them from
-   * there means an editor reorders the hero by reordering the places, and no table has to
-   * carry the same four photographs twice. The `g-hero-N` slot supplies the photograph until a
-   * place has its own, and its brief is what `ImageSlot` draws while neither exists (D-21).
+   * It used to be built from the first four rows of `places_to_see`, with the caption taken from
+   * the place's name and the photograph from the place's cover *or* a `g-hero-N` slot, whichever
+   * was filled. The argument was that Дарваза, Йангыкала, Ашхабад and Мерв already exist as rows
+   * and should not be entered twice — but it made the caption of a slide a property of another
+   * page, the order of the slides the order of that page, and the photograph a thing with two
+   * possible homes. The owner found all three from the outside. `hero_slides` is one row per
+   * slide, and the brief on it is what `ImageSlot` draws until the photograph exists (D-21).
    */
-  const heroSlides = (data?.places ?? []).slice(0, HERO_SLIDES).map((place, index) => {
-    const slot = slotFor(`g-hero-${String(index + 1)}`);
-    const media: MediaRef | null = place.cover ?? slot?.media ?? null;
+  const heroSlides = (data?.slides ?? []).map((slide, index) => {
+    const media: MediaRef | null = slide.media;
 
     return {
-      id: place.slug,
-      label: place.name,
+      id: String(slide.id),
+      label: slide.title,
       content: (
         <div className="relative size-full">
           <ImageSlot
-            slotKey={`g-hero-${String(index + 1)}`}
-            brief={slot?.brief ?? place.name}
+            slotKey={`hero-${String(slide.id)}`}
+            brief={slide.brief === '' ? slide.title : slide.brief}
             media={
               media === null
                 ? null

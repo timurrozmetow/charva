@@ -40,6 +40,53 @@ import {
 
 export type SeedCounts = Record<string, number>;
 
+/**
+ * Every table the seeder writes, in an order safe to delete in.
+ *
+ * One list, exported, because there were two and they drifted the day this table was added: the
+ * harness in `test/app.ts` cleared before re-seeding and `seed.db.test.ts` kept its own copy, so
+ * a suite ran against four hero slides seeded twice. Nothing was wrong with either list — one of
+ * them simply had not heard about a new table, which is what a second copy is for.
+ *
+ * Children before parents, and everything before `media`: several of these hold a foreign key
+ * into it. `tour_days`, `tour_inclusions` and `tour_prices` cascade from `tours`, and are named
+ * anyway — relying on a cascade to clean up is relying on a constraint nobody reads.
+ */
+export const SEEDED_TABLES: readonly string[] = [
+  'hotel_amenities',
+  'amenities',
+  'tour_media',
+  'tour_days',
+  'tour_inclusions',
+  'tour_prices',
+  'tours',
+  'hotels',
+  'hotel_rooms',
+  'hotel_media',
+  // `room_types` is deliberately absent. It is a vocabulary — «1-комнатный», «Дуплекс», «Люкс» —
+  // shipped by migration 0004 rather than by this file, and `seedHotelRooms` reads it. Clearing
+  // it here would empty a table nothing refills and leave every hotel without a single room.
+  'articles',
+  'gallery_items',
+  'videos',
+  'reviews',
+  'faqs',
+  'places_to_see',
+  'content_blocks',
+  'content_slots',
+  'hero_slides',
+  'umrah_group_media',
+  'umrah_groups',
+  'ziyarat_places',
+  'umrah_program_days',
+  'umrah_trips',
+  'builder_options',
+  'builder_steps',
+  'pricing_rules',
+  'settings',
+  'media',
+];
+
 /** The Umrah departure the whole site is built around. */
 const DEPART_AT = '2026-09-18 06:00:00';
 const RETURN_AT = '2026-09-28 06:00:00';
@@ -51,6 +98,7 @@ export async function seedAll(db: Database): Promise<SeedCounts> {
   };
 
   record('content_slots', await seedContentSlots(db));
+  record('hero_slides', await seedHeroSlides(db));
   record('tours', await seedTours(db));
   // Real content, kept apart from the demo catalogue above it — see `owner-content.ts`.
   record('tours_owner', await seedOwnerTours(db));
@@ -95,8 +143,18 @@ async function seedContentSlots(db: Database): Promise<number> {
     if (target === undefined) continue;
 
     let order = 0;
-    for (const value of Object.values(declarations)) {
+    for (const [name, value] of Object.entries(declarations)) {
       if (!Array.isArray(value)) continue;
+      /*
+       * The hero slides are a table of their own now, and they carry their own brief. A slot
+       * here as well would be a second place to upload the same photograph into, which is
+       * precisely the arrangement `hero_slides` exists to end.
+       *
+       * Keyed on the screen as well as the declaration, because `SLIDES` is not unique to the
+       * homepages: `/paket` has one too, four slots of its own, and skipping by declaration name
+       * alone quietly took those four with it.
+       */
+      if (name === HERO_DECLARATION && HERO_SCREENS.has(screen)) continue;
       for (const item of value as SlottedRow[]) {
         if (typeof item.slot !== 'string' || typeof item.photo !== 'string') continue;
         const key = `${target.site}/${target.page}/${item.slot}`;
@@ -133,6 +191,56 @@ async function seedContentSlots(db: Database): Promise<number> {
   }
 
   await db.insert(t.contentSlots).values(values);
+  return values.length;
+}
+
+/** The key the design export files the hero slides under, on both homepages. */
+const HERO_DECLARATION = 'SLIDES';
+
+/** And the only two screens where that key means the hero — `/paket` has a `SLIDES` of its own. */
+const HERO_SCREENS = new Map<string, 'ru' | 'tm'>([
+  ['Charva Travel Global', 'ru'],
+  ['Charva Umrah', 'tm'],
+]);
+
+interface SlideRow {
+  slot: string;
+  label: string;
+  photo: string;
+}
+
+/**
+ * The homepage slider, from the list the design always had.
+ *
+ * This is not new content. `SLIDES` sits in the export beside `places` and `PLACES`, carrying a
+ * label and a photo brief per slide — and the first version of both homepages ignored it and
+ * took the first four rows of `places_to_see` and the first three of `ziyarat_places` instead,
+ * on the reasoning that the same four photographs should not be entered twice. The reasoning
+ * held; the consequences did not. Umrah's third slide is «Topar», a group in ihram, which is
+ * not a ziyarat place and so was never shown at all — the third place stood in for it silently.
+ *
+ * Russian on Global and Turkmen on Umrah, matching every other seeded string: these are the
+ * design's own words, and inventing translations for them is question Q-3's job, not this file's.
+ */
+async function seedHeroSlides(db: Database): Promise<number> {
+  const values: (typeof t.heroSlides.$inferInsert)[] = [];
+
+  for (const [screen, lang] of HERO_SCREENS) {
+    const site = SCREEN_PAGES[screen]?.site;
+    if (site !== 'global' && site !== 'umrah') continue;
+
+    rows<SlideRow>(screen, HERO_DECLARATION).forEach((slide, index) => {
+      values.push({
+        site,
+        title: { [lang]: slide.label },
+        brief: slide.photo,
+        isPublished: true,
+        sortOrder: index + 1,
+      });
+    });
+  }
+
+  await db.insert(t.heroSlides).values(values);
   return values.length;
 }
 

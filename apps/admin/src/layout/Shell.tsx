@@ -49,7 +49,7 @@ const BUILDER = new Set(['builder_steps', 'builder_options', 'pricing_rules']);
  * composition sits in it beside Global's visa steps — so it appears in both departments,
  * narrowed by `?site=`, and in neither department's resource list.
  */
-const SHARED_BY_SITE = new Set(['content_blocks']);
+const SHARED_BY_SITE = new Set(['content_blocks', 'hero_slides']);
 
 interface Group {
   title: string;
@@ -106,6 +106,16 @@ export function Shell() {
       title: copy.nav.pages,
       children: (
         <>
+          {/* First in the section, because it is the top of the page it belongs to. */}
+          <NavLink
+            to="/data/$resource"
+            params={{ resource: 'hero_slides' }}
+            search={{ site }}
+            label={labelFor(RESOURCE_LABELS, 'hero_slides')}
+            pathname={pathname}
+            activeSite={searchSite}
+            expectSite={site}
+          />
           <NavLink
             to="/data/$resource"
             params={{ resource: 'content_blocks' }}

@@ -38,13 +38,21 @@ describe('the homepage', () => {
     expect(screen.queryByText(/46 отелей/)).not.toBeInTheDocument();
   });
 
-  it('builds the hero from the places, so the rail names what is pictured', async () => {
+  it('builds the hero from the slides, so a caption belongs to the slide it is on', async () => {
     await render();
 
-    // Not a fifth list of four photographs: Дарваза, Йангыкала, Ашхабад and Мерв are rows that
-    // already exist, with a name and a cover each.
-    expect(await screen.findByRole('button', { name: /Кратер Дарваза/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Каньоны Йангыкала/ })).toBeInTheDocument();
+    /*
+     * The rail names the slides, not the places.
+     *
+     * The fixture's slides are «Дарваза» and «Йангыкала»; its places, deliberately, are «Кратер
+     * Дарваза» and «Каньоны Йангыкала» — the same two subjects under different names. The first
+     * version of this page took the hero from the places, so it printed the place's name over
+     * the photograph and «change the caption» meant renaming a row on `/turkmenistan`. Asserting
+     * the short names is what makes that regression visible: they exist nowhere else.
+     */
+    expect(await screen.findByRole('button', { name: /Дарваза/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Йангыкала/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Кратер Дарваза/ })).not.toBeInTheDocument();
   });
 
   it('mounts the same builder as `/builder`, writing into this page’s URL', async () => {
@@ -66,7 +74,7 @@ describe('the homepage', () => {
      * row in a table with a status. The Russian brief beside it stays off by default: an art
      * direction note in the middle of a Turkish page is worse than a plain rectangle.
      */
-    await screen.findByRole('button', { name: /Кратер Дарваза/ });
-    expect(container.querySelector('[data-slot="g-hero-1"]')).not.toBeNull();
+    await screen.findByRole('button', { name: /Дарваза/ });
+    expect(container.querySelector('[data-slot="hero-1"]')).not.toBeNull();
   });
 });

@@ -79,3 +79,23 @@ export const contentSlotSchema = z.object({
 });
 
 export type ContentSlot = z.infer<typeof contentSlotSchema>;
+
+/**
+ * One slide of the homepage slider: a photograph, and the word printed over it.
+ *
+ * Both are on this shape because both belong to the slide. The version this replaced sent
+ * neither — the homepage took its captions from the places on `/turkmenistan` and its pictures
+ * from whichever of two sources happened to be filled, so «change the caption of slide two» was
+ * an operation on a different page and «upload the photograph» was a coin toss.
+ *
+ * `brief` rides along for the same reason `contentSlotSchema` carries one: while `media` is null
+ * the page still draws the frame at its real proportions and says what belongs in it.
+ */
+export const heroSlideSchema = z.object({
+  id: z.number().int(),
+  title: z.string(),
+  brief: z.string(),
+  media: mediaRefSchema.nullable(),
+});
+
+export type HeroSlide = z.infer<typeof heroSlideSchema>;

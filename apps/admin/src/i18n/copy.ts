@@ -240,6 +240,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   ziyarat_places: 'Места зиярата',
   umrah_groups: 'Группы',
   umrah_group_media: 'Медиа групп',
+  hero_slides: 'Слайдер главной',
   content_blocks: 'Текстовые блоки',
   settings: 'Настройки',
 };

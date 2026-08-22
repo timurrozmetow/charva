@@ -151,6 +151,39 @@ export const contentBlocks = mysqlTable(
   (table) => [index('content_blocks_code_idx').on(table.site, table.blockCode, table.sortOrder)],
 );
 
+/**
+ * The slider at the top of both homepages — one photograph and one caption per slide.
+ *
+ * It exists because it did not, and the absence was visible from the outside. Global's slides
+ * were the first four rows of `places_to_see` and Umrah's the first three of `ziyarat_places`;
+ * the caption was the place's name, and the photograph was the place's cover *or* a `g-hero-N`
+ * content slot, whichever happened to be filled. So a slide could not be renamed without
+ * renaming a place on another page, could not be reordered without reordering that page, and
+ * had two possible homes for its picture — which is why an upload sometimes did nothing.
+ *
+ * The design always had this list. The export carries `SLIDES` with a label and a brief per
+ * slide, beside the separate `places` array, and Umrah's third slide is a group photograph that
+ * is not a ziyarat place at all. Folding one list into the other was an invention.
+ *
+ * `brief` lives here rather than in `content_slots` so that the photograph has exactly one home.
+ */
+export const heroSlides = mysqlTable(
+  'hero_slides',
+  {
+    id: int().autoincrement().primaryKey(),
+    /** No `choice`: the chooser is two static halves, and has no slider to put a slide in. */
+    site: mysqlEnum(['global', 'umrah']).notNull(),
+    title: json().$type<LocalizedColumn>().notNull(),
+    /** Art direction until a photograph exists — and the text `db:stock` matches against. */
+    brief: text(),
+    mediaId: int(),
+    isPublished: boolean().notNull().default(true),
+    sortOrder: int().notNull().default(0),
+    ...timestamps,
+  },
+  (table) => [index('hero_slides_site_idx').on(table.site, table.isPublished, table.sortOrder)],
+);
+
 /** Contacts, social links, licence number, opening hours, default OG image. */
 export const settings = mysqlTable(
   'settings',

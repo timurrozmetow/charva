@@ -480,6 +480,7 @@ type Db = Awaited<Parameters<Parameters<typeof withDb>[0]>[0]>;
 /** Every column that can point at a picture, and how to empty it. */
 const NULLABLE_REFERENCES = [
   { table: t.contentSlots, column: t.contentSlots.mediaId, name: 'mediaId' },
+  { table: t.heroSlides, column: t.heroSlides.mediaId, name: 'mediaId' },
   { table: t.tours, column: t.tours.coverMediaId, name: 'coverMediaId' },
   { table: t.hotels, column: t.hotels.coverMediaId, name: 'coverMediaId' },
   { table: t.articles, column: t.articles.coverMediaId, name: 'coverMediaId' },
@@ -686,6 +687,28 @@ async function assign(db: Db, stored: Stored[]): Promise<void> {
       .where(eq(t.contentSlots.id, slot.id));
   }
   process.stdout.write(`filled ${String(slots.length)} content slots\n`);
+
+  /*
+   * The hero slides, matched on their own brief.
+   *
+   * Separate from the covers below because the column is `media_id` rather than `cover_media_id`
+   * and because the text to match on is the brief — «Газовый кратер Дарваза ночью» — rather than
+   * the caption, which is one word. Always wide: these are 21:9 frames across the whole window,
+   * and a portrait photograph in one is a vertical strip of its own middle.
+   */
+  const slides = await db
+    .select({ id: t.heroSlides.id, brief: t.heroSlides.brief, title: t.heroSlides.title })
+    .from(t.heroSlides)
+    .where(isNull(t.heroSlides.mediaId));
+
+  for (const slide of slides) {
+    const caption = Object.values(slide.title as Record<string, string>).join(' ');
+    await db
+      .update(t.heroSlides)
+      .set({ mediaId: pick(`${slide.brief ?? ''} ${caption}`, true) })
+      .where(eq(t.heroSlides.id, slide.id));
+  }
+  process.stdout.write(`filled ${String(slides.length)} hero slides\n`);
 
   const covers = [
     { name: 'tours', table: t.tours, column: t.tours.coverMediaId, label: t.tours.title },

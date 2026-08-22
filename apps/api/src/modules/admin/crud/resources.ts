@@ -288,6 +288,19 @@ const RESOURCES: AdminResource[] = [
   }),
 
   // ---- Both sites -----------------------------------------------------------------------
+  /**
+   * The homepage slider.
+   *
+   * One row per slide, which is the whole point of it: before this table the caption came from
+   * `places_to_see` and the photograph from either that row's cover or a content slot, so the
+   * two halves of a slide were edited on two screens and neither was this one.
+   */
+  define('hero_slides', {
+    table: t.heroSlides,
+    site: null,
+    localized: ['title'],
+    filters: ['site', 'isPublished'],
+  }),
   define('content_blocks', {
     table: t.contentBlocks,
     site: null,

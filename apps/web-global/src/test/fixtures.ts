@@ -214,10 +214,26 @@ export function formToken(overrides: Partial<FormTokenResponse> = {}): FormToken
  * The homepage payload.
  *
  * Deliberately sparse: what the tests care about is that the counters come from `stats` rather
- * than from a literal, and that the hero is built from the places, so the rest is empty arrays.
+ * than from a literal, and that the hero is built from `slides`, so the rest is empty arrays.
  */
 export function home(overrides: Partial<GlobalHomeResponse> = {}): GlobalHomeResponse {
   return {
+    // Two slides, each carrying its own caption and its own photograph — the shape of the thing
+    // this replaced took the first from the places below and the second from the slot below that.
+    slides: [
+      {
+        id: 1,
+        title: 'Дарваза',
+        brief: 'Газовый кратер Дарваза ночью — широкий кадр',
+        media: null,
+      },
+      {
+        id: 2,
+        title: 'Йангыкала',
+        brief: 'Каньон Йангыкала на закате — широкий кадр',
+        media: null,
+      },
+    ],
     featuredTours: [tour()],
     hotels: [hotel()],
     articles: [],
@@ -246,15 +262,7 @@ export function home(overrides: Partial<GlobalHomeResponse> = {}): GlobalHomeRes
       },
     ],
     faq: [],
-    slots: [
-      {
-        slotKey: 'g-hero-1',
-        brief: 'Газовый кратер Дарваза ночью — широкий кадр',
-        recommendedWidth: 2400,
-        recommendedHeight: null,
-        media: null,
-      },
-    ],
+    slots: [],
     stats: { tours: 9, hotels: 9, reviews: 9, places: 6 },
     ...overrides,
   };

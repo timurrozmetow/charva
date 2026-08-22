@@ -2,6 +2,7 @@ import {
   type ContentBlockItem,
   type ContentSlot,
   type Facet,
+  type HeroSlide,
   type Lang,
   pageMeta,
   pageSlice,
@@ -777,6 +778,37 @@ export async function listSlots(
   return rows.map((row) => slotItem(row, media));
 }
 
+/**
+ * The slides of one homepage's slider, in order.
+ *
+ * Lives beside `listSlots` and is used by both sites, because a slide is the same object on
+ * each: a photograph, a caption and a position. What it is *not* is a place — reading the hero
+ * out of `places_to_see` and `ziyarat_places` is what this function replaces, and what made the
+ * caption of a slide a property of another page.
+ */
+export async function listHeroSlides(
+  context: Context,
+  site: 'global' | 'umrah',
+): Promise<HeroSlide[]> {
+  const rows = await context.db
+    .select()
+    .from(t.heroSlides)
+    .where(and(eq(t.heroSlides.site, site), eq(t.heroSlides.isPublished, true)))
+    .orderBy(asc(t.heroSlides.sortOrder), asc(t.heroSlides.id));
+
+  const media = await mediaContext(
+    context,
+    rows.map((row) => row.mediaId),
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: text(row.title, context.lang),
+    brief: row.brief ?? '',
+    media: mediaRef(row.mediaId, media),
+  }));
+}
+
 export async function listFaq(db: Database, site: 'global' | 'umrah', lang: Lang) {
   const rows = await db
     .select()
@@ -850,6 +882,7 @@ export async function getHome(context: Context) {
   const { db, lang } = context;
 
   const [
+    slides,
     featured,
     hotels,
     articles,
@@ -863,6 +896,7 @@ export async function getHome(context: Context) {
     slots,
     stats,
   ] = await Promise.all([
+    listHeroSlides(context, 'global'),
     listTours(context, { page: 1, perPage: 6, sort: 'popular' }),
     listHotels(context, { page: 1, perPage: 4, sort: 'popular' }),
     listArticles(context, { page: 1, perPage: 3 }),
@@ -880,6 +914,7 @@ export async function getHome(context: Context) {
   ]);
 
   return {
+    slides,
     featuredTours: featured.items,
     hotels: hotels.items,
     articles: articles.items,

@@ -9,7 +9,7 @@ import {
   paginated,
   siteSettingsSchema,
 } from './common';
-import { contentSlotSchema, mediaRefSchema } from './media';
+import { contentSlotSchema, heroSlideSchema, mediaRefSchema } from './media';
 
 /**
  * Charva Travel Global — the catalogue.
@@ -331,6 +331,8 @@ export const globalSettingsResponse = siteSettingsSchema;
  * The data is the same; it is cached as one piece with one ETag.
  */
 export const globalHomeResponse = z.object({
+  /** The slider, from its own table. Four slides, each with its own caption and photograph. */
+  slides: z.array(heroSlideSchema),
   featuredTours: z.array(tourCardSchema),
   hotels: z.array(hotelCardSchema),
   articles: z.array(articleCardSchema),

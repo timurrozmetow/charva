@@ -27,9 +27,6 @@ export interface HomePageProps {
   lang: Lang;
 }
 
-/** How many ziyarat places become hero slides. Three, as the design draws. */
-const HERO_SLIDES = 3;
-
 /**
  * The Umrah homepage.
  *
@@ -52,24 +49,25 @@ export function HomePage({ lang }: HomePageProps) {
     data?.slots.find((slot) => slot.slotKey === key);
 
   /*
-   * The hero, from the ziyarat places.
+   * The hero, from the hero slides.
    *
-   * Same argument as the Global hero: Mekge, Medine and the group photograph are three things
-   * that already exist as rows, and a fourth list of the same pictures is a fourth place for
-   * them to drift. The `u-hero-N` slot carries the photograph until a place has its own.
+   * It used to be the first three rows of `ziyarat_places`, on the same argument Global's hero
+   * used — and here that argument had already failed on its own terms. The design's three slides
+   * are Mekge, Medine and **Topar**, a group in ihram; «Topar» is not a ziyarat place and cannot
+   * be one, so the third place in the list stood in for it and nobody noticed. One row per slide,
+   * and the third slide is now the photograph it was always meant to be.
    */
-  const heroSlides = (data?.ziyarat ?? []).slice(0, HERO_SLIDES).map((place, index) => {
-    const slot = slotFor(`u-hero-${String(index + 1)}`);
-    const media: MediaRef | null = place.cover ?? slot?.media ?? null;
+  const heroSlides = (data?.slides ?? []).map((slide, index) => {
+    const media: MediaRef | null = slide.media;
 
     return {
-      id: place.slug,
-      label: place.name,
+      id: String(slide.id),
+      label: slide.title,
       content: (
         <div className="relative size-full">
           <ImageSlot
-            slotKey={`u-hero-${String(index + 1)}`}
-            brief={slot?.brief ?? place.name}
+            slotKey={`hero-${String(slide.id)}`}
+            brief={slide.brief === '' ? slide.title : slide.brief}
             media={
               media === null
                 ? null

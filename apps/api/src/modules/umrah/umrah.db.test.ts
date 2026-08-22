@@ -129,6 +129,30 @@ describe('the departure', () => {
   });
 });
 
+describe('the homepage slider', () => {
+  it('carries the slide the ziyarat places could never hold', async () => {
+    /*
+     * «Topar» is the proof this list needed a table of its own.
+     *
+     * The hero used to be the first three rows of `ziyarat_places`, and the design's third slide
+     * is a photograph of a group in ihram — not a place, not in that table, and therefore never
+     * shown: the third *place* silently stood in for it. Nothing failed, nothing warned, and the
+     * only way to see it was to hold the screen against the design.
+     */
+    const home = await get<{
+      slides: { id: number; title: string; brief: string; media: unknown }[];
+      ziyarat: { name: string }[];
+    }>('/umrah/home');
+
+    expect(home.slides.map((slide) => slide.title)).toEqual(['Mekge', 'Medine', 'Topar']);
+    expect(home.ziyarat.map((place) => place.name)).not.toContain('Topar');
+
+    for (const slide of home.slides) {
+      expect(slide.brief.length, slide.title).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe('ziyarat', () => {
   it('offers a chip for every city in the data, including Jidda', async () => {
     /*

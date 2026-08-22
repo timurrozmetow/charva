@@ -6,7 +6,7 @@ import * as t from '../../db/schema';
 import { loadMedia, type MediaContext, mediaRef, text } from '../../lib/serialize';
 import { deriveTripState } from '../../lib/trip-status';
 import { notFound } from '../../plugins/error-handler';
-import { listBlocks, listFaq, listSlots, type Context } from '../global/service';
+import { listBlocks, listFaq, listHeroSlides, listSlots, type Context } from '../global/service';
 
 /**
  * Charva Umrah.
@@ -416,18 +416,21 @@ export async function getProgram(context: Context) {
 export async function getHome(context: Context) {
   const { db, lang } = context;
 
-  const [current, packageItems, ziyarat, program, groups, faq, slots, places] = await Promise.all([
-    currentTrip(db, lang),
-    listBlocks(db, 'umrah', 'package_items', lang),
-    listZiyarat(context, {}),
-    listProgramDays(context),
-    listGroups(context, { page: 1, perPage: 4 }),
-    listFaq(db, 'umrah', lang),
-    listSlots(context, 'umrah', 'home'),
-    db.select({ value: count() }).from(t.ziyaratPlaces).where(ziyaratPublished),
-  ]);
+  const [slides, current, packageItems, ziyarat, program, groups, faq, slots, places] =
+    await Promise.all([
+      listHeroSlides(context, 'umrah'),
+      currentTrip(db, lang),
+      listBlocks(db, 'umrah', 'package_items', lang),
+      listZiyarat(context, {}),
+      listProgramDays(context),
+      listGroups(context, { page: 1, perPage: 4 }),
+      listFaq(db, 'umrah', lang),
+      listSlots(context, 'umrah', 'home'),
+      db.select({ value: count() }).from(t.ziyaratPlaces).where(ziyaratPublished),
+    ]);
 
   return {
+    slides,
     trip: current.trip,
     next: current.next,
     packageItems,

@@ -6,7 +6,7 @@ import mysql from 'mysql2/promise';
 import { API_PREFIX, buildApp } from '../app';
 import { createDb } from '../db/client';
 import * as t from '../db/schema';
-import { seedAll } from '../db/seed/seed';
+import { seedAll, SEEDED_TABLES } from '../db/seed/seed';
 import { TEST_DATABASE_URL } from '../db/test-setup';
 import { loadEnv } from '../env';
 import { issueFormToken } from '../lib/form-token';
@@ -61,34 +61,7 @@ async function ensureSeeded(pool: mysql.Pool): Promise<void> {
   const tours = await db.select({ id: t.tours.id }).from(t.tours).limit(1);
   if (tours.length > 0) return;
 
-  for (const table of [
-    'hotel_amenities',
-    'amenities',
-    'tour_media',
-    'tour_days',
-    'tour_inclusions',
-    'tour_prices',
-    'tours',
-    'hotels',
-    'articles',
-    'gallery_items',
-    'videos',
-    'reviews',
-    'faqs',
-    'places_to_see',
-    'content_blocks',
-    'content_slots',
-    'umrah_group_media',
-    'umrah_groups',
-    'ziyarat_places',
-    'umrah_program_days',
-    'umrah_trips',
-    'builder_options',
-    'builder_steps',
-    'pricing_rules',
-    'settings',
-    'media',
-  ]) {
+  for (const table of SEEDED_TABLES) {
     await pool.query(`DELETE FROM \`${table}\``);
   }
 

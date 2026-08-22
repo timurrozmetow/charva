@@ -15,6 +15,7 @@
     "db:reset": "tsx src/db/reset.ts",
     "db:seed": "tsx src/db/seed/index.ts",
     "db:stock": "tsx src/db/import-stock.ts",
+    "db:hero-slides": "tsx src/db/backfill-hero-slides.ts",
     "admin:create": "tsx src/db/create-admin.ts",
     "i18n:report": "tsx src/db/i18n-report.ts"
   },

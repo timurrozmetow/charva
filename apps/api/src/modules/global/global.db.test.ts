@@ -300,6 +300,7 @@ describe('the homepage, in one request', () => {
     const body = await get<Record<string, unknown>>('/global/home');
 
     for (const section of [
+      'slides',
       'featuredTours',
       'hotels',
       'articles',
@@ -336,6 +337,42 @@ describe('the homepage, in one request', () => {
     expect(home.stats.tours).toBe(tours.meta.total);
     expect(home.stats.hotels).toBe(9);
     expect(home.stats.reviews).toBe(9);
+  });
+
+  it('names the slider from the slides, not from the places under it', async () => {
+    /*
+     * The defect the owner found, stated as a test.
+     *
+     * The hero used to be the first four rows of `places_to_see`: the caption was the place's
+     * name, so «Дарваза» on the slider and «Кратер Дарваза» on `/turkmenistan` could not be
+     * different words, and the order of the slides was the order of that page. The two lists
+     * are separate in the design export and separate here; asserting they *differ* is what
+     * makes a quiet return to the old arrangement visible.
+     */
+    const home = await get<{
+      slides: { id: number; title: string; brief: string; media: unknown }[];
+      places: { name: string }[];
+    }>('/global/home');
+
+    const titles = home.slides.map((slide) => slide.title);
+    expect(titles).toEqual(['Дарваза', 'Йангыкала', 'Ашхабад', 'Мерв']);
+
+    /*
+     * And the places disagree with them on both counts, which is the whole finding.
+     *
+     * `places_to_see` runs Ашхабад, Кратер Дарваза, Древний Мерв, Куняургенч — a different order
+     * under different names. The old hero printed the first four of *those* over the design's
+     * four photographs, so the slider was captioned by a page nobody was looking at.
+     */
+    const places = home.places.slice(0, titles.length).map((place) => place.name);
+    expect(places).not.toEqual(titles);
+    expect(places[0]).toBe('Ашхабад');
+
+    for (const slide of home.slides) {
+      // One source for the picture, and one brief describing it while there is none (Q-1).
+      expect(slide.brief.length, slide.title).toBeGreaterThan(0);
+      expect(slide.media, slide.title).toBeNull();
+    }
   });
 
   it('carries the photograph briefs, so every page renders without photographs', async () => {

@@ -425,6 +425,7 @@ const DEPARTMENT_RESOURCES = {
     TOURS,
     { ...TOURS, name: 'umrah_trips', site: 'umrah' },
     { ...TOURS, name: 'content_blocks', site: null, filters: ['site'] },
+    { ...TOURS, name: 'hero_slides', site: null, filters: ['site'] },
     { ...TOURS, name: 'settings', site: null },
   ],
 };
@@ -506,6 +507,37 @@ describe('the departments', () => {
       'href',
       expect.stringContaining('site=umrah'),
     );
+  });
+
+  it('offers each department the slider of its own homepage', async () => {
+    /*
+     * The screen the owner asked for, in the place it belongs.
+     *
+     * `hero_slides` holds Global's four slides beside Umrah's three, so it behaves like
+     * `content_blocks`: it appears in both departments carrying its own `site`, and in neither
+     * department's flat resource list. Before it existed, «change the photograph on slide two»
+     * was an edit to a place on `/turkmenistan` and there was no screen for it at all.
+     */
+    const user = userEvent.setup();
+    stubApi({ '/admin/auth/refresh': sessionFor(), '/admin/resources': DEPARTMENT_RESOURCES });
+
+    await renderPage(<Shell />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Слайдер главной' })).toHaveAttribute(
+        'href',
+        expect.stringContaining('site=global'),
+      );
+    });
+
+    await user.click(screen.getByRole('link', { name: 'Умра' }));
+    expect(screen.getByRole('link', { name: 'Слайдер главной' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('site=umrah'),
+    );
+
+    await user.click(screen.getByRole('link', { name: 'Общее' }));
+    expect(screen.queryByRole('link', { name: 'Слайдер главной' })).not.toBeInTheDocument();
   });
 
   it('keeps what both sites share out of either of them', async () => {

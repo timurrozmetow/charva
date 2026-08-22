@@ -7,7 +7,7 @@ import {
   pageMetaSchema,
   siteSettingsSchema,
 } from './common';
-import { contentSlotSchema, mediaRefSchema } from './media';
+import { contentSlotSchema, heroSlideSchema, mediaRefSchema } from './media';
 
 /**
  * Charva Umrah.
@@ -207,6 +207,14 @@ export const umrahGroupDetailResponse = z.object({
 export const umrahSettingsResponse = siteSettingsSchema;
 
 export const umrahHomeResponse = z.object({
+  /**
+   * The slider, from its own table.
+   *
+   * Three slides, and the third is «Topar» — a photograph of a group in ihram. It was never a
+   * ziyarat place, so while the hero read from that table it could not be shown at all; the
+   * third place in the list stood in for it.
+   */
+  slides: z.array(heroSlideSchema),
   trip: umrahTripSchema.nullable(),
   next: umrahTripSchema.nullable(),
   /** The package composition, as the card on the homepage shows it. */
