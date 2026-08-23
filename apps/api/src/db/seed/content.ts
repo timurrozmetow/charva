@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -13,7 +13,21 @@ import { fileURLToPath } from 'node:url';
  * database. `pnpm design:check` fails if the JSON drifts from the prototypes.
  */
 
-const contentPath = new URL('../../../../../docs/design/content.json', import.meta.url);
+/**
+ * Beside the module first, then five levels up.
+ *
+ * Five levels up is the repository — true while this runs from `apps/api/src/db/seed/` under
+ * `tsx`. In the deploy artefact the module is `apps/api/dist/seed.js`, `docs/` was never
+ * shipped, and the same path lands somewhere above the release entirely: `node dist/seed.js`
+ * on the server failed on ENOENT with the database still empty. The postbuild step copies the
+ * file next to the bundle, which is what the first branch finds — the same arrangement the
+ * migrations already use.
+ */
+function resolveContentPath(): URL {
+  const besideBundle = new URL('./content.json', import.meta.url);
+  if (existsSync(fileURLToPath(besideBundle))) return besideBundle;
+  return new URL('../../../../../docs/design/content.json', import.meta.url);
+}
 
 export interface DesignContent {
   screenCount: number;
@@ -26,7 +40,7 @@ export interface DesignContent {
 let cached: DesignContent | undefined;
 
 export function loadContent(): DesignContent {
-  cached ??= JSON.parse(readFileSync(fileURLToPath(contentPath), 'utf8')) as DesignContent;
+  cached ??= JSON.parse(readFileSync(fileURLToPath(resolveContentPath()), 'utf8')) as DesignContent;
   return cached;
 }
 
