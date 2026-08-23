@@ -1,4 +1,4 @@
-import { DEFAULT_LANG, type Lang, type Site, SITE_LANGS, type SiteLang } from './constants';
+import { bcp47, DEFAULT_LANG, type Lang, type Site, SITE_LANGS, type SiteLang } from './constants';
 
 /**
  * The head of every page, in one place.
@@ -406,11 +406,18 @@ export function contentMeta(
   };
 }
 
-/** Every language a site offers, plus `x-default`, which points at that site's default. */
+/**
+ * Every language a site offers, plus `x-default`, which points at that site's default.
+ *
+ * `hreflang` is the BCP 47 tag and `lang` is the internal key that builds the URL — they are
+ * the same string three times out of four and differ on Turkmen, which is `tk` to a parser and
+ * `/tm` in the address. Keeping both in the tuple is what stops the caller from picking one and
+ * using it for both, which is exactly how `hreflang="tm"` reached production.
+ */
 export function hreflangSet(site: Site): { hreflang: string; lang: Lang }[] {
   const langs: readonly Lang[] = SITE_LANGS[site];
   return [
-    ...langs.map((lang) => ({ hreflang: lang, lang })),
+    ...langs.map((lang) => ({ hreflang: bcp47(lang), lang })),
     { hreflang: 'x-default', lang: DEFAULT_LANG[site] },
   ];
 }

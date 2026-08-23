@@ -93,6 +93,22 @@ describe('hreflang', () => {
     // x-default is not a fourth language: it points at the one this site starts in.
     expect(global.at(-1)?.lang).toBe('ru');
     expect(hreflangSet('umrah').at(-1)?.lang).toBe('tm');
-    expect(hreflangSet('umrah').map((entry) => entry.hreflang)).toEqual(['tm', 'ru', 'x-default']);
+  });
+
+  it('spells Turkmen the way a parser spells it', () => {
+    // `tm` is the internal key and the country code; ISO 639-1 for Turkmen is `tk`. Lighthouse
+    // called `hreflang="tm"` an invalid language code and discarded the whole alternate set
+    // with it — on every page of two of the three sites.
+    expect(hreflangSet('umrah').map((entry) => entry.hreflang)).toEqual(['tk', 'ru', 'x-default']);
+    expect(hreflangSet('choice').map((entry) => entry.hreflang)).toEqual([
+      'ru',
+      'en',
+      'tr',
+      'tk',
+      'x-default',
+    ]);
+
+    // The URL is unchanged: a path segment is an address, not a language tag.
+    expect(hreflangSet('umrah')[0]?.lang).toBe('tm');
   });
 });

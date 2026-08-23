@@ -45,6 +45,32 @@ export const LANG_NAMES = {
   tm: 'Türkmen',
 } as const satisfies Record<Lang, string>;
 
+/**
+ * The same language as a machine has to be told it — BCP 47.
+ *
+ * `tm` is this project's internal key and it is **not** a language code: ISO 639-1 spells
+ * Turkmen `tk`, and `TM` is the country. Three of the four codes happen to coincide with the
+ * standard, which is why the fourth went unnoticed until Lighthouse called the Umrah pages'
+ * `hreflang="tm"` an invalid language and refused the whole alternate set with it. The same
+ * value sits on `<html lang>`, where a screen reader reads it to choose a voice.
+ *
+ * The URL keeps `/tm`. A path segment is not a language tag, it is an address that has already
+ * been shared, and `og:locale` has spelled it `tk_TM` since Phase 8 without anyone minding.
+ *
+ * Use this at every point where the code leaves the project and reaches a parser: `hreflang`,
+ * `<html lang>`, `Content-Language`. Everywhere inside, `Lang` stays what it is.
+ */
+export const BCP47: Record<Lang, string> = {
+  ru: 'ru',
+  en: 'en',
+  tr: 'tr',
+  tm: 'tk',
+};
+
+export function bcp47(lang: Lang): string {
+  return BCP47[lang];
+}
+
 /** Narrowing guard for a `?lang=` parameter, scoped to what the site actually offers. */
 export function isSiteLang<S extends Site>(site: S, value: string): value is SiteLang<S> {
   return (SITE_LANGS[site] as readonly string[]).includes(value);

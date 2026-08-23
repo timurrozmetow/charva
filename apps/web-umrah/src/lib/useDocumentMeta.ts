@@ -1,4 +1,11 @@
-import { contentMeta, hreflangSet, type Lang, routeMeta, type SiteRoute } from '@charva/contracts';
+import {
+  bcp47,
+  contentMeta,
+  hreflangSet,
+  type Lang,
+  routeMeta,
+  type SiteRoute,
+} from '@charva/contracts';
 import { useEffect } from 'react';
 
 const SITE = 'umrah';
@@ -39,7 +46,8 @@ export function useDocumentMeta({ route, pathAfterLang, content }: DocumentMeta,
     content === undefined ? section : withFallback(contentMeta(SITE, content), section.description);
 
   useEffect(() => {
-    document.documentElement.lang = lang;
+    // BCP 47, not the internal key: Turkmen is `tk` to a parser and to a screen reader.
+    document.documentElement.lang = bcp47(lang);
     document.title = title;
     setMeta('description', description);
 
