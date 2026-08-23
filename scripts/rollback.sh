@@ -48,7 +48,8 @@ printf '\n\033[1m→ %s → %s\033[0m\n' "$CURRENT" "$WANT"
   pm2 reload $ROOT/current/ecosystem.config.cjs --update-env && pm2 save"
 
 for attempt in 1 2 3 4 5 6 7 8 9 10; do
-  if "${SSH[@]}" "curl -fsS -m 5 http://127.0.0.1:3002/api/v1/health > /dev/null"; then
+  # At the root, not under /api/v1 — see the note in deploy.sh.
+  if "${SSH[@]}" "curl -fsS -m 5 http://127.0.0.1:3002/ready > /dev/null"; then
     echo "healthy — now on $WANT"
     exit 0
   fi

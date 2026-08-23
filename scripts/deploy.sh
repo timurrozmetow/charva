@@ -34,7 +34,6 @@ RELEASE="$(date -u +%Y%m%d-%H%M%S)"
 TARGET="$ROOT/releases/$RELEASE"
 
 SSH=(ssh -p "$PORT" -i "$KEY" -o StrictHostKeyChecking=accept-new "$USER@$HOST")
-RSYNC_SSH="ssh -p $PORT -i $KEY -o StrictHostKeyChecking=accept-new"
 
 say() { printf '\n\033[1m→ %s\033[0m\n' "$*"; }
 
@@ -99,20 +98,53 @@ fi
 say "release $RELEASE"
 "${SSH[@]}" "mkdir -p $TARGET/apps/api $ROOT/shared/uploads $ROOT/shared/logs $ROOT/releases"
 
+# `current` must be a symlink or absent, never a real directory. `ln -sfn release current`
+# against a directory does not replace it — it creates the link *inside* it — and the deploy
+# then reports success while nginx and PM2 read a path that holds nothing. Cheap to check,
+# and invisible if it ever happens.
+"${SSH[@]}" "! test -d $ROOT/current || test -L $ROOT/current" || {
+  echo "$ROOT/current is a real directory; it has to be a symlink. Remove it and deploy again." >&2
+  exit 1
+}
+
+# One tar streamed over one ssh connection, rather than rsync.
+#
+# rsync is not a choice here: this script runs from a laptop, and Git Bash on Windows ships ssh
+# and tar and no rsync at all. Nothing is lost by the swap — every release is a fresh empty
+# directory, so there is no delta for rsync to compute and it would send the whole tree anyway.
+ship_dir() {
+  "${SSH[@]}" "mkdir -p '$2'"
+  tar -czf - -C "$1" . | "${SSH[@]}" "tar -xzf - -C '$2'"
+}
+
+ship_stdin() {
+  "${SSH[@]}" "cat > '$1'"
+}
+
 # Only what runs. No sources, no node_modules, no design package: the artefact is about 6 MB,
 # which is the difference between a deploy that takes seconds and one that takes minutes on a
 # connection from Ashgabat.
 for app in web-choice web-global web-umrah admin; do
-  rsync -az --delete -e "$RSYNC_SSH" "apps/$app/dist/" "$USER@$HOST:$TARGET/apps/$app/"
+  ship_dir "apps/$app/dist" "$TARGET/apps/$app"
 done
-rsync -az --delete -e "$RSYNC_SSH" apps/api/dist/ "$USER@$HOST:$TARGET/apps/api/dist/"
+ship_dir apps/api/dist "$TARGET/apps/api/dist"
 
-# The API's own manifest and the lockfile, so `pnpm install --prod` on the server resolves the
-# same versions. sharp and @node-rs/argon2 ship platform binaries and MUST be installed there:
-# a linux-x64 build cannot be produced by rsyncing a Windows `node_modules`.
-rsync -az -e "$RSYNC_SSH" apps/api/package.json "$USER@$HOST:$TARGET/apps/api/package.json"
-rsync -az -e "$RSYNC_SSH" pnpm-lock.yaml "$USER@$HOST:$TARGET/pnpm-lock.yaml"
-rsync -az -e "$RSYNC_SSH" deploy/ecosystem.config.cjs "$USER@$HOST:$TARGET/ecosystem.config.cjs"
+# The manifest is rewritten rather than copied — see scripts/production-manifest.mjs, which
+# explains each of the three reasons. The short version: `apps/api/package.json` depends on
+# "@charva/contracts": "workspace:*", and pnpm outside a workspace refuses that specifier
+# outright, so shipping the file as it stands fails the install step below on every deploy,
+# starting with the first. The generated manifest drops the workspace packages — tsup already
+# bundled them into dist/ — pins every remaining version to the exact one this build was
+# verified against, and carries the `onlyBuiltDependencies` allowance that otherwise lives in
+# pnpm-workspace.yaml, without which sharp and @node-rs/argon2 install with no platform binary
+# and fail at the first request rather than at install time.
+#
+# The lockfile is not shipped for the same reason it never worked: with --ignore-workspace pnpm
+# reads a lockfile beside the manifest, not one a directory above, so the root lockfile that
+# used to be copied here was never consulted. Exact versions in the manifest do the job it was
+# meant to do for every direct dependency; transitive ones resolve within their own ranges.
+node scripts/production-manifest.mjs | ship_stdin "$TARGET/apps/api/package.json"
+ship_stdin "$TARGET/ecosystem.config.cjs" < deploy/ecosystem.config.cjs
 
 say "install production dependencies"
 "${SSH[@]}" "cd $TARGET/apps/api && pnpm install --prod --ignore-workspace --no-frozen-lockfile"
@@ -137,7 +169,14 @@ fi
 # --------------------------------------------------------------------------------------
 # 5. Switch, restart, check
 # --------------------------------------------------------------------------------------
-PREVIOUS=$("${SSH[@]}" "readlink -f $ROOT/current 2>/dev/null || true")
+# `test -L` first, and that guard is the whole point. `readlink -f` prints a canonical path even
+# when the last component does not exist, so on a first deploy it answered `/opt/charva/current`
+# — and the rollback below then ran `ln -sfn /opt/charva/current /opt/charva/current`, pointing
+# the symlink at itself. Every path through it becomes ELOOP: nginx serves 404 for the whole
+# site, the shell cannot read an index.html, and the running process keeps answering because it
+# resolved its directory at start. That is a deploy that reports failure and leaves the site
+# worse than the failure did.
+PREVIOUS=$("${SSH[@]}" "test -L $ROOT/current && readlink -f $ROOT/current || true")
 
 say "switch and restart"
 "${SSH[@]}" "ln -sfn $TARGET $ROOT/current && \
@@ -147,14 +186,20 @@ say "switch and restart"
 say "health"
 # Against the API directly rather than through nginx: this asks whether the process this
 # script just started is answering, and a stale nginx cache could answer for a dead one.
+#
+# `/ready` and `/health` both sit at the root, NOT under /api/v1 — they are not part of the
+# versioned surface, and asking for /api/v1/health gets a well-formed 404 from the API's own
+# error envelope. This loop asked for exactly that and rolled back ten seconds after a deploy
+# that had in fact worked. `/ready` rather than `/health` because it round-trips the database:
+# a release that cannot reach MySQL is not one to switch to.
 for attempt in 1 2 3 4 5 6 7 8 9 10; do
-  if "${SSH[@]}" "curl -fsS -m 5 http://127.0.0.1:3002/api/v1/health > /dev/null"; then
+  if "${SSH[@]}" "curl -fsS -m 5 http://127.0.0.1:3002/ready > /dev/null"; then
     echo "healthy after ${attempt}s"
     break
   fi
   if [[ $attempt -eq 10 ]]; then
     echo "the new release did not come up — rolling back" >&2
-    if [[ -n "$PREVIOUS" ]]; then
+    if [[ -n "$PREVIOUS" && "$PREVIOUS" != "$ROOT/current" && "$PREVIOUS" != "$TARGET" ]]; then
       "${SSH[@]}" "ln -sfn $PREVIOUS $ROOT/current && pm2 reload $ROOT/current/ecosystem.config.cjs --update-env"
       echo "rolled back to $PREVIOUS" >&2
     fi
