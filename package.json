@@ -14,7 +14,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
+    "test": "turbo run test --concurrency=50%",
     "test:e2e": "turbo run test:e2e",
     "design:extract": "node scripts/extract-design-data.mjs",
     "design:check": "node scripts/extract-design-data.mjs --check",
