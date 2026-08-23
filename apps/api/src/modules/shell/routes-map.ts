@@ -19,6 +19,16 @@ export interface ResolvedRoute<S extends Site = Site> {
   slug: string | null;
   /** The path with the language prefix removed — what `canonical` and `hreflang` are built on. */
   pathAfterLang: string;
+  /**
+   * Did a pattern actually match, or is this the fallback?
+   *
+   * Stated rather than inferred, because inferring it by comparing the route id against
+   * `unmatchedRoute(site)` is wrong on the chooser: its fallback IS `home`, its only page, so
+   * the comparison called every single chooser URL — including the homepage — a 404. The HTML
+   * was right and browsers rendered it, so the only readers who ever saw the status were the
+   * ones the shell exists for: Google and the Telegram card.
+   */
+  matched: boolean;
 }
 
 interface Pattern {
@@ -84,6 +94,7 @@ export function resolveRoute<S extends Site>(site: S, rawPath: string): Resolved
       route: pattern.route as SiteRoute<S>,
       slug: match[1] ?? null,
       pathAfterLang: normalise(pathAfterLang),
+      matched: true,
     };
   }
 
@@ -92,6 +103,7 @@ export function resolveRoute<S extends Site>(site: S, rawPath: string): Resolved
     route: UNMATCHED[site] as SiteRoute<S>,
     slug: null,
     pathAfterLang: normalise(pathAfterLang),
+    matched: false,
   };
 }
 

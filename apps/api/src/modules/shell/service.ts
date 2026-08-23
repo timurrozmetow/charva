@@ -90,7 +90,10 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
   return {
     tags: buildHead(context),
     lang,
-    found: !missing && resolved.route !== unmatchedRoute(site),
+    // `resolved.matched`, not a comparison against `unmatchedRoute(site)`: on the chooser those
+    // are the same route id, and the comparison made every chooser URL answer 404 — see the
+    // note on `matched` in routes-map.ts.
+    found: resolved.matched && !missing,
   };
 }
 

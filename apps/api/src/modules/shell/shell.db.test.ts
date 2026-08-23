@@ -89,6 +89,18 @@ describe('matching a path to a page', () => {
   it('sends an unknown path on the chooser to the chooser', () => {
     // It has one page and its router redirects everything to it; there is no missing page.
     expect(resolveRoute('choice', '/ru/nonsense').route).toBe('home');
+    expect(resolveRoute('choice', '/ru/nonsense').matched).toBe(false);
+  });
+
+  it('answers 200 for the chooser itself, in every language it speaks', async () => {
+    // The chooser's fallback route IS `home`, its only page, so deriving "found" by comparing
+    // the route id against the fallback made every chooser URL a 404 — the homepage included.
+    // Browsers render a 404 body perfectly well, so the only readers who ever saw it were the
+    // two this whole shell exists for: the crawler and the Telegram card.
+    for (const path of ['/', '/ru', '/en', '/tr', '/tm']) {
+      const { found } = await render('choice', path);
+      expect(found, `chooser ${path}`).toBe(true);
+    }
   });
 });
 
