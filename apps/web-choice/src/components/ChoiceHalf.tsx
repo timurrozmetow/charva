@@ -122,9 +122,27 @@ export function ChoiceHalf({
       */}
       {badge}
 
+      {/*
+        The text column is sized to the narrow state, not to the half.
+
+        The halves are 50/50 at rest and 59/41 while one is hovered, and until this was fixed the
+        copy inside was simply `width: auto` — so every expansion re-wrapped it. The headline went
+        from three lines to two and back, the paragraph reflowed under it, and the whole block
+        grew and shrank on every pass of the cursor. That is what the owner saw and called the
+        text distorting; it is not a font-size change, it is line breaking.
+
+        41vw is the width a half has while the *other* one is open, which is the narrowest this
+        column ever has to fit into. Pinning it there means the line breaks are decided once and
+        never revisited: expanding a half now widens the photograph beside the text rather than
+        the text. Below the tablet breakpoint the halves stack and neither expands, so the column
+        goes back to filling what it is given.
+      */}
       <div
         className={[
           'relative z-[3] px-[70px] pb-[76px] lap:px-12 lap:pb-14 tab:px-8 tab:pb-10 mob:px-5 mob:pb-8',
+          // 41vw, not 41vw minus the padding: `box-sizing: border-box` is on everything, so the
+          // padding is already inside this number.
+          'w-[41vw] tab:w-full',
           'motion-safe:animate-fade-up',
           umrah ? 'motion-safe:[animation-delay:120ms]' : '',
         ].join(' ')}

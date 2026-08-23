@@ -41,6 +41,7 @@
     "fastify-type-provider-zod": "^4.0.2",
     "libphonenumber-js": "^1.13.10",
     "mysql2": "^3.23.3",
+    "nodemailer": "^9.0.5",
     "pino": "^9.6.0",
     "sharp": "^0.34.5",
     "zod": "^3.24.1"
@@ -49,6 +50,7 @@
     "@charva/config": "workspace:*",
     "@types/form-data": "^2.5.2",
     "@types/node": "^22.10.7",
+    "@types/nodemailer": "^8.0.1",
     "drizzle-kit": "^0.31.10",
     "form-data": "^4.0.6",
     "pino-pretty": "^13.0.0",

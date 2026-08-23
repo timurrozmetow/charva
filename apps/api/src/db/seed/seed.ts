@@ -1031,11 +1031,16 @@ async function seedBuilder(db: Database): Promise<number> {
 // ========================================================================================
 
 /**
- * Contacts and identifiers, straight from the prototypes.
+ * Contacts, as the owner gave them on 2026-08-23. Question Q-12 is answered.
  *
- * All of it is placeholder-shaped and none of it has been confirmed — the licence number reads
- * `TM-1428`, and the two sites give different email domains (`charvatravel.com` against
- * `charva.com`). Question Q-12.
+ * The prototype's numbers were invented (`+993 12 456 789` on both sites) and its two email
+ * domains disagreed with each other; both are gone. The two brands genuinely have separate
+ * lines, which is the point of the chooser — `global@` for Turkmenistan travel, `umra@` for the
+ * pilgrimage, and the Umrah desk answers on two numbers.
+ *
+ * **The licence number is deliberately absent.** The prototype's `TM-1428` was a placeholder,
+ * the owner asked for it gone, and `null` here means the footer prints its sentence without a
+ * licence clause rather than printing «Licence No. » followed by nothing.
  */
 async function seedSettings(db: Database): Promise<number> {
   const values: (typeof t.settings.$inferInsert)[] = [
@@ -1043,17 +1048,17 @@ async function seedSettings(db: Database): Promise<number> {
       site: 'global',
       settingKey: 'contacts',
       value: {
-        phone: '+993 12 456 789',
-        whatsapp: '+993 65 123 456',
-        email: 'info@charvatravel.com',
+        phone: '+993 65 618 530',
+        whatsapp: '+993 65 618 530',
+        email: 'global@charva-travel.com',
         hours: { ru: 'Пн–Сб, 09:00–18:00' },
-        address: { ru: 'Ашхабад, Битарап Туркменистан 42' },
+        address: { ru: 'Ашхабад, Туркменистан' },
       },
     },
     {
       site: 'global',
       settingKey: 'legal',
-      value: { license: 'TM-1428', unconfirmed: true },
+      value: { license: null, unconfirmed: false },
     },
     {
       site: 'global',
@@ -1064,16 +1069,18 @@ async function seedSettings(db: Database): Promise<number> {
       site: 'umrah',
       settingKey: 'contacts',
       value: {
-        phone: '+993 12 456 789',
-        email: 'umrah@charva.com',
+        phone: '+993 71 309 060',
+        phoneAlt: '+993 71 309 070',
+        whatsapp: '+993 71 309 060',
+        email: 'umra@charva-travel.com',
         hours: { tm: 'Du–Şe, 09:00–18:00' },
-        address: { tm: 'Aşgabat, Bitarap Türkmenistan 42' },
+        address: { tm: 'Aşgabat, Türkmenistan' },
       },
     },
     {
       site: 'umrah',
       settingKey: 'legal',
-      value: { license: 'TM-1428', unconfirmed: true },
+      value: { license: null, unconfirmed: false },
     },
     {
       site: 'umrah',

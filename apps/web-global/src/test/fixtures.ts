@@ -81,6 +81,7 @@ export function settings(overrides: Partial<GlobalSettingsResponse> = {}): Globa
   return {
     contacts: {
       phone: '+993 12 456 789',
+      phoneAlt: '',
       whatsapp: '+993 65 123 456',
       email: 'info@charvatravel.com',
       hours: 'Пн–Сб, 09:00–18:00',

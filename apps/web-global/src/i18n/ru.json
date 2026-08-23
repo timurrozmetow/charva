@@ -19,6 +19,7 @@
   },
   "footer": {
     "label": "Подвал сайта",
+    "legalPlain": "Charva Travel — туроператор по Туркменистану. {address}.",
     "legal": "Charva Travel — туроператор по Туркменистану. {address}. Лицензия № {license}.",
     "copyright": "© {year} Charva Travel. Все права защищены.",
     "columns": {

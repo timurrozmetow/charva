@@ -36,9 +36,25 @@ export interface SubmissionMeta {
   now?: Date;
 }
 
-/** `honeypot` means: answer 204 and write nothing. It is never an error. */
+/**
+ * `honeypot` means: answer 204 and write nothing. It is never an error.
+ *
+ * `stored` carries the phone in E.164 and the priced quote because the route notifies from this
+ * and not from the request body: the number the business sees has to be the number that was
+ * stored, and the total has to be the one the server computed. Reading either back off the
+ * submission would be a second source for both.
+ */
 export type LeadOutcome =
-  { kind: 'honeypot' } | { kind: 'stored'; id: number; isDuplicate: boolean };
+  | { kind: 'honeypot' }
+  | {
+      kind: 'stored';
+      id: number;
+      isDuplicate: boolean;
+      phone?: string;
+      quote?: { totalMinor: number; currency: string } | null;
+      /** The departure a signup attached to, for the notification's subject line. */
+      departsAt?: string | null;
+    };
 
 /**
  * Layers two and three, which apply identically to both forms.
@@ -152,7 +168,16 @@ export async function submitLead(
     userAgent: meta.userAgent?.slice(0, 255) ?? null,
   });
 
-  return { kind: 'stored', id: result.insertId, isDuplicate: false };
+  return {
+    kind: 'stored',
+    id: result.insertId,
+    isDuplicate: false,
+    phone,
+    quote:
+      quoteSnapshot === null
+        ? null
+        : { totalMinor: quoteSnapshot.total.minor, currency: quoteSnapshot.total.currency },
+  };
 }
 
 // ----------------------------------------------------------------------------------------
@@ -205,7 +230,13 @@ export async function submitSignup(
     userAgent: meta.userAgent?.slice(0, 255) ?? null,
   });
 
-  return { kind: 'stored', id: result.insertId, isDuplicate: false };
+  return {
+    kind: 'stored',
+    id: result.insertId,
+    isDuplicate: false,
+    phone,
+    departsAt: trip.departAt,
+  };
 }
 
 /** The departure a signup attaches to, or a 409 explaining which of the five states blocked it. */

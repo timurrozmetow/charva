@@ -96,8 +96,31 @@ export const leadRoutes: FastifyPluginAsync = async (instance) => {
           },
         },
       },
-      async (request, reply) =>
-        answer(reply, await submitLead(app.db, request.body, meta(request)), 'leadId'),
+      async (request, reply) => {
+        const outcome = await submitLead(app.db, request.body, meta(request));
+
+        // After the row, never before it, and never awaited into the response: a lead that
+        // reached the database is a lead the business has, whether or not the relay answered.
+        // A duplicate inside the fifteen-minute window announces nothing — it is the same
+        // person pressing the button twice, and two identical e-mails teach the reader to
+        // ignore the first (D-50).
+        if (outcome.kind === 'stored' && !outcome.isDuplicate) {
+          void app.mailer.lead({
+            id: outcome.id,
+            kind: request.body.kind,
+            name: request.body.name.trim(),
+            phone: outcome.phone ?? request.body.phone,
+            email: request.body.email ?? null,
+            guests: request.body.guests ?? null,
+            topics: request.body.topics ?? null,
+            message: request.body.message ?? null,
+            locale: request.lang,
+            quote: outcome.quote ?? null,
+          });
+        }
+
+        return answer(reply, outcome, 'leadId');
+      },
     );
   });
 
@@ -121,15 +144,30 @@ export const leadRoutes: FastifyPluginAsync = async (instance) => {
           response: { 201: umrahSignupResponse, 204: z.null() },
         },
       },
-      async (request, reply) =>
-        answer(
-          reply,
-          await submitSignup(app.db, request.body, {
-            ...meta(request),
-            passportKey: env.PASSPORT_ENCRYPTION_KEY,
-          }),
-          'signupId',
-        ),
+      async (request, reply) => {
+        const outcome = await submitSignup(app.db, request.body, {
+          ...meta(request),
+          passportKey: env.PASSPORT_ENCRYPTION_KEY,
+        });
+
+        if (outcome.kind === 'stored' && !outcome.isDuplicate) {
+          void app.mailer.signup({
+            id: outcome.id,
+            fullName: request.body.fullName.trim(),
+            phone: outcome.phone ?? request.body.phone,
+            peopleCount: request.body.peopleCount,
+            roomType: request.body.roomType ?? null,
+            comment: request.body.comment ?? null,
+            locale: request.lang,
+            // Whether, not what. The number is sealed in the column and read only through an
+            // audited action (D-18); an inbox is the one place it must never end up.
+            hasPassport: request.body.passportNumber !== undefined,
+            departsAt: outcome.departsAt ?? null,
+          });
+        }
+
+        return answer(reply, outcome, 'signupId');
+      },
     );
   });
 };

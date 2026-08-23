@@ -101,6 +101,7 @@ export function settings(overrides: Partial<UmrahSettingsResponse> = {}): UmrahS
   return {
     contacts: {
       phone: '+993 12 456 789',
+      phoneAlt: '+993 71 309 070',
       whatsapp: '+993 65 123 456',
       email: 'umrah@charvatravel.com',
       hours: 'Du–Şe, 09:00–18:00',

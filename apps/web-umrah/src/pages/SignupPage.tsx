@@ -49,6 +49,17 @@ export function SignupPage({ lang }: SignupPageProps) {
       value: contacts?.phone ?? '',
       href: `tel:${(contacts?.phone ?? '').replace(/[^\d+]/g, '')}`,
     },
+    // The desk has a second line. On the page where somebody is deciding to hand over a
+    // passport, one number that does not answer is a reason to close the tab.
+    ...(contacts?.phoneAlt === undefined || contacts.phoneAlt === ''
+      ? []
+      : [
+          {
+            key: 'phoneAlt' as const,
+            value: contacts.phoneAlt,
+            href: `tel:${contacts.phoneAlt.replace(/[^\d+]/g, '')}`,
+          },
+        ]),
     {
       key: 'whatsapp',
       value: contacts?.whatsapp ?? '',

@@ -420,14 +420,36 @@ describe('pagination', () => {
 });
 
 describe('settings', () => {
-  it('says out loud that the contacts are still the prototype placeholders', async () => {
-    // Question Q-12: the licence reads `TM-1428` and the two sites give different email
-    // domains. Carrying the fact to the client beats hiding it behind plausible-looking data.
-    const body = await get<{ legal: { license: string; unconfirmed: boolean } }>(
-      '/global/settings',
+  it('carries the operator´s own contacts, and no invented licence', async () => {
+    /*
+     * The inverse of the test that stood here, and inverted rather than deleted.
+     *
+     * It used to assert `TM-1428` and `unconfirmed: true` — question Q-12 made visible instead
+     * of hidden behind plausible-looking data, which was right while nobody had asked the
+     * owner. He answered on 2026-08-23: these are the numbers, and there is no licence to
+     * print. So the assertion is now that the placeholder is gone, because a placeholder is
+     * exactly the kind of thing that comes back in a later merge without anyone noticing.
+     */
+    const body = await get<{
+      legal: { license: string | null; unconfirmed: boolean };
+      contacts: { phone: string; email: string };
+    }>('/global/settings');
+
+    expect(body.legal.license).toBeNull();
+    expect(body.legal.unconfirmed).toBe(false);
+    expect(body.contacts.email).toBe('global@charva-travel.com');
+    expect(body.contacts.phone).not.toContain('456 789');
+  });
+
+  it('gives the Umrah desk both of its lines', async () => {
+    // Two numbers, and the second is not decoration: on the page where somebody is deciding to
+    // hand over a passport, one line that does not answer is a reason to close the tab.
+    const body = await get<{ contacts: { phone: string; phoneAlt: string; email: string } }>(
+      '/umrah/settings',
     );
 
-    expect(body.legal.license).toBe('TM-1428');
-    expect(body.legal.unconfirmed).toBe(true);
+    expect(body.contacts.phone).toBe('+993 71 309 060');
+    expect(body.contacts.phoneAlt).toBe('+993 71 309 070');
+    expect(body.contacts.email).toBe('umra@charva-travel.com');
   });
 });

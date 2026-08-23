@@ -16,6 +16,7 @@
   },
   "footer": {
     "label": "Подвал сайта",
+    "legalPlain": "Charva Umrah — туроператор, организующий умру. {address}.",
     "legal": "Charva Umrah — туроператор, организующий умру. {address}. Лицензия № {license}.",
     "copyright": "© {year} Charva Umrah. Все права защищены.",
     "columns": {
@@ -251,6 +252,7 @@
     "contactsTitle": "Связаться напрямую",
     "labels": {
       "phone": "Телефон",
+      "phoneAlt": "Телефон (2)",
       "whatsapp": "WhatsApp",
       "email": "E-mail",
       "hours": "Часы работы"

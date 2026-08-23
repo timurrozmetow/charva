@@ -41,8 +41,8 @@ function payload(overrides: Partial<ChoiceResponse> = {}): ChoiceResponse {
       umrah: { seatsTotal: 45, groups: 6, pilgrims: 168 },
     },
     contacts: {
-      global: { phone: '', whatsapp: '', email: '', hours: '', address: '' },
-      umrah: { phone: '', whatsapp: '', email: '', hours: '', address: '' },
+      global: { phone: '', phoneAlt: '', whatsapp: '', email: '', hours: '', address: '' },
+      umrah: { phone: '', phoneAlt: '', whatsapp: '', email: '', hours: '', address: '' },
     },
     legal: { license: 'TM-1428', unconfirmed: true },
     // Empty by default, which is the state this page shipped in for months — see the slot test

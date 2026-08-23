@@ -16,6 +16,7 @@
   },
   "footer": {
     "label": "Saýtyň aşaky bölümi",
+    "legalPlain": "Charva Umrah — umra ziýaratlaryny guraýan tur operator. {address}.",
     "legal": "Charva Umrah — umra ziýaratlaryny guraýan tur operator. {address}. Ygtyýarnama № {license}.",
     "copyright": "© {year} Charva Umrah. Ähli hukuklar goralan.",
     "columns": {
@@ -243,6 +244,7 @@
     "contactsTitle": "Göni habarlaşmak",
     "labels": {
       "phone": "Telefon",
+      "phoneAlt": "Telefon (2)",
       "whatsapp": "WhatsApp",
       "email": "E-mail",
       "hours": "Iş wagty"

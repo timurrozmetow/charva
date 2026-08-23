@@ -130,6 +130,28 @@ const schema = z.object({
   READ_RATE_LIMIT_MAX: z.coerce.number().int().positive().max(100_000).default(300),
 
   /**
+   * Where a filled-in form is announced. Question Q-11, answered 2026-08-23: SMTP.
+   *
+   * All four of `SMTP_HOST`, `EMAIL_USER`, `EMAIL_PASS` and `NOTIFICATION_EMAIL` or none —
+   * `createMailer` turns itself off unless it has the whole set, because a half-configured
+   * mailer throws on every submission and reads as a broken form. Nothing else in the system
+   * depends on it: the enquiry is in the database and in the panel either way (D-50).
+   *
+   * `SMTP_SECURE` is nodemailer's name for «TLS from the first byte», which is port 465. Port
+   * 587 is STARTTLS and wants `false` — it is not «no encryption», which is what the name
+   * suggests to everyone who meets it for the first time.
+   */
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().int().positive().max(65_535).default(587),
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  EMAIL_USER: z.string().min(1).optional(),
+  EMAIL_PASS: z.string().min(1).optional(),
+  NOTIFICATION_EMAIL: z.string().email().optional(),
+
+  /**
    * Signs the form token that carries the moment a form was rendered — anti-spam layer three.
    *
    * The signature is the whole mechanism: it lets the server trust a timestamp it did not

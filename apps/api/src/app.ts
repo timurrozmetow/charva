@@ -17,6 +17,7 @@ import { z } from 'zod';
 
 import { createDb, createPool, type Database } from './db/client';
 import { type Env } from './env';
+import { createMailer, type Mailer } from './lib/mailer';
 import { adminRoutes } from './modules/admin/routes';
 import { builderRoutes } from './modules/builder/routes';
 import { choiceRoutes } from './modules/choice/routes';
@@ -65,6 +66,7 @@ declare module 'fastify' {
     db: Database;
     pool: Pool;
     env: Env;
+    mailer: Mailer;
     registeredRoutes: RegisteredRoute[];
   }
 }
@@ -72,6 +74,8 @@ declare module 'fastify' {
 export interface BuildOptions {
   /** Supplied by tests, which share one pool across a suite rather than opening ten. */
   pool?: Pool;
+  /** Supplied by tests that want to assert what would have been sent, without sending it. */
+  mailer?: Mailer;
 }
 
 export async function buildApp(env: Env, options: BuildOptions = {}): Promise<FastifyInstance> {
@@ -121,10 +125,22 @@ export async function buildApp(env: Env, options: BuildOptions = {}): Promise<Fa
   app.decorate('db', createDb(pool));
   app.decorate('env', env);
 
+  // Off unless SMTP is fully configured, and off in tests unless a test configures it: the
+  // suite must never open a socket to Gmail, and `createMailer` returning a null object is how
+  // that is guaranteed rather than remembered.
+  const mailer = options.mailer ?? createMailer(env, app.log);
+  app.decorate('mailer', mailer);
+
   // The pool is this app's to close only when this app opened it.
   if (options.pool === undefined) {
     app.addHook('onClose', async () => {
       await pool.end();
+    });
+  }
+
+  if (options.mailer === undefined) {
+    app.addHook('onClose', async () => {
+      await mailer.close();
     });
   }
 

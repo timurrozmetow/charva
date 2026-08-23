@@ -57,6 +57,17 @@ export function UmrahFooter({ lang, settings }: UmrahFooterProps) {
                 href: `tel:${contacts.phone.replace(/[^\d+]/g, '')}`,
               },
             ]),
+        // The Umrah desk answers on two lines and both belong in the footer: a pilgrim who
+        // cannot get through on the first should not have to hunt for the second.
+        ...(contacts?.phoneAlt === undefined || contacts.phoneAlt === ''
+          ? []
+          : [
+              {
+                key: 'phoneAlt',
+                label: contacts.phoneAlt,
+                href: `tel:${contacts.phoneAlt.replace(/[^\d+]/g, '')}`,
+              },
+            ]),
         ...(contacts?.email === undefined || contacts.email === ''
           ? []
           : [{ key: 'email', label: contacts.email, href: `mailto:${contacts.email}` }]),
@@ -92,10 +103,15 @@ export function UmrahFooter({ lang, settings }: UmrahFooterProps) {
           <img src={logoMark} alt={copy.brand} width={88} height={56} className="h-14 w-auto" />
         </Link>
       }
-      legal={fill(copy.footer.legal, {
-        address: contacts?.address ?? '',
-        license: settings?.legal.license ?? '',
-      })}
+      // Same as Global: a licence clause only when there is a licence to name.
+      legal={
+        settings?.legal.license == null || settings.legal.license === ''
+          ? fill(copy.footer.legalPlain, { address: contacts?.address ?? '' })
+          : fill(copy.footer.legal, {
+              address: contacts?.address ?? '',
+              license: settings.legal.license,
+            })
+      }
       copyright={fill(copy.footer.copyright, {
         // The year is the only date this site reads from the clock, and it is the copyright
         // line. Every other date comes from `umrah_trips` — see `no-hardcoded-date.test.ts`.

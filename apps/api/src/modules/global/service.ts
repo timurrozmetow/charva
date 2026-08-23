@@ -826,9 +826,12 @@ export async function listFaq(db: Database, site: 'global' | 'umrah', lang: Lang
 /**
  * Contacts, socials and the licence number.
  *
- * Every value is currently the prototype's own placeholder — the licence reads `TM-1428` and the
- * two sites give different email domains. `legal.unconfirmed` carries that fact to the client
- * rather than hiding it, which is question Q-12 made visible instead of forgotten.
+ * The contacts are the owner's own since 2026-08-23 — two lines for the Umrah desk, one for
+ * Global, a separate address for each brand. `legal.unconfirmed` stays in the response because
+ * it is how the client learns that a value is a stand-in rather than a fact; it is false now.
+ *
+ * The licence is `null` when there is none, and that is different from `''`. The footer prints
+ * a different sentence for each: no licence clause at all, versus «Licence No. » with a gap.
  */
 export async function getSettings(
   db: Database,
@@ -857,6 +860,7 @@ export async function getSettings(
   return {
     contacts: {
       phone: value(contacts, 'phone'),
+      phoneAlt: value(contacts, 'phoneAlt'),
       whatsapp: value(contacts, 'whatsapp'),
       email: value(contacts, 'email'),
       hours: value(contacts, 'hours'),
@@ -868,7 +872,12 @@ export async function getSettings(
       whatsapp: value(socials, 'whatsapp'),
       youtube: value(socials, 'youtube'),
     },
-    legal: { license: value(legal, 'license'), unconfirmed: legal['unconfirmed'] === true },
+    legal: {
+      // Empty collapses to null: a licence that is not set and a licence set to an empty string
+      // are the same fact to a reader, and the footer has one branch, not two.
+      license: value(legal, 'license') === '' ? null : value(legal, 'license'),
+      unconfirmed: legal['unconfirmed'] === true,
+    },
     langs: [...langs],
     defaultLang,
   };

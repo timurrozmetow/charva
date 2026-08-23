@@ -10,6 +10,7 @@ import { seedAll, SEEDED_TABLES } from '../db/seed/seed';
 import { TEST_DATABASE_URL } from '../db/test-setup';
 import { loadEnv } from '../env';
 import { issueFormToken } from '../lib/form-token';
+import type { LeadNotification, Mailer, SignupNotification } from '../lib/mailer';
 import { hashPassword } from '../lib/passwords';
 
 /**
@@ -73,6 +74,37 @@ export interface TestAppOptions {
   cacheTtlSeconds?: number;
   /** Raised by suites that make many requests and are not testing the limiter. */
   readRateLimitMax?: number;
+  /** A recorder in place of the mailer, for the suite that asserts what would be sent. */
+  mailer?: Mailer;
+}
+
+/**
+ * A mailer that records instead of sending.
+ *
+ * The suite must never open a socket to Gmail, and the way to guarantee that is for the real
+ * one to be off unless configured — which it is — plus this, for the tests that need to see
+ * what the message would have carried. Chiefly: that it never carries a passport number.
+ */
+export function recordingMailer(): Mailer & {
+  leads: LeadNotification[];
+  signups: SignupNotification[];
+} {
+  const leads: LeadNotification[] = [];
+  const signups: SignupNotification[] = [];
+  return {
+    enabled: true,
+    leads,
+    signups,
+    lead: (notification) => {
+      leads.push(notification);
+      return Promise.resolve();
+    },
+    signup: (notification) => {
+      signups.push(notification);
+      return Promise.resolve();
+    },
+    close: () => Promise.resolve(),
+  };
 }
 
 export async function buildTestApp(options: TestAppOptions = {}): Promise<TestApp> {
@@ -96,7 +128,10 @@ export async function buildTestApp(options: TestAppOptions = {}): Promise<TestAp
     CORS_ORIGINS: 'http://localhost:5181',
   });
 
-  const app = await buildApp(env, { pool });
+  const app = await buildApp(env, {
+    pool,
+    ...(options.mailer === undefined ? {} : { mailer: options.mailer }),
+  });
 
   return {
     app,

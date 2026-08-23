@@ -111,10 +111,19 @@ export function GlobalFooter({ lang, settings }: GlobalFooterProps) {
           <img src={logoMark} alt={copy.brand} width={88} height={56} className="h-14 w-auto" />
         </Link>
       }
-      legal={fill(copy.footer.legal, {
-        address: contacts?.address ?? '',
-        license: settings?.legal.license ?? '',
-      })}
+      /*
+        Two sentences, not one with a hole in it. The operator has no licence number to print,
+        and «Лицензия № .» is worse than saying nothing — it reads as a value that failed to
+        load rather than as a clause that does not apply.
+      */
+      legal={
+        settings?.legal.license == null || settings.legal.license === ''
+          ? fill(copy.footer.legalPlain, { address: contacts?.address ?? '' })
+          : fill(copy.footer.legal, {
+              address: contacts?.address ?? '',
+              license: settings.legal.license,
+            })
+      }
       copyright={fill(copy.footer.copyright, {
         // The year is the only date this site computes, and it is the copyright line. Reading
         // the clock is right here and wrong everywhere else — see `no-hardcoded-date.test.ts`.

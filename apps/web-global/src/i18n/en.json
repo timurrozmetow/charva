@@ -19,6 +19,7 @@
   },
   "footer": {
     "label": "Site footer",
+    "legalPlain": "Charva Travel — a tour operator in Turkmenistan. {address}.",
     "legal": "Charva Travel — a tour operator in Turkmenistan. {address}. Licence No. {license}.",
     "copyright": "© {year} Charva Travel. All rights reserved.",
     "columns": {

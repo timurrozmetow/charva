@@ -19,6 +19,7 @@
   },
   "footer": {
     "label": "Site altbilgisi",
+    "legalPlain": "Charva Travel — Türkmenistan tur operatörü. {address}.",
     "legal": "Charva Travel — Türkmenistan tur operatörü. {address}. Lisans No. {license}.",
     "copyright": "© {year} Charva Travel. Tüm hakları saklıdır.",
     "columns": {

@@ -87,6 +87,8 @@ export type ContentBlockItem = z.infer<typeof contentBlockSchema>;
 export const siteSettingsSchema = z.object({
   contacts: z.object({
     phone: z.string(),
+    /** A second line, which the Umrah desk has and Global does not. Empty when there is one. */
+    phoneAlt: z.string(),
     whatsapp: z.string(),
     email: z.string(),
     hours: z.string(),
@@ -99,8 +101,16 @@ export const siteSettingsSchema = z.object({
     youtube: z.string(),
   }),
   legal: z.object({
-    license: z.string(),
-    /** True while the values are the prototype's placeholders — question Q-12. */
+    /**
+     * Null, not an empty string.
+     *
+     * The operator has no licence number to print — the prototype's `TM-1428` was invented and
+     * the owner asked for it gone. A footer that renders «Licence No. » with nothing after it
+     * is worse than one that does not mention licensing, so the absence has to be expressible
+     * and has to be distinguishable from a number that failed to load.
+     */
+    license: z.string().nullable(),
+    /** True while the values are the prototype's placeholders — question Q-12, now answered. */
     unconfirmed: z.boolean(),
   }),
   langs: z.array(z.string()),
