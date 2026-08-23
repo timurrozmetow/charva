@@ -1,4 +1,4 @@
-import { type Lang } from '@charva/contracts';
+import { type Lang, siteOrigin } from '@charva/contracts';
 
 /**
  * Every path this site has, built in one place.
@@ -26,10 +26,11 @@ export const path = {
  * Where the other two sites live.
  *
  * Separate subdomains in production, separate dev servers locally, so neither can be a relative
- * path. The ports are the ones in CLAUDE.md's map — chosen because the silkgrain project on
- * this machine already owns everything Vite picks by itself.
+ * path. The address now comes from `SITE_ORIGINS` in `@charva/contracts` rather than from an
+ * environment variable that nothing ever set — that variable is why the first production build
+ * linked back to `http://localhost:5180`. It still overrides, for a staging domain.
  */
 export const SITE_URLS = {
-  choice: import.meta.env.VITE_CHOICE_URL ?? 'http://localhost:5180',
-  umrah: import.meta.env.VITE_UMRAH_URL ?? 'http://localhost:5182',
+  choice: siteOrigin('choice', import.meta.env.PROD, import.meta.env.VITE_CHOICE_URL),
+  umrah: siteOrigin('umrah', import.meta.env.PROD, import.meta.env.VITE_UMRAH_URL),
 } as const;

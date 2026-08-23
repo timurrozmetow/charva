@@ -8,3 +8,4 @@ export * from './money';
 export * from './pagination';
 export * from './permissions';
 export * from './seo';
+export * from './sites';

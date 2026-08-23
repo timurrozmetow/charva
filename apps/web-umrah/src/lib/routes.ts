@@ -1,4 +1,4 @@
-import { type Lang } from '@charva/contracts';
+import { type Lang, siteOrigin } from '@charva/contracts';
 
 /**
  * Every path this site has, built in one place.
@@ -18,8 +18,11 @@ export const path = {
   yazylmak: (lang: Lang) => `/${lang}/yazylmak`,
 } as const;
 
-/** Where the other two sites live. Separate subdomains in production, separate ports locally. */
+/**
+ * Where the other two sites live. Separate subdomains in production, separate ports locally.
+ * The address comes from `SITE_ORIGINS` in `@charva/contracts`; the variable only overrides it.
+ */
 export const SITE_URLS = {
-  choice: import.meta.env.VITE_CHOICE_URL ?? 'http://localhost:5180',
-  global: import.meta.env.VITE_GLOBAL_URL ?? 'http://localhost:5181',
+  choice: siteOrigin('choice', import.meta.env.PROD, import.meta.env.VITE_CHOICE_URL),
+  global: siteOrigin('global', import.meta.env.PROD, import.meta.env.VITE_GLOBAL_URL),
 } as const;
