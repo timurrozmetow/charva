@@ -96,7 +96,7 @@ timedatectl set-timezone UTC
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get -y -o Dpkg::Options::=--force-confold upgrade
-apt-get -y install curl git ufw fail2ban nginx mysql-server ffmpeg nodejs npm
+apt-get -y install curl git ufw fail2ban nginx mysql-server ffmpeg nodejs npm cron certbot
 
 adduser --disabled-password --gecos "" charva
 mkdir -p /home/charva/.ssh && chmod 700 /home/charva/.ssh
@@ -111,6 +111,9 @@ chown -R charva:charva /home/charva/.ssh && chmod 600 /home/charva/.ssh/authoriz
 
 `--force-confold` — чтобы обновление не остановилось на вопросе о файле конфигурации, которого
 никто не правил.
+
+**`cron` в образе 26.04 отсутствует**, и обнаруживается это на шаге 8, где `crontab` просто нет
+в системе. Ставится здесь же, вместе со всем остальным.
 
 ```bash
 ufw allow OpenSSH && ufw allow 'Nginx Full' && ufw --force enable
@@ -130,11 +133,19 @@ Node пришёл из репозитория на предыдущем шаге
 `tsup` и что стоит в CI. NodeSource не нужен.
 
 ```bash
-corepack enable && corepack prepare pnpm@10 --activate
-npm install -g pm2
+npm install -g pnpm@10.34.5 pm2
 ```
 
-**Проверка:** `node -v` → v22.x, `pnpm -v` → 10.x, `pm2 -v` отвечает.
+**Не corepack.** Он кеширует активированную версию **на пользователя**: `corepack prepare` от
+root оставляет учётку `charva` без активной версии, та при первом вызове тянет свежий pnpm 11,
+а corepack из репозитория 26.04 его загрузить не может — падает
+`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING` посреди `deploy.sh`, на шаге установки зависимостей.
+Один экземпляр на машину, версия та, что закреплена в `package.json`. Если corepack уже включали
+— `corepack disable`, иначе его шим в `/usr/bin` перекроет установленный.
+
+**Проверка:** `node -v` → v22.x, `pnpm -v` → 10.34.5, `pm2 -v` отвечает. Проверять **от имени
+`charva`**, а не от root: `ssh charva@<ip> 'pnpm -v'`. Разница между этими двумя ответами и есть
+весь абзац выше.
 
 ---
 
@@ -390,8 +401,13 @@ nginx -t && systemctl reload nginx
 браузер уже не пойдёт. Включать после того, как все пять хостов отдают валидный TLS; до тех пор
 строку закомментировать.
 
-**Проверка:** `nginx -t` без ошибок; `curl -I https://api.charva-travel.com/api/v1/health`
-отвечает по TLS. Остальные хосты пока отдают 502 — кода на сервере ещё нет, это следующий шаг.
+**Проверка:** `nginx -t` без ошибок; `curl https://api.charva-travel.com/health` отвечает по TLS.
+Остальные хосты пока отдают 502 — кода на сервере ещё нет, это следующий шаг.
+
+`/health` и `/ready` живут **в корне**, а не под `/api/v1`: они не часть версионированной
+поверхности. `/api/v1/health` вернёт аккуратный 404 из конверта ошибок API — что и случилось на
+первой выкладке, где `deploy.sh` спрашивал именно этот адрес и откатывался через десять секунд
+после успешного запуска.
 
 ---
 
@@ -442,9 +458,22 @@ ssh charva@<ip> 'cd /opt/charva/current/apps/api && \
 ### Автозапуск
 
 ```bash
-ssh charva@<ip> 'pm2 startup systemd -u charva --hp /home/charva' # выполнить выданную строку от root
 ssh charva@<ip> 'pm2 save'
+pm2 startup systemd -u charva --hp /home/charva      # от root; выполнить выданную строку
+
+# Демон отдаётся systemd, и это обязательный шаг, а не формальность.
+ssh charva@<ip> 'pm2 kill'                            # свой демон, запущенный deploy.sh
+systemctl reset-failed pm2-charva && systemctl start pm2-charva
 ```
+
+**Почему `pm2 kill`.** Юнит объявлен `Type=forking`: systemd ждёт, что `pm2 resurrect`
+разветвится и оставит PID-файл. Когда демон уже запущен пользователем, `resurrect` возвращается
+мгновенно, systemd не находит процесса и объявляет `Result: protocol` — юнит «enabled» и при
+этом `failed`, то есть после перезагрузки API не поднимется, а `pm2 list` до перезагрузки
+показывает всё в порядке. Расхождение видно только в `systemctl status pm2-charva`.
+
+**Проверка:** `systemctl is-active pm2-charva` → `active`, и `pm2 list` показывает `charva-api`
+в состоянии `online`.
 
 **Проверка:** все пять хостов отвечают по HTTPS; `pm2 status` — `online`; в админку удаётся
 войти.
