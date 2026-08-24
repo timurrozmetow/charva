@@ -63,3 +63,10 @@ desktop.ini
 .eslintcache
 .cache/
 tmp/
+
+# Agent skills installed with `npx skills add` — third-party guidance, not this project's code.
+# Kept out of the repository for the same reason node_modules is: it is fetched, not written,
+# and `skills-lock.json` is the record of what was fetched.
+.agents/
+.claude/
+skills-lock.json
