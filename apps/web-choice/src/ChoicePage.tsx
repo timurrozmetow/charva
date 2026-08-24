@@ -60,7 +60,10 @@ export function ChoicePage({ lang }: ChoicePageProps) {
   ];
 
   /*
-   * `min-h-dvh`, not `h-dvh min-h-[760px]`.
+   * `min-h-dvh`, not a fixed `h-dvh` with a 760px floor under it.
+   *
+   * (Written out rather than quoted as a class: Tailwind scans this file as raw text, comments
+   * included, so naming the old utility here would emit a live rule for a class nobody uses.)
    *
    * The old pair asked for two incompatible things at once: exactly one screen tall, but never
    * under 760px. On a 1366x768 laptop that is a 760px box inside about 690px of viewport, and

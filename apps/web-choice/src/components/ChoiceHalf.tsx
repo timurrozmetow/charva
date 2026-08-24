@@ -48,14 +48,19 @@ export interface ChoiceHalfProps {
 /**
  * Where the seat badge sits, written against the `pt-…` on the half above.
  *
- * 96px clears the nav island (26px of offset plus about 60px of island); the pill is roughly
- * 38px tall, so it ends around 134 and the column's 150px of top padding starts below it.
- * Change one of these two numbers and the other has to move — which is the whole reason they
- * are now four lines apart instead of in two files.
+ * The two numbers are one sum, so here is the sum. The nav island is 26px down and about 62px
+ * tall (10px of padding either side of a 40px logo, plus its hairline), so it ends at 88. The
+ * badge starts at 96 and is about 37 tall — 10px of padding either side of a 12px line — so it
+ * ends at 133, and the column's 150px of top padding starts below that with room to spare.
+ *
+ * No `lap:` step, and that is deliberate: the island keeps its full 26px offset all the way
+ * down to the tablet breakpoint — its own override is `tab:py-4`, not `lap:` — so a badge moved
+ * up at `lap` would climb *into* it. Below `tab` the halves stack, the island is over the
+ * Global half and the badge is over the Umrah one, so the only clearance that still matters is
+ * the badge's own: 80 + 37 = 117, under the half's 124.
  */
 const BADGE_POSITION = [
   'absolute right-14 top-24 z-[4]',
-  'lap:right-12 lap:top-[84px]',
   'tab:right-6 tab:top-20 mob:right-4 mob:top-[70px]',
 ].join(' ');
 
@@ -94,11 +99,11 @@ export function ChoiceHalf({
           the edge of the screen. Padding here is what the growing content stops against, and
           `BADGE_TOP` below is written against this number rather than beside it.
 
-          150px = the island's 26px offset and ~60px of height, then the badge at 96px and its
-          own ~38px, then clearance. Below `lap` the island loses its outer padding and the
-          badge moves up with it.
+          150px is the arithmetic in `BADGE_POSITION` above: island to 88, badge to 133, then
+          clearance. 124 below the tablet breakpoint, where the halves stack and the badge — at
+          80 plus its own 37 — is the only thing left to clear.
         */
-        'pt-[150px] lap:pt-[132px] tab:pt-24',
+        'pt-[150px] tab:pt-[124px] mob:pt-[112px]',
         // Below the tablet breakpoint the two halves stack and neither expands: there is no
         // pointer to expand them with, and a 45vh panel that grows to 65vh just hides the other.
         'tab:min-h-[50vh] tab:!grow',
