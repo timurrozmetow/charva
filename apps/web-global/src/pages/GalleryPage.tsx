@@ -1,5 +1,14 @@
 import { type Lang } from '@charva/contracts';
-import { Container, Eyebrow, Heading, ImageSlot, Lightbox, MosaicGrid, Section } from '@charva/ui';
+import {
+  Container,
+  Eyebrow,
+  Heading,
+  ImageSlot,
+  Lightbox,
+  MosaicGrid,
+  mosaicTileSizes,
+  Section,
+} from '@charva/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -111,6 +120,7 @@ export function GalleryPage({ lang }: GalleryPageProps) {
                     <ImageSlot
                       slotKey={`gallery-${String(item.id)}`}
                       brief={item.caption}
+                      sizes={mosaicTileSizes(item.spanCols)}
                       media={{ src: item.media.url, alt: item.media.alt }}
                       className="size-full"
                     />

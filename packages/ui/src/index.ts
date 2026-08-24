@@ -2,6 +2,7 @@ export { cn } from './cn';
 export * from './color';
 export * from './tokens';
 export * from './theme';
+export * from './image-sizes';
 
 export * from './components/Accordion';
 export * from './components/Badge';

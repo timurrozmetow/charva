@@ -1,5 +1,5 @@
 import { formatMoney, type HotelCard as HotelCardData, type Lang } from '@charva/contracts';
-import { Badge, cardClass, ImageSlot, StarRating } from '@charva/ui';
+import { Badge, cardClass, imageSizes, ImageSlot, StarRating } from '@charva/ui';
 import { Link } from '@tanstack/react-router';
 
 import { copyFor, fill } from '../i18n';
@@ -50,6 +50,7 @@ export function HotelCard({ hotel, lang, priority = false }: HotelCardProps) {
             }
             ratio="4/3"
             priority={priority}
+            sizes={imageSizes.cardGrid}
             className="h-[220px] w-full rounded-media"
           />
 

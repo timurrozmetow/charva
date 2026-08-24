@@ -4,6 +4,7 @@ import {
   Container,
   Eyebrow,
   Heading,
+  imageSizes,
   ImageSlot,
   Section,
   StarRating,
@@ -158,6 +159,7 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                                 slotKey={`hotel-gallery-${hotel.slug}`}
                                 brief={shot.caption}
                                 media={{ src: shot.media.url, alt: shot.media.alt }}
+                                sizes={imageSizes.cardGrid}
                                 ratio="4/3"
                                 className="h-[240px] w-full rounded-media"
                               />

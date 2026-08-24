@@ -6,6 +6,7 @@ import {
   Container,
   Eyebrow,
   Heading,
+  imageSizes,
   ImageSlot,
   Section,
   SectionHead,
@@ -77,6 +78,7 @@ export function HomePage({ lang }: HomePageProps) {
                     ...(media.lqip === null ? {} : { lqip: media.lqip }),
                   }
             }
+            sizes={imageSizes.full}
             priority={index === 0}
             className="size-full"
           />
@@ -250,6 +252,7 @@ export function HomePage({ lang }: HomePageProps) {
                       alt: slotFor('u-pack-cover')?.media?.alt ?? '',
                     }
               }
+              sizes={imageSizes.halfPanel}
               ratio="4/3"
               className="min-h-[420px] w-full rounded-panel"
             />

@@ -5,10 +5,12 @@ import {
   Eyebrow,
   Heading,
   Icon,
+  imageSizes,
   ImageSlot,
   Lightbox,
   LoadMore,
   MosaicGrid,
+  mosaicTileSizes,
   Section,
   StatStrip,
   TabPanel,
@@ -196,6 +198,7 @@ export function MediaPage({ lang }: MediaPageProps) {
                           <ImageSlot
                             slotKey={`u-group-${selected}-${String(photo.id)}`}
                             brief={photo.caption}
+                            sizes={mosaicTileSizes(photo.spanCols)}
                             media={{ src: photo.media.url, alt: photo.media.alt }}
                             className="size-full"
                           />
@@ -401,6 +404,7 @@ function GroupVideo({ video, lang, slug }: { video: UmrahGroupMedia; lang: Lang;
       <ImageSlot
         slotKey={`u-group-${slug}-video-${String(video.id)}`}
         brief={video.caption}
+        sizes={imageSizes.cardGrid}
         media={video.poster === null ? null : { src: video.poster.url, alt: video.poster.alt }}
         className="size-full"
       />

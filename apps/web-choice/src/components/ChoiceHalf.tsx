@@ -1,5 +1,5 @@
 import { type MediaRef } from '@charva/contracts';
-import { ImageSlot } from '@charva/ui';
+import { imageSizes, ImageSlot } from '@charva/ui';
 import { type ReactNode } from 'react';
 
 export interface HalfStat {
@@ -34,19 +34,7 @@ export interface ChoiceHalfProps {
 }
 
 /**
- * One half of the chooser.
- *
- * The expansion is a `flex-grow` transition on the hovered half alone, which is what produces
- * the design's 59/41 split rather than a symmetric push. It is gated behind
- * `@media (hover: hover)` by the preset, so a tap on a phone opens the link instead of leaving
- * one half stuck open with no way to close it.
- *
- * `focus-within` expands it too. A keyboard user gets no hover, and without this the only
- * feedback that the left half is focused would be the focus ring on a link that fills half the
- * screen — the same affordance, reached a different way.
- */
-/**
- * Where the seat badge sits, written against the `pt-…` on the half above.
+ * Where the seat badge sits, written against the `pt-…` on the half below.
  *
  * The two numbers are one sum, so here is the sum. The nav island is 26px down and about 62px
  * tall (10px of padding either side of a 40px logo, plus its hairline), so it ends at 88. The
@@ -64,6 +52,18 @@ const BADGE_POSITION = [
   'tab:right-6 tab:top-20 mob:right-4 mob:top-[70px]',
 ].join(' ');
 
+/**
+ * One half of the chooser.
+ *
+ * The expansion is a `flex-grow` transition on the hovered half alone, which is what produces
+ * the design's 59/41 split rather than a symmetric push. It is gated behind
+ * `@media (hover: hover)` by the preset, so a tap on a phone opens the link instead of leaving
+ * one half stuck open with no way to close it.
+ *
+ * `focus-within` expands it too. A keyboard user gets no hover, and without this the only
+ * feedback that the left half is focused would be the focus ring on a link that fills half the
+ * screen — the same affordance, reached a different way.
+ */
 export function ChoiceHalf({
   eyebrow,
   title,
@@ -97,7 +97,7 @@ export function ChoiceHalf({
           the two, so on a short window the headline simply grew into them: the eyebrow ended up
           behind the island and the first line of «Умра с туркменской группой» was cut off by
           the edge of the screen. Padding here is what the growing content stops against, and
-          `BADGE_TOP` below is written against this number rather than beside it.
+          `BADGE_POSITION` above is written against this number rather than beside it.
 
           150px is the arithmetic in `BADGE_POSITION` above: island to 88, badge to 133, then
           clearance. 124 below the tablet breakpoint, where the halves stack and the badge — at
@@ -125,6 +125,7 @@ export function ChoiceHalf({
                   ...(media.height === null ? {} : { height: media.height }),
                 }
           }
+          sizes={imageSizes.splitHalf}
           // Both halves are above the fold on every screen this page has, so neither waits.
           priority
           className="size-full"

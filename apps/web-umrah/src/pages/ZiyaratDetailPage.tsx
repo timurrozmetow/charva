@@ -1,5 +1,14 @@
 import { type Lang } from '@charva/contracts';
-import { Badge, buttonClass, Container, Eyebrow, Heading, ImageSlot, Section } from '@charva/ui';
+import {
+  Badge,
+  buttonClass,
+  Container,
+  Eyebrow,
+  Heading,
+  ImageSlot,
+  proseSizes,
+  Section,
+} from '@charva/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 
@@ -92,6 +101,7 @@ export function ZiyaratDetailPage({ lang, slug }: ZiyaratDetailPageProps) {
                           ...(place.cover.lqip === null ? {} : { lqip: place.cover.lqip }),
                         }
                   }
+                  sizes={proseSizes(860)}
                   ratio="16/9"
                   priority
                   className="mt-9 h-[440px] w-full rounded-panel mob:h-[220px]"

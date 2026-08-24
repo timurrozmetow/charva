@@ -1,5 +1,5 @@
 import { type Lang, type Review } from '@charva/contracts';
-import { Eyebrow, ImageSlot, StarRating } from '@charva/ui';
+import { Eyebrow, imageSizes, ImageSlot, StarRating } from '@charva/ui';
 
 import { copyFor, fill } from '../i18n';
 
@@ -44,6 +44,7 @@ export function ReviewCard({ review, lang }: ReviewCardProps) {
           slotKey={`review-avatar-${String(review.id)}`}
           brief={review.authorName}
           media={review.avatar === null ? null : { src: review.avatar.url, alt: review.avatar.alt }}
+          sizes={imageSizes.avatar}
           className="size-11 shrink-0 overflow-hidden rounded-full"
         />
         <div>

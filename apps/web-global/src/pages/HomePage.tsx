@@ -5,8 +5,10 @@ import {
   Container,
   Eyebrow,
   Heading,
+  imageSizes,
   ImageSlot,
   MosaicGrid,
+  mosaicTileSizes,
   Section,
   SectionHead,
 } from '@charva/ui';
@@ -83,6 +85,7 @@ export function HomePage({ lang }: HomePageProps) {
                     ...(media.lqip === null ? {} : { lqip: media.lqip }),
                   }
             }
+            sizes={imageSizes.full}
             // Only the first slide is the LCP candidate; the other three are behind it.
             priority={index === 0}
             className="size-full"
@@ -257,6 +260,7 @@ export function HomePage({ lang }: HomePageProps) {
                     media={
                       lead.cover === null ? null : { src: lead.cover.url, alt: lead.cover.alt }
                     }
+                    sizes={imageSizes.halfPanel}
                     ratio="16/9"
                     className="h-[320px] w-full"
                   />
@@ -343,6 +347,7 @@ export function HomePage({ lang }: HomePageProps) {
                       media={
                         item.media === null ? null : { src: item.media.url, alt: item.media.alt }
                       }
+                      sizes={mosaicTileSizes(item.spanCols)}
                       className="size-full"
                     />
                     {item.caption !== '' && (

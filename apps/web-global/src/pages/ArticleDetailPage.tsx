@@ -1,5 +1,14 @@
 import { type Lang } from '@charva/contracts';
-import { Badge, buttonClass, Container, Eyebrow, Heading, ImageSlot, Section } from '@charva/ui';
+import {
+  Badge,
+  buttonClass,
+  Container,
+  Eyebrow,
+  Heading,
+  ImageSlot,
+  proseSizes,
+  Section,
+} from '@charva/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 
@@ -106,6 +115,7 @@ export function ArticleDetailPage({ lang, slug }: ArticleDetailPageProps) {
                       ...(article.cover.width === null ? {} : { width: article.cover.width }),
                       ...(article.cover.height === null ? {} : { height: article.cover.height }),
                     }}
+                    sizes={proseSizes(760)}
                     ratio="16/9"
                     priority
                     className="mt-10 h-[420px] w-full rounded-panel mob:h-[210px]"

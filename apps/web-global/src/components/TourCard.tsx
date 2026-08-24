@@ -1,5 +1,5 @@
 import { formatMoney, type Lang, type TourCard as TourCardData } from '@charva/contracts';
-import { Badge, cardClass, ImageSlot, StarRating } from '@charva/ui';
+import { Badge, cardClass, imageSizes, ImageSlot, StarRating } from '@charva/ui';
 import { Link } from '@tanstack/react-router';
 
 import { copyFor, fill, plural } from '../i18n';
@@ -51,6 +51,7 @@ export function TourCard({ tour, lang, priority = false }: TourCardProps) {
             }
             ratio="4/3"
             priority={priority}
+            sizes={imageSizes.cardGrid}
             className="h-[240px] w-full rounded-media"
           />
 

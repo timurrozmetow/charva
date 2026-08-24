@@ -1,5 +1,13 @@
 import { type Lang } from '@charva/contracts';
-import { buttonClass, Container, Eyebrow, Heading, ImageSlot, Section } from '@charva/ui';
+import {
+  buttonClass,
+  Container,
+  Eyebrow,
+  Heading,
+  imageSizes,
+  ImageSlot,
+  Section,
+} from '@charva/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 
@@ -118,6 +126,7 @@ export function CountryPage({ lang }: CountryPageProps) {
                     media={
                       place.cover === null ? null : { src: place.cover.url, alt: place.cover.alt }
                     }
+                    sizes={imageSizes.cardGrid}
                     ratio="16/10"
                     className="h-[200px] w-full"
                   />

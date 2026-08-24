@@ -1,5 +1,5 @@
 import { type Lang, type ZiyaratPlace } from '@charva/contracts';
-import { Badge, cardClass, ImageSlot } from '@charva/ui';
+import { Badge, cardClass, imageSizes, ImageSlot } from '@charva/ui';
 import { Link } from '@tanstack/react-router';
 
 import { copyFor } from '../i18n';
@@ -51,6 +51,7 @@ export function ZiyaratCard({ place, lang }: ZiyaratCardProps) {
                   }
             }
             ratio="4/3"
+            sizes={imageSizes.cardGrid}
             className="h-[230px] w-full rounded-media"
           />
           <Badge variant="scrim" className="absolute left-4 top-4">

@@ -7,6 +7,7 @@ import {
   Eyebrow,
   Heading,
   Icon,
+  imageSizes,
   ImageSlot,
   Section,
   StarRating,
@@ -115,6 +116,7 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
                             ...(tour.cover.height === null ? {} : { height: tour.cover.height }),
                           }
                     }
+                    sizes={imageSizes.rail}
                     ratio="16/9"
                     // The largest element on the page, and the reason it is not lazy.
                     priority
@@ -294,6 +296,7 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
                     slotKey={`tour-gallery-${tour.slug}`}
                     brief={shot.caption}
                     media={{ src: shot.media.url, alt: shot.media.alt }}
+                    sizes={imageSizes.cardGrid}
                     ratio="4/3"
                     className="h-[240px] w-full rounded-media"
                   />
