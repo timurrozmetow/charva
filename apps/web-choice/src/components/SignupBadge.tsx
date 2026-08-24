@@ -18,6 +18,11 @@ export interface SignupBadgeProps {
  * they are not edge cases: the first happens the day a group leaves and the second the day
  * after, before the next departure is announced. The prototype has neither — its countdown
  * clamps to zeros and the badge keeps promising twelve seats forever.
+ *
+ * It no longer positions itself. `absolute right-[70px] top-[118px]` used to live on this span,
+ * a hundred lines away from the padding that has to clear it, and the two went out of step: the
+ * pill ended up lying across the headline. `ChoiceHalf` owns the placement now, next to the
+ * number it has to agree with.
  */
 export function SignupBadge({ trip, lang }: SignupBadgeProps) {
   const copy = COPY[lang].badge;
@@ -38,7 +43,7 @@ export function SignupBadge({ trip, lang }: SignupBadgeProps) {
 
   return (
     <span
-      className="absolute right-[70px] top-[118px] z-[4] inline-flex items-center gap-2.5 rounded-full border border-tint-line bg-tint px-[18px] py-2.5 text-[12px] font-bold uppercase tracking-[.12em] text-dark-on backdrop-blur-soft tab:right-6 tab:top-20 mob:right-4 mob:top-[70px] mob:text-[11px]"
+      className="inline-flex items-center gap-2.5 rounded-full border border-tint-line bg-tint px-[18px] py-2.5 text-[12px] font-bold uppercase tracking-[.12em] text-dark-on backdrop-blur-soft mob:text-[11px]"
       // The whole half is one link; this pill is a label on it, not a second target.
       aria-hidden={false}
     >

@@ -331,7 +331,26 @@ export const charvaPreset = {
       animation: {
         'drop-in': `dropIn ${String(duration.drop)}ms ${easing.drop} both`,
         pulse: 'pulse 2s ease-in-out infinite',
-        'fade-up': '"fadeUp" 900ms ease both',
+        /*
+         * The name is bare, and it has to be.
+         *
+         * This read `'"fadeUp" 900ms ease both'` — quoted — and quoting it is legal CSS that
+         * nonetheless breaks the utility, because Tailwind decides which `@keyframes` block to
+         * emit by matching the *first token* of this value against a key in `theme.keyframes`.
+         * `"fadeUp"` matches nothing, so no block was emitted, and the deployed stylesheet
+         * carried `animation:fadeUp .9s ease both` pointing at a rule that did not exist. The
+         * chooser's two halves have never once faded in. Nothing failed and nothing warned:
+         * with `both` and no keyframes the element simply renders at its normal values.
+         *
+         * D-32's audit could not see it either — it asks whether a class produces CSS, and this
+         * one does. `animation-keyframes.test.ts` asks the question that actually matters: does
+         * every animation this preset declares name a block the preset also defines.
+         *
+         * `ease-out` rather than the prototype's `ease`: this is an entrance, and `ease` starts
+         * slow, which on a 900ms fade means the front door of the site sits blank for a beat
+         * after it could have been readable.
+         */
+        'fade-up': 'fadeUp 900ms ease-out both',
         'page-in': 'pageIn 260ms ease-out both',
       },
 

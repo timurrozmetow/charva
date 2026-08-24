@@ -45,6 +45,20 @@ export interface ChoiceHalfProps {
  * feedback that the left half is focused would be the focus ring on a link that fills half the
  * screen — the same affordance, reached a different way.
  */
+/**
+ * Where the seat badge sits, written against the `pt-…` on the half above.
+ *
+ * 96px clears the nav island (26px of offset plus about 60px of island); the pill is roughly
+ * 38px tall, so it ends around 134 and the column's 150px of top padding starts below it.
+ * Change one of these two numbers and the other has to move — which is the whole reason they
+ * are now four lines apart instead of in two files.
+ */
+const BADGE_POSITION = [
+  'absolute right-14 top-24 z-[4]',
+  'lap:right-12 lap:top-[84px]',
+  'tab:right-6 tab:top-20 mob:right-4 mob:top-[70px]',
+].join(' ');
+
 export function ChoiceHalf({
   eyebrow,
   title,
@@ -70,6 +84,21 @@ export function ChoiceHalf({
         'group relative flex min-w-0 flex-1 flex-col justify-end overflow-hidden no-underline',
         'transition-[flex-grow] duration-choiceExpand ease-expand',
         'hover:grow-[1.45] focus-within:grow-[1.45]',
+        /*
+          The top band is reserved, not hoped for.
+
+          The content is bottom-anchored, so it grows upwards, and the two things above it — the
+          nav island and the Umrah seat badge — are positioned from the top. Nothing connected
+          the two, so on a short window the headline simply grew into them: the eyebrow ended up
+          behind the island and the first line of «Умра с туркменской группой» was cut off by
+          the edge of the screen. Padding here is what the growing content stops against, and
+          `BADGE_TOP` below is written against this number rather than beside it.
+
+          150px = the island's 26px offset and ~60px of height, then the badge at 96px and its
+          own ~38px, then clearance. Below `lap` the island loses its outer padding and the
+          badge moves up with it.
+        */
+        'pt-[150px] lap:pt-[132px] tab:pt-24',
         // Below the tablet breakpoint the two halves stack and neither expands: there is no
         // pointer to expand them with, and a 45vh panel that grows to 65vh just hides the other.
         'tab:min-h-[50vh] tab:!grow',
@@ -120,7 +149,16 @@ export function ChoiceHalf({
         for them gone, and that is their call to make: the numerals were a guess about intent
         and the person whose brand it is has stated the intent. See D-128.
       */}
-      {badge}
+      {/*
+        The badge is placed here, not by itself.
+
+        It used to carry `absolute right-[70px] top-[118px]` in its own file, which meant the
+        offset that has to clear the nav and the padding that has to clear the offset lived two
+        components apart with nothing relating them. They drifted, and the result was the seat
+        pill sitting on top of the headline. Now the pill is a pill and this is the only file
+        that has an opinion about where it goes.
+      */}
+      {badge === undefined ? null : <div className={BADGE_POSITION}>{badge}</div>}
 
       {/*
         The text column is sized to the narrow state, not to the half.
@@ -136,10 +174,16 @@ export function ChoiceHalf({
         never revisited: expanding a half now widens the photograph beside the text rather than
         the text. Below the tablet breakpoint the halves stack and neither expands, so the column
         goes back to filling what it is given.
+
+        The side padding is 56px rather than the mockup's 70. `box-sizing: border-box` puts that
+        padding *inside* the 41vw, so on a 1366 laptop 70+70 left 419px of line — which is why
+        the headline broke into three lines and the three Umrah figures wrapped onto two rows.
+        28px back is 28px of line length at the one width where the design is tightest, and it
+        is the difference between two lines and three on both halves.
       */}
       <div
         className={[
-          'relative z-[3] px-[70px] pb-[76px] lap:px-12 lap:pb-14 tab:px-8 tab:pb-10 mob:px-5 mob:pb-8',
+          'relative z-[3] px-14 pb-16 lap:px-11 lap:pb-12 tab:px-8 tab:pb-10 mob:px-5 mob:pb-8',
           // 41vw, not 41vw minus the padding: `box-sizing: border-box` is on everything, so the
           // padding is already inside this number.
           'w-[41vw] tab:w-full',
@@ -154,35 +198,51 @@ export function ChoiceHalf({
           </span>
         </div>
 
+        {/*
+          No `lap:` override any more. It was a flat 52px, and a flat number is exactly what
+          cannot work here: at 1279x900 there is room for more and at 1279x680 there is room
+          for less. `--c-hero-size` now reads `min(4.5vw, 7.2vh)`, which answers both. Below
+          the tablet breakpoint the halves stack and the page scrolls, so height stops being
+          the binding axis and the size goes back to width alone.
+        */}
         <h2
           id={headingId}
-          className="max-w-[600px] text-hero font-medium text-dark-on lap:text-[52px] mob:text-[38px]"
+          className="max-w-[600px] text-hero font-medium text-dark-on tab:text-[clamp(30px,5.4vw,46px)] mob:text-[34px]"
         >
           {title}
         </h2>
 
-        <p className="mt-6 max-w-[450px] text-[17px] font-light leading-[1.68] text-cream-body mob:text-[15px]">
+        <p className="mt-5 max-w-[450px] text-[16px] font-light leading-[1.6] text-cream-body mob:text-[15px]">
           {lead}
         </p>
 
-        <ul className="mt-7 flex list-none flex-wrap gap-2 p-0">
+        <ul className="mt-6 flex list-none flex-wrap gap-2 p-0">
           {chips.map((chip) => (
             <li
               key={chip}
-              className="rounded-full border border-line-chip bg-cream-fill px-3.5 py-1.5 text-[12px] font-medium text-cream-soft"
+              className="rounded-full border border-line-chip bg-cream-fill px-3 py-1.5 text-[12px] font-medium text-cream-soft"
             >
               {chip}
             </li>
           ))}
         </ul>
 
-        <div className="my-8 flex flex-wrap gap-[34px] mob:gap-6">
+        {/*
+          Separate row and column gaps, and a smaller label.
+
+          One `gap-[34px]` set the space between the figures and the space between rows to the
+          same 34px, so the moment three Umrah figures did not fit on one line the block grew by
+          124px — on the half that was already the taller of the two. At 10px and .12em the
+          three labels measure about 318px against 447px of column, so they fit on one row at
+          every width the split layout is used at, and the row gap only matters on a phone.
+        */}
+        <div className="my-7 flex flex-wrap gap-x-8 gap-y-5 mob:gap-x-6">
           {stats.map((stat) => (
             <div key={stat.label} className="flex flex-col gap-[5px]">
-              <span className="text-[29px] font-medium leading-none text-accent mob:text-[24px]">
+              <span className="text-[26px] font-medium leading-none text-accent mob:text-[23px]">
                 {stat.value}
               </span>
-              <span className="text-[11px] font-bold uppercase tracking-[.16em] text-cream-faint">
+              <span className="text-[10px] font-bold uppercase tracking-[.12em] text-cream-faint">
                 {stat.label}
               </span>
             </div>

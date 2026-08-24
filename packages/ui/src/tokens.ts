@@ -322,11 +322,20 @@ export const type = {
  * on a 375px phone overflows on the second word. The upper bound is pinned above ~1170px, so
  * at every width the design was drawn for the number is exactly the one in the mockup, and
  * below that it scales rather than wraps into six lines.
+ *
+ * Choice is the exception, and it is the only page in the system that has to be: the two
+ * homepages scroll, so their headline is bound by width alone and a tall block simply pushes
+ * the next section down. The chooser fills the window and has nothing below it, so its binding
+ * axis is **height** — and a size that reads only `vw` cannot know the window is short. On a
+ * 1366x768 laptop the Umrah column wanted 745px inside 760, and the difference came off the
+ * top: the eyebrow behind the nav island and the first line of the headline gone. `min()` of
+ * the two axes is what makes the headline shrink when the window is short rather than when it
+ * is narrow, and that is what the owner was looking at.
  */
 export const heroScale = {
   global: { size: 'clamp(38px, 7vw, 82px)', leading: '1', tracking: '-0.02em' },
   umrah: { size: 'clamp(34px, 6.2vw, 72px)', leading: '1.02', tracking: '-0.02em' },
-  choice: { size: 'clamp(32px, 5.5vw, 64px)', leading: '1.02', tracking: '-0.015em' },
+  choice: { size: 'clamp(28px, min(4.5vw, 7.2vh), 58px)', leading: '1.04', tracking: '-0.015em' },
 } as const;
 
 /**

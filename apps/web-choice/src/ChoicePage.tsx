@@ -59,8 +59,23 @@ export function ChoicePage({ lang }: ChoicePageProps) {
     { value: format(data?.stats.umrah.groups), label: copy.umrah.stats.groups },
   ];
 
+  /*
+   * `min-h-dvh`, not `h-dvh min-h-[760px]`.
+   *
+   * The old pair asked for two incompatible things at once: exactly one screen tall, but never
+   * under 760px. On a 1366x768 laptop that is a 760px box inside about 690px of viewport, and
+   * the content — bottom-anchored — grew out of the *top* of it, where `overflow-hidden` cut it
+   * off. The eyebrow went behind the nav island and the first line of the Umrah headline was
+   * simply not on the page. Nothing about that is recoverable by the reader: it does not
+   * scroll, because the overflow is hidden, and it does not shrink, because 760 is a floor.
+   *
+   * A minimum is the honest version of the same intent. The halves still fill the window on
+   * every screen the site is actually used on, because the type now scales with height; and on
+   * one shorter than the content, the page scrolls a little instead of destroying the headline.
+   * `overflow-hidden` stays — it is what keeps the photographs inside their halves.
+   */
   return (
-    <main className="relative flex h-dvh min-h-[760px] overflow-hidden bg-bg tab:h-auto tab:min-h-dvh tab:flex-col">
+    <main className="relative flex min-h-dvh overflow-hidden bg-bg tab:flex-col">
       <ChoiceNav lang={lang} />
 
       <ChoiceHalf
