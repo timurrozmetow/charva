@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -292,7 +292,15 @@ describe('useToasts', () => {
     );
   });
 
-  it('clears itself after the timeout', () => {
+  /*
+   * A dismissal is two steps now, and these two tests assert both.
+   *
+   * They used to check only that the text was gone, which passed when the row was ripped out of
+   * the array between frames — the behaviour that made a toast vanish rather than leave. Marking
+   * `leaving` and unmounting later is the fix, so «gone» is no longer one moment and a test that
+   * only knows about the second one cannot tell a working exit from a missing one.
+   */
+  it('marks itself leaving at the timeout, then unmounts', () => {
     vi.useFakeTimers();
     try {
       render(<Harness />);
@@ -307,6 +315,14 @@ describe('useToasts', () => {
       act(() => {
         vi.advanceTimersByTime(1100);
       });
+
+      // Still there, and saying so — this is the frame the exit transition needs to start from.
+      const row = screen.getByText('Заявка отправлена').closest('[data-state]');
+      expect(row).toHaveAttribute('data-state', 'leaving');
+
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
       expect(screen.queryByText('Заявка отправлена')).not.toBeInTheDocument();
     } finally {
       vi.useRealTimers();
@@ -319,6 +335,32 @@ describe('useToasts', () => {
 
     await user.click(screen.getByRole('button', { name: 'Отправить' }));
     await user.click(screen.getByRole('button', { name: 'Закрыть' }));
-    expect(screen.queryByText('Заявка отправлена')).not.toBeInTheDocument();
+
+    expect(screen.getByText('Заявка отправлена').closest('[data-state]')).toHaveAttribute(
+      'data-state',
+      'leaving',
+    );
+
+    // `waitFor` rather than a fake clock: this test drives the button through `userEvent`,
+    // which runs on real timers, and mixing the two is what the note above avoids.
+    await waitFor(() => {
+      expect(screen.queryByText('Заявка отправлена')).not.toBeInTheDocument();
+    });
+  });
+
+  it('does not restart the exit when a dismissal is repeated', async () => {
+    // The close button is still on screen while the row leaves, and a second press used to be
+    // possible. Without the guard it would queue a second removal timer against an id that the
+    // first one is about to take away.
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(screen.getByRole('button', { name: 'Отправить' }));
+    await user.click(screen.getByRole('button', { name: 'Закрыть' }));
+    await user.click(screen.getByRole('button', { name: 'Закрыть' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Заявка отправлена')).not.toBeInTheDocument();
+    });
   });
 });

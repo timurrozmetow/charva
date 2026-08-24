@@ -370,9 +370,28 @@ export const easing = {
   caret: 'cubic-bezier(.3, .9, .2, 1)',
   /** The Choice half expanding. */
   expand: 'cubic-bezier(.16, 1, .3, 1)',
+  /**
+   * Anything answering a pointer directly: a hover colour, a press.
+   *
+   * A strong ease-out, because the moment the reader is watching is the beginning. The curve
+   * this replaced on buttons and chips was `cubic-bezier(.4, 0, .2, 1)` — Material's standard
+   * curve, which is an ease-*in*-out and therefore starts slowly, delaying the one frame that
+   * says «I heard you».
+   */
+  press: 'cubic-bezier(.23, 1, .32, 1)',
 } as const;
 
 export const duration = {
+  /**
+   * A control acknowledging a pointer.
+   *
+   * Short on purpose. Buttons and chips ran their hover at 260ms and had no press state at all,
+   * which mattered far more than it sounds: `hover:` is compiled to `@media (hover: hover)` on
+   * purpose (D-51), so on a phone — most of this audience — a tap produced no visual response
+   * whatsoever between the finger landing and the next page arriving. On a connection out of
+   * Ashgabat that is a second or more of a screen that looks broken.
+   */
+  press: 160,
   chip: 240,
   colour: 260,
   option: 220,
@@ -382,7 +401,21 @@ export const duration = {
   indicator: 500,
   packSlide: 1000,
   heroSlide: 1200,
-  choiceExpand: 1100,
+  /**
+   * The chooser half expanding under the pointer. The prototype says 1100ms.
+   *
+   * Halved, and the reason is not taste. This is a `flex-grow` transition on an element the size
+   * of half the window with a full-bleed photograph inside it, so every frame of it is a layout,
+   * a paint and a composite — the most expensive animation either site has, on the first thing
+   * anybody touches. 1100ms is sixty-odd such frames; 520 is thirty. And it is a *response to a
+   * pointer*: at 1100ms the half is still moving a second after the cursor arrived, which is
+   * long past the point where the reader has stopped connecting the movement to their own hand.
+   *
+   * 520 rather than something shorter because the thing being moved is enormous, and the design's
+   * unhurried feel is the point of the screen. It is the top of the 200–500ms range for a drawer,
+   * which is the closest thing to this that has a budget.
+   */
+  choiceExpand: 520,
 } as const;
 
 export const interval = {

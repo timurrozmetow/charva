@@ -38,7 +38,11 @@ export function chipClass({
   return cn(
     'inline-flex min-h-tap select-none items-center justify-center gap-2 rounded-full border',
     'px-5 py-[11px] text-chip font-medium',
-    'transition-all duration-chip ease-slide',
+    // Named properties and a press state, for the reasons written out in `Button.tsx`. A filter
+    // chip is tapped more often than anything else on a listing page and had the least to say
+    // about it: on a phone the grid below simply changed, with nothing marking the cause.
+    'transition-[color,background-color,border-color,transform] duration-press ease-press',
+    'active:scale-[0.97]',
     'disabled:pointer-events-none disabled:opacity-45',
     active ? ACTIVE[variant] : IDLE,
     className,

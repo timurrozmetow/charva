@@ -9,10 +9,24 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
  * `min-h-tap` is README §10's 44px minimum. The small button is 41px of padding and line box
  * without it, which is under the bar on exactly the control that appears in every header.
  */
+/**
+ * The press is the part that was missing, and it mattered most where it is least visible here.
+ *
+ * `hover:` compiles to `@media (hover: hover)` deliberately (D-51), so on a phone a button had
+ * no state between rest and the next page: the finger landed, nothing changed, and on a slow
+ * connection the reader was looking at an unchanged screen wondering whether the tap registered.
+ * `:active` is the one signal that works on both a mouse and a finger.
+ *
+ * 0.97 rather than something you can measure by eye — the point is that the surface moves under
+ * the finger, not that it performs. And the properties are named rather than `all`: `all`
+ * animates whatever else happens to change, which on a button that also moves its arrow meant
+ * transitioning layout off the compositor for no reason.
+ */
 const BASE = [
   'group inline-flex select-none items-center justify-center gap-3 rounded-full',
   'min-h-tap text-center no-underline',
-  'transition-all duration-colour ease-slide',
+  'transition-[color,background-color,border-color,box-shadow,transform] duration-press ease-press',
+  'active:scale-[0.97]',
   'disabled:pointer-events-none disabled:opacity-45',
   'aria-disabled:pointer-events-none aria-disabled:opacity-45',
 ].join(' ');

@@ -45,8 +45,21 @@ export function cardClass({
     'overflow-hidden rounded-card border border-line bg-surface',
     PADDING[padding],
     interactive && [
-      'transition-[transform,box-shadow] duration-lift ease-lift',
+      /*
+       * Two durations on one transition, in the order the properties are listed: the transform
+       * answers in 160ms, the shadow follows over 320.
+       *
+       * They are different events. The transform now carries two things — the hover lift and,
+       * new here, the press — and a press is a direct answer to a finger, so it has to be the
+       * fast one; a card that takes a third of a second to admit it was tapped reads as a card
+       * that was not tapped. The shadow is the slower half of the same gesture and looks wrong
+       * hurried. The design's 320ms is still the lift's number, and the shadow keeps it.
+       */
+      'transition-[transform,box-shadow] [transition-duration:160ms,320ms] ease-lift',
       'hover:translate-y-lift hover:shadow-card',
+      // Slighter than a button's 0.97: this is a much larger object, and the same ratio on a
+      // 436px card is a shove rather than an acknowledgement.
+      'active:scale-[0.985]',
       // The lift is decoration; under reduced motion the shadow alone carries the state.
       'motion-reduce:hover:translate-y-0',
     ],
