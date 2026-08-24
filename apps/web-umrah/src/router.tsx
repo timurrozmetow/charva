@@ -21,6 +21,7 @@ import {
 } from './api/queries';
 import { Layout } from './layout/Layout';
 import { bestLang, isUmrahLang } from './lib/lang';
+import { CreditsPage } from './pages/CreditsPage';
 import { HomePage } from './pages/HomePage';
 import { MediaPage } from './pages/MediaPage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -153,6 +154,12 @@ const programRoute = createRoute({
 });
 
 /** `?topar=` is which group is being looked at — the one piece of state this page has. */
+const creditsRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'credits',
+  component: CreditsRoute,
+});
+
 const mediaRoute = createRoute({
   getParentRoute: () => langRoute,
   path: 'suratlar',
@@ -199,6 +206,10 @@ function ProgramRoute() {
   return <ProgramPage lang={useLang()} />;
 }
 
+function CreditsRoute() {
+  return <CreditsPage lang={useLang()} />;
+}
+
 function MediaRoute() {
   return <MediaPage lang={useLang()} />;
 }
@@ -217,6 +228,7 @@ const routeTree = rootRoute.addChildren([
     programRoute,
     mediaRoute,
     signupRoute,
+    creditsRoute,
   ]),
 ]);
 

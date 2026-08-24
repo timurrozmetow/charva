@@ -2,13 +2,15 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
 
-import { IMAGE_WIDTHS } from '@charva/contracts';
+import { creditsResponse, IMAGE_WIDTHS } from '@charva/contracts';
 import staticFiles from '@fastify/static';
+import { eq } from 'drizzle-orm';
 import { type FastifyPluginAsync } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 import sharp from 'sharp';
 import { z } from 'zod';
 
+import * as t from '../../db/schema';
 import { ApiProblem } from '../../plugins/error-handler';
 
 /**
@@ -80,6 +82,58 @@ export const mediaRoutes: FastifyPluginAsync = async (instance) => {
     // invalidate.
     serveDotFiles: false,
   });
+
+  /**
+   * Who took the photographs, and under what licence.
+   *
+   * Every image on the site came from Wikimedia Commons, and CC BY and CC BY-SA — which is most
+   * of them — require the author to be named wherever the work is published. This is that
+   * naming, read from what the import recorded rather than from a list somebody keeps by hand:
+   * a photograph replaced tomorrow drops off this page by itself.
+   *
+   * Shared by both public sites and not scoped to either. The pool is one pool, the obligation
+   * is the same obligation, and a Turkmen pilgrim and an English tourist are owed the same
+   * sentence.
+   */
+  app.get(
+    '/credits',
+    {
+      schema: {
+        tags: ['media'],
+        summary: 'Author and licence of every borrowed photograph',
+        description:
+          'Rows with `source = "stock"`, which is what the Wikimedia import writes and nothing ' +
+          'else does. A photograph the operator took needs no credit and does not appear.',
+        response: { 200: creditsResponse },
+      },
+    },
+    async () => {
+      const rows = await app.db
+        .select({
+          id: t.media.id,
+          attribution: t.media.attribution,
+          license: t.media.license,
+        })
+        .from(t.media)
+        .where(eq(t.media.source, 'stock'))
+        .orderBy(t.media.id);
+
+      return {
+        items: rows.map((row) => {
+          // The import stores «Author · https://commons.wikimedia.org/…» in one column, which is
+          // the right shape for a database and the wrong one for a page. Split here rather than
+          // migrating the column: the separator is this project's own and has one writer.
+          const [author = '', sourceUrl] = (row.attribution ?? '').split(' · ');
+          return {
+            id: row.id,
+            author: author.trim() || 'Wikimedia Commons',
+            license: row.license ?? '',
+            sourceUrl: sourceUrl?.trim() ?? null,
+          };
+        }),
+      };
+    },
+  );
 
   app.get(
     '/img/*',

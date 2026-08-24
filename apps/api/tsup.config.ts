@@ -24,6 +24,10 @@ export default defineConfig({
     seed: 'src/db/seed/index.ts',
     'backfill-hero-slides': 'src/db/backfill-hero-slides.ts',
     'backfill-translations': 'src/db/backfill-translations.ts',
+    // Ships because the photographs have to land on the server rather than be uploaded to it:
+    // a hundred and sixteen files is a hundred megabytes over a connection from Ashgabat, and
+    // the VPS can fetch them from Wikimedia directly in a fraction of the time.
+    'import-stock': 'src/db/import-stock.ts',
   },
   format: ['esm'],
   target: 'node20',

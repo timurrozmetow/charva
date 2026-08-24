@@ -16,6 +16,7 @@ export const path = {
   maksatnama: (lang: Lang) => `/${lang}/maksatnama`,
   suratlar: (lang: Lang) => `/${lang}/suratlar`,
   yazylmak: (lang: Lang) => `/${lang}/yazylmak`,
+  credits: (lang: Lang) => `/${lang}/credits`,
 } as const;
 
 /**

@@ -1,5 +1,11 @@
 {
   "brand": "Charva Travel",
+  "credits": {
+    "breadcrumb": "Photo credits",
+    "title": "Photograph credits",
+    "lead": "The photographs on this site come from Wikimedia Commons under free licences. Below is the author and the licence of each; the link goes to the file at its source.",
+    "source": "source"
+  },
   "nav": {
     "label": "Main navigation",
     "home": "Charva Travel home",
@@ -33,6 +39,7 @@
       "hotels": "Hotels",
       "contact": "Enquire online",
       "country": "The country and visas",
+      "credits": "Photo credits",
       "gallery": "Gallery",
       "video": "Video",
       "reviews": "Reviews"

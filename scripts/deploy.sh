@@ -59,33 +59,38 @@ done
 [[ -d apps/api/dist/migrations ]] || { echo "apps/api/dist/migrations is missing" >&2; exit 1; }
 
 # --------------------------------------------------------------------------------------
-# 2. Refuse to ship placeholder photographs — decision D-25
+# 2. Refuse to ship a borrowed photograph with nobody's name on it — decision D-25
 # --------------------------------------------------------------------------------------
-# Every image on the site is currently a Wikimedia stand-in with `is_placeholder = 1`, and
-# several are CC BY, which requires a credit this site does not print. Shipping them is a
-# licensing decision, so it is made deliberately with an environment variable rather than
-# silently by whoever runs this script.
-if [[ "${ALLOW_PLACEHOLDER_MEDIA:-}" != "yes" ]]; then
-  PLACEHOLDERS=$("${SSH[@]}" "cd $ROOT/current/apps/api 2>/dev/null && \
+# This check used to count `is_placeholder = 1`, and that was the right question while the
+# Wikimedia photographs were stand-ins waiting for a shoot. The owner decided otherwise: they
+# are the site's photographs now, the flag is `0`, and a check that can no longer fire is not
+# a check.
+#
+# What is still true is that they are somebody else's work, and that CC BY and CC BY-SA both
+# require a visible credit. So the gate moved to the thing that would actually go wrong: a
+# `source = 'stock'` row with no author or no licence recorded is one the credits page cannot
+# name, which means publishing it is a licence breach nobody can even see.
+if [[ "${ALLOW_UNCREDITED_MEDIA:-}" != "yes" ]]; then
+  UNCREDITED=$("${SSH[@]}" "cd $ROOT/current/apps/api 2>/dev/null && \
     node -e \"import('mysql2/promise').then(async m => {
       const u = process.env.DATABASE_URL || require('fs').readFileSync('$ROOT/shared/.env','utf8').match(/^DATABASE_URL=(.*)\$/m)[1];
       const c = await m.default.createConnection(u.trim());
-      const [r] = await c.query('SELECT COUNT(*) n FROM media WHERE is_placeholder = 1');
+      const [r] = await c.query(\\\"SELECT COUNT(*) n FROM media WHERE source = 'stock' AND (attribution IS NULL OR attribution = '' OR license IS NULL OR license = '')\\\");
       console.log(r[0].n); await c.end();
     }).catch(() => console.log(0))\"" 2>/dev/null || echo 0)
 
-  if [[ "${PLACEHOLDERS:-0}" != "0" ]]; then
+  if [[ "${UNCREDITED:-0}" != "0" ]]; then
     cat >&2 <<EOF
 
-  $PLACEHOLDERS placeholder photographs are in the database (decision D-25).
+  $UNCREDITED borrowed photographs have no author or no licence recorded (decision D-25).
 
-  They are stand-ins from Wikimedia Commons. Some are CC BY and require a credit this site
-  does not print, and none of them are the operator's own. Question Q-1.
+  Every row with source='stock' came from Wikimedia Commons, and CC BY and CC BY-SA require
+  the author to be named where the photograph is published. /credits prints what the database
+  holds; a row with an empty attribution is one it cannot name.
 
-  This is a licensing call, not a technical one. To deploy anyway — a closed stand, a
-  demonstration — say so explicitly:
+  Fix the rows, or say explicitly that this deploy ships them anyway:
 
-      ALLOW_PLACEHOLDER_MEDIA=yes ./scripts/deploy.sh
+      ALLOW_UNCREDITED_MEDIA=yes ./scripts/deploy.sh
 
 EOF
     exit 1

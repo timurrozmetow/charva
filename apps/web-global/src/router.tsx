@@ -30,6 +30,7 @@ import { ArticleDetailPage } from './pages/ArticleDetailPage';
 import { BuilderPage } from './pages/BuilderPage';
 import { ContactPage } from './pages/ContactPage';
 import { CountryPage } from './pages/CountryPage';
+import { CreditsPage } from './pages/CreditsPage';
 import { GalleryPage } from './pages/GalleryPage';
 import { HomePage } from './pages/HomePage';
 import { HotelDetailPage } from './pages/HotelDetailPage';
@@ -248,6 +249,12 @@ function ContactRoute() {
   return <ContactPage lang={useLang()} />;
 }
 
+const creditsRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'credits',
+  component: CreditsRoute,
+});
+
 const countryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: 'turkmenistan',
@@ -324,6 +331,12 @@ function HotelsRoute() {
 
 function CountryRoute() {
   return <CountryPage lang={useLang()} />;
+}
+
+// Named rather than an inline arrow, like every other route here: `useLang` is a hook, and a
+// hook inside `component: () => …` sits in a function React's rules do not see as a component.
+function CreditsRoute() {
+  return <CreditsPage lang={useLang()} />;
 }
 
 function ReviewsRoute() {
@@ -407,6 +420,7 @@ const routeTree = rootRoute.addChildren([
     reviewsRoute,
     galleryRoute,
     videoRoute,
+    creditsRoute,
   ]),
 ]);
 

@@ -1,5 +1,6 @@
 import {
   createApiClient,
+  type CreditsResponse,
   type FormTokenResponse,
   type Lang,
   type UmrahCurrentTripResponse,
@@ -152,4 +153,16 @@ export function postSignup(
   // `undefined` is a real answer: the honeypot branch replies 204 and writes nothing, and the
   // form shows the same confirmation either way.
   return api.post<UmrahSignupResponse | undefined>('/umrah/signups', body, { query: { lang } });
+}
+
+/**
+ * Who took the photographs. No `lang` in the key: a name and a licence read the same in both
+ * languages, and this is the same list the Global site prints — one pool, one obligation.
+ */
+export function creditsQuery() {
+  return queryOptions({
+    queryKey: ['credits'] as const,
+    queryFn: ({ signal }) => api.get<CreditsResponse>('/credits', { signal }),
+    staleTime: 60 * MINUTE,
+  });
 }

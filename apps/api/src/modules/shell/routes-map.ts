@@ -50,6 +50,7 @@ const GLOBAL_PATTERNS: Pattern[] = [
   { test: /^\/gallery\/?$/, route: 'gallery' },
   { test: /^\/video\/?$/, route: 'video' },
   { test: /^\/contact\/?$/, route: 'contact' },
+  { test: /^\/credits\/?$/, route: 'credits' },
 ];
 
 const UMRAH_PATTERNS: Pattern[] = [
@@ -60,6 +61,7 @@ const UMRAH_PATTERNS: Pattern[] = [
   { test: /^\/maksatnama\/?$/, route: 'maksatnama' },
   { test: /^\/suratlar\/?$/, route: 'suratlar' },
   { test: /^\/yazylmak\/?$/, route: 'yazylmak' },
+  { test: /^\/credits\/?$/, route: 'credits' },
 ];
 
 const CHOICE_PATTERNS: Pattern[] = [{ test: /^\/?$/, route: 'home' }];

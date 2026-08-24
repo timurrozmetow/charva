@@ -46,6 +46,8 @@ export function GlobalFooter({ lang, settings }: GlobalFooterProps) {
         { key: 'gallery', label: copy.footer.links.gallery, href: path.gallery(lang) },
         { key: 'video', label: copy.footer.links.video, href: path.video(lang) },
         { key: 'reviews', label: copy.footer.links.reviews, href: path.reviews(lang) },
+        // A licence obligation, not a navigation aid — which is why it is last and quiet.
+        { key: 'credits', label: copy.footer.links.credits, href: path.credits(lang) },
       ],
     },
     {

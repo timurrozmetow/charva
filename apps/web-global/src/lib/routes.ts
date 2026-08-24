@@ -20,6 +20,7 @@ export const path = {
   reviews: (lang: Lang) => `/${lang}/reviews`,
   contact: (lang: Lang) => `/${lang}/contact`,
   article: (lang: Lang, slug: string) => `/${lang}/articles/${slug}`,
+  credits: (lang: Lang) => `/${lang}/credits`,
 } as const;
 
 /**

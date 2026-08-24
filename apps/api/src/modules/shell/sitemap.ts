@@ -43,6 +43,9 @@ const STATIC_PAGES: Record<
     { path: '/video', frequency: 'weekly', priority: '0.6' },
     { path: '/reviews', frequency: 'weekly', priority: '0.6' },
     { path: '/contact', frequency: 'monthly', priority: '0.7' },
+    // Low priority and rightly so: it exists because a licence requires it, not because anybody
+    // is looking for it.
+    { path: '/credits', frequency: 'monthly', priority: '0.2' },
   ],
   umrah: [
     { path: '', frequency: 'daily', priority: '1.0' },
@@ -51,6 +54,7 @@ const STATIC_PAGES: Record<
     { path: '/maksatnama', frequency: 'monthly', priority: '0.8' },
     { path: '/suratlar', frequency: 'weekly', priority: '0.6' },
     { path: '/yazylmak', frequency: 'daily', priority: '0.9' },
+    { path: '/credits', frequency: 'monthly', priority: '0.2' },
   ],
 };
 

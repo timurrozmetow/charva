@@ -6,6 +6,7 @@ import {
   type BuilderQuoteResponse,
   type CountryResponse,
   createApiClient,
+  type CreditsResponse,
   type FaqResponse,
   type FormTokenResponse,
   type GalleryResponse,
@@ -243,4 +244,16 @@ export function postLead(lang: Lang, body: LeadPayload): Promise<LeadResponse | 
   // `undefined` is a real answer: the honeypot branch replies 204 and writes nothing, and the
   // form shows the same confirmation either way — an error message is a lesson for a bot.
   return api.post<LeadResponse | undefined>('/global/leads', body, { query: { lang } });
+}
+
+/**
+ * Who took the photographs. Not language-dependent: a name and a licence are the same in every
+ * language, which is why this is the one query on the site with no `lang` in its key.
+ */
+export function creditsQuery() {
+  return queryOptions({
+    queryKey: ['credits'] as const,
+    queryFn: ({ signal }) => api.get<CreditsResponse>('/credits', { signal }),
+    staleTime: 60 * MINUTE,
+  });
 }

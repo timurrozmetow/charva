@@ -40,7 +40,11 @@ export function UmrahFooter({ lang, settings }: UmrahFooterProps) {
     {
       key: 'about',
       title: copy.footer.columns.about,
-      links: [{ key: 'suratlar', label: copy.footer.links.suratlar, href: path.suratlar(lang) }],
+      links: [
+        { key: 'suratlar', label: copy.footer.links.suratlar, href: path.suratlar(lang) },
+        // A licence obligation rather than a place anybody is going — last, and quiet.
+        { key: 'credits', label: copy.footer.links.credits, href: path.credits(lang) },
+      ],
     },
     {
       key: 'contacts',

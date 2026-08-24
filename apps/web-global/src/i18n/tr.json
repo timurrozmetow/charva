@@ -1,5 +1,11 @@
 {
   "brand": "Charva Travel",
+  "credits": {
+    "breadcrumb": "Fotoğraf künyesi",
+    "title": "Fotoğraf künyesi",
+    "lead": "Bu sitedeki fotoğraflar Wikimedia Commons üzerinden serbest lisanslarla alınmıştır. Aşağıda her birinin sahibi ve lisansı var; bağlantı kaynaktaki dosyaya gider.",
+    "source": "kaynak"
+  },
   "nav": {
     "label": "Ana gezinme",
     "home": "Charva Travel ana sayfası",
@@ -33,6 +39,7 @@
       "hotels": "Oteller",
       "contact": "Online başvuru",
       "country": "Ülke ve vize",
+      "credits": "Fotoğraf künyesi",
       "gallery": "Galeri",
       "video": "Video",
       "reviews": "Yorumlar"

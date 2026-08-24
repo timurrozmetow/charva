@@ -33,9 +33,10 @@ export const SITE_ROUTES = {
     'video',
     'contact',
     'article',
+    'credits',
     'notFound',
   ],
-  umrah: ['home', 'paket', 'ziyarat', 'maksatnama', 'suratlar', 'yazylmak', 'notFound'],
+  umrah: ['home', 'paket', 'ziyarat', 'maksatnama', 'suratlar', 'yazylmak', 'credits', 'notFound'],
 } as const satisfies Record<Site, readonly string[]>;
 
 export type SiteRoute<S extends Site> = (typeof SITE_ROUTES)[S][number];
@@ -246,6 +247,23 @@ const ROUTE_META = {
           'Türkmenistan gezileri üzerine yazılar: ne zaman gitmeli, vize nasıl alınır, ne yenir ve ne getirilir.',
       },
     },
+    credits: {
+      ru: {
+        title: 'Авторы фотографий — Charva Travel',
+        description:
+          'Снимки на сайте взяты с Викисклада под свободными лицензиями. Здесь названы автор и лицензия каждого.',
+      },
+      en: {
+        title: 'Photograph credits — Charva Travel',
+        description:
+          'The photographs on this site come from Wikimedia Commons under free licences. Each one is named here, with its author and licence.',
+      },
+      tr: {
+        title: 'Fotoğraf künyesi — Charva Travel',
+        description:
+          'Bu sitedeki fotoğraflar Wikimedia Commons üzerinden serbest lisanslarla alınmıştır. Her birinin sahibi ve lisansı burada.',
+      },
+    },
     notFound: {
       ru: {
         title: 'Страница не найдена — Charva Travel',
@@ -333,6 +351,18 @@ const ROUTE_META = {
         title: 'Записаться в группу — Charva Umrah',
         description:
           'Онлайн-заявка в группу умры: имя, телефон и число человек. Сопровождающий позвонит и объяснит условия.',
+      },
+    },
+    credits: {
+      tm: {
+        title: 'Suratlaryň awtorlary — Charva Umrah',
+        description:
+          'Saýtdaky suratlar Wikimedia Commons-dan erkin ygtyýarnamalar bilen alyndy. Her biriniň awtory we ygtyýarnamasy şu ýerde.',
+      },
+      ru: {
+        title: 'Авторы фотографий — Charva Umrah',
+        description:
+          'Снимки на сайте взяты с Викисклада под свободными лицензиями. Здесь названы автор и лицензия каждого.',
       },
     },
     notFound: {

@@ -99,3 +99,29 @@ export const heroSlideSchema = z.object({
 });
 
 export type HeroSlide = z.infer<typeof heroSlideSchema>;
+
+/**
+ * One borrowed photograph, as the credits page names it.
+ *
+ * Every image on the site today came from Wikimedia Commons, and the licences they carry — CC BY
+ * and CC BY-SA, mostly — require the author to be named where the work is published. This is that
+ * naming: what the file is called there, who took it, under what licence, and a link back.
+ *
+ * Only `source = 'stock'` rows appear. A photograph the operator took needs no credit to anybody,
+ * and listing it would say the opposite of the truth.
+ */
+export const creditSchema = z.object({
+  id: z.number().int(),
+  author: z.string(),
+  license: z.string(),
+  /** The Commons description page, or null when the import recorded no link. */
+  sourceUrl: z.string().nullable(),
+});
+
+export type Credit = z.infer<typeof creditSchema>;
+
+export const creditsResponse = z.object({
+  items: z.array(creditSchema),
+});
+
+export type CreditsResponse = z.infer<typeof creditsResponse>;

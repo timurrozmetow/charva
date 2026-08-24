@@ -17,10 +17,12 @@ import * as t from './schema';
  * `attribution` and `license` filled and `is_placeholder` set, and the production deploy is
  * blocked while any of those rows remain. This is the script that does it.
  *
- * **Every one of these is a placeholder and is marked as one.** They are other people's
- * photographs of the same places, not the operator's, and most carry a licence that requires a
- * visible credit if published. What they buy is a site that can be shown and reviewed today
- * instead of after a shoot.
+ * **These are the site's photographs, not stand-ins** — the owner's decision on 2026-08-23,
+ * which is why the thresholds moved with it: at least 1800 pixels, landscape where the frame is
+ * landscape, and Commons' own reviewed photographs first. They are still somebody else's work
+ * under a licence that mostly requires a visible credit, and `/credits` is where that credit is
+ * printed. `source = 'stock'` is what says so, and the deploy checks that every such row has an
+ * author and a licence recorded rather than checking a flag that no longer means anything.
  *
  * Wikimedia Commons rather than a stock library, for one reason: its API states the licence and
  * the author of every file, so `attribution` and `license` are recorded from what the source says
@@ -36,7 +38,7 @@ import * as t from './schema';
  *
  * Re-running without `--reset` is safe and nearly a no-op: identical bytes return the existing
  * row and only empty slots are filled. `--reset` never touches a photograph the owner uploaded:
- * it works strictly on rows with `is_placeholder = 1`.
+ * it works strictly on rows with `source = 'stock'`, which this script is the only writer of.
  */
 
 const COMMONS = 'https://commons.wikimedia.org/w/api.php';
@@ -115,7 +117,6 @@ const REJECTED_PREFIXES = ['Khalili Collection'];
 /** A title carrying a year from before photography of this kind existed here. */
 const HISTORICAL = /\b(1[6-9]\d{2}|19[0-8]\d)\b/;
 
-/** Below this a hero would be upscaled, and an upscaled hero looks like a mistake. */
 /**
  * The narrowest a photograph may be, at the size Commons hands it over.
  *
@@ -145,7 +146,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'darvaza',
     category: 'Darvaza gas crater',
-    want: 5,
+    want: 10,
     hints: ['дарваз', 'кратер', 'врата ада'],
     alt: {
       ru: 'Газовый кратер Дарваза в пустыне Каракумы',
@@ -156,7 +157,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'ashgabat',
     category: 'Ashgabat',
-    want: 8,
+    want: 16,
     hints: ['ашхабад', 'столиц', 'город', 'мрамор', 'проспект', 'фонтан'],
     alt: {
       ru: 'Ашхабад — белокаменная столица Туркменистана',
@@ -167,7 +168,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'nisa',
     category: 'Nisa, Turkmenistan',
-    want: 3,
+    want: 6,
     hints: ['ниса', 'парфян', 'крепост', 'юнеско'],
     alt: {
       ru: 'Старая Ниса — парфянская крепость под Ашхабадом',
@@ -178,7 +179,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'merv',
     category: 'Merv',
-    want: 4,
+    want: 8,
     hints: ['мерв', 'древн', 'шёлков', 'шелков', 'руин', 'городищ'],
     alt: {
       ru: 'Древний Мерв — город на Великом шёлковом пути',
@@ -189,7 +190,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'konye_urgench',
     category: 'Konye-Urgench',
-    want: 3,
+    want: 6,
     hints: ['ургенч', 'куняургенч', 'минарет', 'мавзолей', 'хорезм'],
     alt: {
       ru: 'Куняургенч — минареты и мавзолеи Хорезма',
@@ -200,7 +201,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'yangikala',
     category: 'Yangykala',
-    want: 4,
+    want: 8,
     hints: ['янги', 'каньон', 'кала', 'обрыв'],
     alt: {
       ru: 'Каньоны Янги-Кала на западе Туркменистана',
@@ -211,7 +212,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'caspian',
     category: 'Turkmenbashi',
-    want: 4,
+    want: 8,
     hints: ['каспи', 'туркменбаши', 'аваза', 'море', 'пляж', 'берег'],
     alt: {
       ru: 'Каспийское побережье у Туркменбаши',
@@ -222,7 +223,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'karakum',
     category: 'Karakum Desert',
-    want: 4,
+    want: 8,
     hints: ['каракум', 'пустын', 'бархан', 'песок', 'юрт', 'звёзд', 'звезд'],
     alt: {
       ru: 'Барханы пустыни Каракумы',
@@ -233,7 +234,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'akhal_teke',
     category: 'Akhal-Teke',
-    want: 3,
+    want: 6,
     hints: ['ахалтекин', 'конь', 'лошад', 'ипподром', 'скакун'],
     alt: {
       ru: 'Ахалтекинский конь — гордость Туркменистана',
@@ -244,7 +245,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'carpet',
     category: 'Turkmen carpets',
-    want: 3,
+    want: 6,
     hints: ['ковёр', 'ковер', 'орнамент', 'ремесл', 'сувенир', 'узор'],
     alt: {
       ru: 'Туркменский ковёр ручной работы',
@@ -255,7 +256,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'people',
     category: 'People of Turkmenistan',
-    want: 4,
+    want: 8,
     hints: ['люди', 'гид', 'портрет', 'улыб', 'гост', 'семь'],
     alt: {
       ru: 'Люди Туркменистана',
@@ -266,7 +267,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'food',
     category: 'Cuisine of Turkmenistan',
-    want: 3,
+    want: 6,
     hints: ['еда', 'кухн', 'плов', 'чай', 'ужин', 'обед', 'базар', 'рынок'],
     alt: {
       ru: 'Туркменская кухня',
@@ -277,7 +278,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'kowata',
     category: 'Kow Ata',
-    want: 2,
+    want: 4,
     hints: ['ков-ата', 'ков ата', 'подземн', 'озер', 'пещер'],
     alt: {
       ru: 'Подземное озеро Ков-Ата',
@@ -288,7 +289,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'mekka',
     category: 'Masjid al-Haram',
-    want: 4,
+    want: 8,
     hints: ['мекк', 'кааб', 'харам', 'mekge'],
     alt: {
       ru: 'Мечеть аль-Харам в Мекке',
@@ -299,7 +300,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'medina',
     category: 'Al-Masjid an-Nabawi',
-    want: 4,
+    want: 8,
     hints: ['медин', 'пророк', 'набави', 'medine'],
     alt: {
       ru: 'Мечеть Пророка в Медине',
@@ -314,9 +315,47 @@ interface Candidate {
   url: string;
   width: number;
   height: number;
+  /** The original file's width, which is the honest measure of what was shot. */
+  originalWidth: number;
   license: string;
   artist: string;
   descriptionUrl: string;
+  /** In «Quality images» or «Featured pictures» — Commons' own peer review. */
+  reviewed: boolean;
+}
+
+/**
+ * Commons' two review categories, asked about in one batched call.
+ *
+ * Both are decided by people looking at the photograph: «Quality images» is a technical review —
+ * sharpness, exposure, composition, at least two megapixels — and «Featured pictures» is the
+ * stricter one above it. Neither is a guarantee, and together they are the closest thing to an
+ * opinion this pipeline can get without a person in it, which is why they sort first rather than
+ * filter: on a subject with four photographs in total, insisting on a reviewed one leaves none.
+ */
+const REVIEWED_CATEGORIES = [
+  'Category:Quality images',
+  'Category:Featured pictures on Wikimedia Commons',
+];
+
+async function reviewedTitles(titles: string[]): Promise<Set<string>> {
+  const found = new Set<string>();
+  // The API takes fifty titles per call and this pipeline never has more than sixty per subject.
+  for (let index = 0; index < titles.length; index += 50) {
+    const batch = titles.slice(index, index + 50);
+    const data = (await commons({
+      action: 'query',
+      titles: batch.join('|'),
+      prop: 'categories',
+      clcategories: REVIEWED_CATEGORIES.join('|'),
+      cllimit: 'max',
+    })) as { query?: { pages?: Record<string, { title?: string; categories?: unknown[] }> } };
+
+    for (const page of Object.values(data.query?.pages ?? {})) {
+      if (page.title !== undefined && (page.categories?.length ?? 0) > 0) found.add(page.title);
+    }
+  }
+  return found;
 }
 
 /** A photograph that made it into the library, with what the assignment needs to place it. */
@@ -334,11 +373,47 @@ function plainText(html: string | undefined): string {
     .trim();
 }
 
+/**
+ * `fetch`, with the retries a hundred-file import over a long connection needs.
+ *
+ * The first long run died on a single `UND_ERR_CONNECT_TIMEOUT` a third of the way through, and
+ * the damage was not the failure — it was the state it left: `--reset` had already detached the
+ * previous set, so the database sat with a third of its photographs and two thirds of its slots
+ * empty. One flaky packet should not cost a re-run of the whole thing, and on the VPS, where
+ * this actually runs, the connection to Wikimedia is longer and worse than it is here.
+ *
+ * Four attempts, backing off 1s, 2s, 4s. A 404 is not retried: it is an answer.
+ */
+async function fetchWithRetry(url: string | URL, attempts = 4): Promise<Response> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+      if (response.status >= 500 && attempt < attempts) {
+        lastError = new Error(`upstream answered ${String(response.status)}`);
+      } else {
+        return response;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (attempt < attempts) {
+      const wait = 1000 * 2 ** (attempt - 1);
+      process.stdout.write(`  retrying in ${String(wait / 1000)}s — ${String(lastError)}\n`);
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
+}
+
 async function commons(params: Record<string, string>): Promise<unknown> {
   const url = new URL(COMMONS);
   url.search = new URLSearchParams({ format: 'json', ...params }).toString();
 
-  const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+  const response = await fetchWithRetry(url);
   if (!response.ok) throw new Error(`Commons answered ${String(response.status)}`);
   return response.json();
 }
@@ -363,6 +438,9 @@ interface CommonsPage {
     url?: string;
     thumbwidth?: number;
     thumbheight?: number;
+    /** The original file, before the thumbnailer. `iiprop=size` supplies it. */
+    width?: number;
+    height?: number;
     mime?: string;
     extmetadata?: Record<string, { value?: string }>;
   }[];
@@ -388,7 +466,7 @@ async function searchFiles(term: string): Promise<Candidate[]> {
     // capital came back empty twice while every other subject looked fine.
     gsrlimit: '25',
     prop: 'imageinfo',
-    iiprop: 'url|mime|extmetadata',
+    iiprop: 'url|mime|size|extmetadata',
     iiurlwidth: '2200',
   })) as { query?: { pages?: Record<string, CommonsPage> } };
 
@@ -419,7 +497,7 @@ async function filesIn(category: string): Promise<Candidate[]> {
     gcmtype: 'file',
     gcmlimit: '60',
     prop: 'imageinfo',
-    iiprop: 'url|mime|extmetadata',
+    iiprop: 'url|mime|size|extmetadata',
     iiurlwidth: '2200',
   })) as { query?: { pages?: Record<string, CommonsPage> } };
 
@@ -460,9 +538,11 @@ function collect(
       url,
       width,
       height,
+      originalWidth: info.width ?? width,
       license,
       artist: plainText(info.extmetadata?.['Artist']?.value) || 'Wikimedia Commons',
       descriptionUrl: `https://commons.wikimedia.org/wiki/${encodeURIComponent(title)}`,
+      reviewed: false,
     });
   }
 
@@ -476,10 +556,34 @@ function collect(
    */
   return found
     .sort((a, b) => {
+      // Commons' own reviewers first — see REVIEWED_CATEGORIES — then landscape, then the
+      // largest original. Resolution is a weak proxy for quality on its own and a decent one
+      // as a tiebreak: nobody uploads a 6000-pixel frame of something they were not trying to
+      // photograph properly.
+      const review = Number(b.reviewed) - Number(a.reviewed);
+      if (review !== 0) return review;
       const wide = Number(b.width > b.height) - Number(a.width > a.height);
-      return wide !== 0 ? wide : b.width - a.width;
+      return wide !== 0 ? wide : b.originalWidth - a.originalWidth;
     })
     .slice(0, 60);
+}
+
+/** Marks the candidates Commons has peer-reviewed, then re-sorts on it. */
+async function withReview(candidates: Candidate[]): Promise<Candidate[]> {
+  if (candidates.length === 0) return candidates;
+
+  const reviewed = await reviewedTitles(candidates.map((one) => `File:${one.title}`));
+  const marked = candidates.map((one) => ({
+    ...one,
+    reviewed: reviewed.has(`File:${one.title}`),
+  }));
+
+  return marked.sort((a, b) => {
+    const review = Number(b.reviewed) - Number(a.reviewed);
+    if (review !== 0) return review;
+    const wide = Number(b.width > b.height) - Number(a.width > a.height);
+    return wide !== 0 ? wide : b.originalWidth - a.originalWidth;
+  });
 }
 
 type Db = Awaited<Parameters<Parameters<typeof withDb>[0]>[0]>;
@@ -583,13 +687,18 @@ async function main(): Promise<void> {
       if (candidates.length < subject.want) {
         candidates = candidates.concat(await searchFiles(subject.category));
       }
+
+      // One call, and it decides the order the next loop takes them in: a photograph Commons'
+      // own reviewers have looked at goes on the page before one nobody has.
+      candidates = await withReview(candidates);
       let kept = 0;
 
       for (const candidate of candidates) {
         if (kept >= subject.want) break;
 
         try {
-          const response = await fetch(candidate.url, { headers: { 'User-Agent': USER_AGENT } });
+          // Same retries as the metadata calls: this is the half that moves megabytes.
+          const response = await fetchWithRetry(candidate.url);
           if (!response.ok) continue;
           const buffer = Buffer.from(await response.arrayBuffer());
 
@@ -606,7 +715,21 @@ async function main(): Promise<void> {
               source: 'stock',
               attribution: `${candidate.artist} · ${candidate.descriptionUrl}`.slice(0, 255),
               license: candidate.license.slice(0, 120),
-              isPlaceholder: true,
+              /*
+               * Not a placeholder any more — the owner's decision, 2026-08-23.
+               *
+               * `is_placeholder` meant «replace this before the site goes live», and while that
+               * was the plan the flag was correct and D-25 blocked the deploy on it. The owner
+               * chose otherwise: these are the site's photographs, and the ones that follow are
+               * chosen accordingly — reviewed by Commons where possible, 1800 pixels at least,
+               * landscape where the frame is.
+               *
+               * `source` stays `stock`, which is the fact that is still true and the one that
+               * matters: these are somebody else's photographs under a licence that mostly
+               * requires a credit. `/credits` prints it, and the deploy now checks that rather
+               * than this flag — see scripts/deploy.sh.
+               */
+              isPlaceholder: false,
               alt: subject.alt,
             })
             .where(eq(t.media.id, result.media.id));

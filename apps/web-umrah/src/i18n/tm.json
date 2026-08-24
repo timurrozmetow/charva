@@ -1,5 +1,11 @@
 {
   "brand": "Charva Umrah",
+  "credits": {
+    "breadcrumb": "Suratlaryň awtorlary",
+    "title": "Suratlaryň awtorlary",
+    "lead": "Saýtdaky suratlar Wikimedia Commons-dan erkin ygtyýarnamalar bilen alyndy. Aşakda her biriniň awtory we ygtyýarnamasy; salgy asyl faýla eltýär.",
+    "source": "çeşme"
+  },
   "nav": {
     "label": "Esasy nawigasiýa",
     "home": "Charva Umrah — baş sahypa",
@@ -29,7 +35,8 @@
       "maksatnama": "Gün-günden maksatnama",
       "ziyarat": "Ziýarat ýerleri",
       "yazylmak": "Topara ýazylmak",
-      "suratlar": "Suratlar we wideolar"
+      "suratlar": "Suratlar we wideolar",
+      "credits": "Suratlaryň awtorlary"
     },
     "socials": {
       "instagram": "Instagram",
