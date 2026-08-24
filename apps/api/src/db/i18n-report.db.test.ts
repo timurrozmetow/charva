@@ -33,30 +33,28 @@ describe('coverage', () => {
     expect(umrah.percent.tm).toBe(100);
   });
 
-  it('reports the languages nobody has written yet as all but empty', async () => {
+  it('reports every language of the catalogue as written', async () => {
     const global = await collectCoverage(context.app.db, 'global');
 
     /*
-     * Question Q-3, and the number is a fact rather than an approximation.
+     * The inverse of the assertion that stood here, and inverted rather than deleted.
      *
-     * Neither is zero any more, for two unrelated reasons. The nine room types — «Люкс»,
-     * «Suite», «Suit» — ship translated from the migration that creates them, because nine words
-     * of hotel vocabulary is not the translation work Q-3 is about. And the one real tour in the
-     * catalogue carries all three languages, because the owner asked for all three.
+     * It read `toBeLessThan(20)` and was the honest measurement of question Q-3 for two phases:
+     * the prototypes are Russian, the room types arrived translated by migration, the owner's own
+     * tour carries three languages, and everything else was Russian only. The owner asked for the
+     * rest on 2026-08-23, and `seed/translations.ts` is that answer.
      *
-     * Everything the prototype invented is still Russian only, which is what a percentage this
-     * far below the publication threshold says. Q-3 is about that remainder.
+     * Kept as a bound rather than replaced by an equality: `translations.db.test.ts` owns the
+     * «exactly 100%» claim against a freshly seeded schema, and this file measures whatever the
+     * schema holds — which by the time it runs may include a tour some other suite typed in.
      */
-    expect(global.percent.en).toBeLessThan(20);
-    expect(global.percent.tr).toBeLessThan(20);
+    expect(global.percent.en).toBeGreaterThanOrEqual(READY_PERCENT);
+    expect(global.percent.tr).toBeGreaterThanOrEqual(READY_PERCENT);
 
     const catalogue = global.fields.find((field) => field.table === 'tours');
     expect(catalogue).toBeDefined();
-    // Bounded on both sides on purpose: at zero the real tour has lost a language, and at
-    // `values` somebody has bulk-filled the column and the report has stopped measuring Q-3.
     for (const lang of ['en', 'tr'] as const) {
       expect(catalogue!.filled[lang], lang).toBeGreaterThan(0);
-      expect(catalogue!.filled[lang], lang).toBeLessThan(catalogue!.values);
     }
   });
 
@@ -102,9 +100,15 @@ describe('coverage', () => {
 });
 
 describe('what may be published', () => {
-  it('offers only the language the content is actually in', async () => {
+  it('offers every language the content is actually in', async () => {
+    // Was `['ru']`, and that was the truth until the dictionary was written. All three now, and
+    // Umrah's two — which is what «offerable today» is for: it answers from the database rather
+    // than from what somebody intended.
     const global = await collectCoverage(context.app.db, 'global');
-    expect(readyLanguages(global)).toEqual(['ru']);
+    expect(readyLanguages(global)).toEqual(['ru', 'en', 'tr']);
+
+    const umrah = await collectCoverage(context.app.db, 'umrah');
+    expect(readyLanguages(umrah)).toEqual(['tm', 'ru']);
   });
 
   it('holds the threshold at nine values in ten', () => {

@@ -23,6 +23,7 @@ export default defineConfig({
     'create-admin': 'src/db/create-admin.ts',
     seed: 'src/db/seed/index.ts',
     'backfill-hero-slides': 'src/db/backfill-hero-slides.ts',
+    'backfill-translations': 'src/db/backfill-translations.ts',
   },
   format: ['esm'],
   target: 'node20',

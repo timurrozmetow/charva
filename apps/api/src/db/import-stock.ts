@@ -116,7 +116,14 @@ const REJECTED_PREFIXES = ['Khalili Collection'];
 const HISTORICAL = /\b(1[6-9]\d{2}|19[0-8]\d)\b/;
 
 /** Below this a hero would be upscaled, and an upscaled hero looks like a mistake. */
-const MIN_WIDTH = 1400;
+/**
+ * The narrowest a photograph may be, at the size Commons hands it over.
+ *
+ * Raised from 1400 when these stopped being stand-ins. A hero is full-bleed on a 2560px screen
+ * and 1400 across is visibly soft there; 1800 is the point where the largest frame on the site
+ * is served a photograph rather than an enlargement of one.
+ */
+const MIN_WIDTH = 1800;
 
 interface Subject {
   key: string;
@@ -498,7 +505,7 @@ async function reset(db: Db, uploadsRoot: string): Promise<void> {
   const placeholders = await db
     .select({ id: t.media.id, key: t.media.storageKey })
     .from(t.media)
-    .where(eq(t.media.isPlaceholder, true));
+    .where(eq(t.media.source, 'stock'));
 
   if (placeholders.length === 0) return;
   const ids = placeholders.map((row) => row.id);

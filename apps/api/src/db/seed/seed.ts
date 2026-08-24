@@ -22,6 +22,7 @@ import {
   TOUR_CATEGORIES,
   ZIYARAT_CITIES,
 } from './parse';
+import { byLang, ru3, tm2 } from './translations';
 
 /**
  * The catalogue, from the prototypes.
@@ -232,7 +233,7 @@ async function seedHeroSlides(db: Database): Promise<number> {
     rows<SlideRow>(screen, HERO_DECLARATION).forEach((slide, index) => {
       values.push({
         site,
-        title: { [lang]: slide.label },
+        title: byLang(lang, slide.label),
         brief: slide.photo,
         isPublished: true,
         sortOrder: index + 1,
@@ -266,9 +267,9 @@ async function seedTours(db: Database): Promise<number> {
     const price = parseMoney(tour.price);
     return {
       slug: slugify(tour.title),
-      title: { ru: tour.title },
-      summary: { ru: tour.desc },
-      tag: { ru: tour.tag },
+      title: ru3(tour.title),
+      summary: ru3(tour.desc),
+      tag: ru3(tour.tag),
       category: codeFromLabel(tour.cat, TOUR_CATEGORIES),
       days: parseCount(tour.days, 'days'),
       cities: parseCount(tour.cities, 'cities'),
@@ -306,7 +307,7 @@ async function seedAmenities(db: Database): Promise<number> {
 
   const values = [...names].sort().map((name, index) => ({
     code: slugify(name),
-    name: { ru: name },
+    name: ru3(name),
     sortOrder: index + 1,
   }));
 
@@ -407,9 +408,9 @@ async function seedHotels(db: Database): Promise<number> {
 
     return {
       slug: slugify(hotel.name),
-      name: { ru: hotel.name },
-      summary: { ru: hotel.desc },
-      city: { ru: hotel.city },
+      name: ru3(hotel.name),
+      summary: ru3(hotel.desc),
+      city: ru3(hotel.city),
       stars,
       category,
       priceFromMinor: price.minor,
@@ -441,9 +442,9 @@ async function seedArticles(db: Database): Promise<number> {
 
   const values = [...bySlug.entries()].map(([slug, article], index) => ({
     slug,
-    title: { ru: article.title },
-    summary: { ru: article.desc },
-    tag: { ru: article.tag },
+    title: ru3(article.title),
+    summary: ru3(article.desc),
+    tag: ru3(article.tag),
     isFeatured: index === 0,
     isPublished: true,
     publishedAt: new Date(),
@@ -476,7 +477,7 @@ async function seedGallery(db: Database): Promise<number> {
         // `media_id` is NOT NULL on this table, so the row waits for its photograph in
         // `content_slots` rather than existing here with a dangling reference.
         mediaId: 0,
-        caption: { ru: photo.caption },
+        caption: ru3(photo.caption),
         category: codeFromLabel(photo.cat, GALLERY_CATEGORIES),
         spanCols: parseSpan(photo.col),
         spanRows: parseSpan(photo.row),
@@ -500,7 +501,7 @@ interface VideoRow {
 async function seedVideos(db: Database): Promise<number> {
   const values = rows<VideoRow>('Charva Video', 'videos').map((video, index) => ({
     slug: slugify(video.title),
-    title: { ru: video.title },
+    title: ru3(video.title),
     kind: 'file' as const,
     durationSec: parseDuration(video.dur),
     viewCount: parseViews(video.views),
@@ -531,13 +532,13 @@ async function seedReviews(db: Database): Promise<number> {
 
   const values = rows<ReviewRow>('Charva Reviews', 'REVIEWS').map((review, index) => ({
     authorName: review.name,
-    authorCity: { ru: review.from },
+    authorCity: ru3(review.from),
     rating: review.rate,
-    body: { ru: review.text },
+    body: ru3(review.text),
     // A real DATE, which is what makes «Сначала новые» sort at all.
     visitedOn: parseMonthYear(review.date),
     tourId: byTitle.get(slugify(review.tour)) ?? null,
-    tourTitle: { ru: review.tour },
+    tourTitle: ru3(review.tour),
     status: 'published' as const,
     isPublished: true,
     sortOrder: index + 1,
@@ -550,8 +551,8 @@ async function seedReviews(db: Database): Promise<number> {
 async function seedFaqs(db: Database): Promise<number> {
   const values = rows<{ q: string; a: string }>('Charva Contact', 'FAQ').map((faq, index) => ({
     site: 'global' as const,
-    question: { ru: faq.q },
-    answer: { ru: faq.a },
+    question: ru3(faq.q),
+    answer: ru3(faq.a),
     isPublished: true,
     sortOrder: index + 1,
   }));
@@ -569,9 +570,9 @@ interface PlaceRow {
 async function seedPlaces(db: Database): Promise<number> {
   const values = rows<PlaceRow>('Charva Turkmenistan', 'places').map((place, index) => ({
     slug: slugify(place.name),
-    name: { ru: place.name },
-    region: { ru: place.region },
-    description: { ru: place.desc },
+    name: ru3(place.name),
+    region: ru3(place.region),
+    description: ru3(place.desc),
     isPublished: true,
     sortOrder: index + 1,
   }));
@@ -598,9 +599,9 @@ async function seedContentBlocks(db: Database): Promise<number> {
       values.push({
         site,
         blockCode,
-        keyText: item.key === undefined ? null : { [lang]: item.key },
-        valueText: item.value === undefined ? null : { [lang]: item.value },
-        note: item.note === undefined ? null : { [lang]: item.note },
+        keyText: item.key === undefined ? null : byLang(lang, item.key),
+        valueText: item.value === undefined ? null : byLang(lang, item.value),
+        note: item.note === undefined ? null : byLang(lang, item.note),
         isFeatured: featured?.(index) ?? false,
         sortOrder: index + 1,
       });
@@ -697,8 +698,8 @@ async function seedTrips(db: Database): Promise<number> {
     seatsTotal: 45,
     seatsTaken: 33,
     durationDays: 10,
-    hotelMekka: { tm: 'Mekge — Harem golaýynda 4★ otel' },
-    hotelMedina: { tm: 'Medine — Metjidiň golaýynda 4★ otel' },
+    hotelMekka: tm2('Mekge — Harem golaýynda 4★ otel'),
+    hotelMedina: tm2('Medine — Metjidiň golaýynda 4★ otel'),
     status: 'open',
     // The derived rule normally decides which trip is current; with one row it is also the
     // manual override, so the two agree from the first request.
@@ -715,9 +716,9 @@ async function seedProgram(db: Database): Promise<number> {
     'PROGRAM',
   ).map((day, index) => ({
     dayNumber: Number(day.day),
-    title: { tm: day.title },
-    description: { tm: day.desc },
-    city: { tm: day.city },
+    title: tm2(day.title),
+    description: tm2(day.desc),
+    city: tm2(day.city),
     isPublished: true,
     sortOrder: index + 1,
   }));
@@ -736,12 +737,12 @@ interface ZiyaratRow {
 async function seedZiyarat(db: Database): Promise<number> {
   const values = rows<ZiyaratRow>('Charva Umrah Route', 'PLACES').map((place, index) => ({
     slug: slugify(place.name),
-    name: { tm: place.name },
-    description: { tm: place.desc },
+    name: tm2(place.name),
+    description: tm2(place.desc),
     // Four cities in the data; the prototype's filter offers three and forgets Jidda. The
     // filter is built from `SELECT DISTINCT` over this column, so it cannot happen again.
     city: ZIYARAT_CITIES[place.city] ?? 'mekge',
-    durationLabel: { tm: place.time },
+    durationLabel: tm2(place.time),
     isPublished: true,
     sortOrder: index + 1,
   }));
@@ -768,9 +769,9 @@ async function seedGroups(db: Database): Promise<number> {
     slug: group.id,
     departedOn: parseDmy(group.date),
     pilgrimsCount: parseCount(group.people, 'pilgrims'),
-    label: { tm: group.label },
-    shortLabel: { tm: group.short },
-    description: { tm: group.desc },
+    label: tm2(group.label),
+    shortLabel: tm2(group.short),
+    description: tm2(group.desc),
     isPublished: true,
     sortOrder: index + 1,
   }));
@@ -943,9 +944,9 @@ async function seedBuilder(db: Database): Promise<number> {
         : step.multi === true
           ? ('multi' as const)
           : ('single' as const),
-    title: { ru: step.title },
-    hint: { ru: step.hint },
-    railLabel: { ru: step.label },
+    title: ru3(step.title),
+    hint: ru3(step.hint),
+    railLabel: ru3(step.label),
     isRequired: step.id === 'dest' || step.id === 'dates' || step.id === 'people',
     sortOrder: index + 1,
   }));
@@ -973,8 +974,8 @@ async function seedBuilder(db: Database): Promise<number> {
       optionValues.push({
         stepId,
         code,
-        name: { ru: option.name },
-        note: { ru: option.note },
+        name: ru3(option.name),
+        note: ru3(option.note),
         numericValue: NUMERIC_VALUES[code] ?? null,
         priceModifierMinor: rate ?? null,
         modifierType: rate !== undefined ? 'per_night' : step.multi === true ? 'per_item' : 'none',
@@ -1051,8 +1052,8 @@ async function seedSettings(db: Database): Promise<number> {
         phone: '+993 65 618 530',
         whatsapp: '+993 65 618 530',
         email: 'global@charva-travel.com',
-        hours: { ru: 'Пн–Сб, 09:00–18:00' },
-        address: { ru: 'Ашхабад, Туркменистан' },
+        hours: ru3('Пн–Сб, 09:00–18:00'),
+        address: ru3('Ашхабад, Туркменистан'),
       },
     },
     {
@@ -1073,8 +1074,8 @@ async function seedSettings(db: Database): Promise<number> {
         phoneAlt: '+993 71 309 070',
         whatsapp: '+993 71 309 060',
         email: 'umra@charva-travel.com',
-        hours: { tm: 'Du–Şe, 09:00–18:00' },
-        address: { tm: 'Aşgabat, Türkmenistan' },
+        hours: tm2('Du–Şe, 09:00–18:00'),
+        address: tm2('Aşgabat, Türkmenistan'),
       },
     },
     {

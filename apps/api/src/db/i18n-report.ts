@@ -167,7 +167,10 @@ if (
         )
         .filter((gap) => gap.missing > 0)
         .sort((a, b) => b.missing - a.missing)
-        .slice(0, 12);
+        // Twelve is enough to answer «what next», and the wrong number when the question is
+        // «what is left in total» — which is what somebody sitting down to finish the job asks.
+        // `--all` prints every gap.
+        .slice(0, process.argv.includes('--all') ? Number.MAX_SAFE_INTEGER : 12);
 
       if (gaps.length > 0) {
         process.stdout.write('  missing:\n');

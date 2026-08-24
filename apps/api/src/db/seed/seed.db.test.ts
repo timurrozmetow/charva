@@ -46,7 +46,12 @@ describe('the catalogue', () => {
     expect(tours).toHaveLength(10);
 
     const classic = tours.find((tour) => tour.slug === 'klassicheskiy-turkmenistan');
-    expect(classic?.title).toEqual({ ru: 'Классический Туркменистан' });
+    // Three languages since the dictionary was written; it used to be `{ ru }` alone.
+    expect(classic?.title).toEqual({
+      ru: 'Классический Туркменистан',
+      en: 'Classic Turkmenistan',
+      tr: 'Klasik Türkmenistan',
+    });
     // «8 дней» / «5 городов» / «1 190 $» as numbers, which is the whole exercise.
     expect(classic?.days).toBe(8);
     expect(classic?.cities).toBe(5);
