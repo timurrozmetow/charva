@@ -258,6 +258,51 @@ describe('injecting into the built page', () => {
   it('refuses a template it cannot render into', () => {
     expect(() => injectHead('<html><body>no head</body></html>', '')).toThrow(/no <\/head>/i);
   });
+
+  it('does not let a comment mentioning the title tag swallow what follows it', () => {
+    /*
+     * This shipped. The strip for the template's own title spans lines, because it matches a
+     * pair of tags with text between them — so an opening tag inside a comment matched, and the
+     * match ran from there to the real closing tag, taking everything between with it.
+     *
+     * The chooser went live with the Google verification tag gone from the response while it sat
+     * in the file on disk, and the comment above it cut off in the middle of a word. Nothing
+     * failed: the result was valid HTML that was simply missing a line.
+     */
+    const withComment =
+      '<!doctype html><html><head><meta charset="utf-8">' +
+      '<!-- the shell strips the <title> and the description before injecting -->' +
+      '<meta name="google-site-verification" content="token">' +
+      '<title>Charva</title>' +
+      '</head><body></body></html>';
+
+    const html = injectHead(withComment, renderHead([{ tag: 'title', text: 'Новый' }]));
+
+    expect(html).toContain('name="google-site-verification"');
+    expect(html).toContain('before injecting -->');
+
+    // The template's own title still goes, and exactly one element is left — counted with the
+    // comments taken out, because the comment says `<title>` too and is supposed to survive
+    // saying it. Counting the raw string here is what the shell itself was doing wrong.
+    const markup = html.replace(/<!--[\s\S]*?-->/g, '');
+    expect(markup).not.toContain('<title>Charva</title>');
+    expect(markup.match(/<title>/g)).toHaveLength(1);
+  });
+
+  it('puts every comment back exactly as it was', () => {
+    // The masking is only safe if the restore is total: a placeholder left in the output would
+    // be visible in the page source, and a comment dropped would be this bug again.
+    const commented =
+      '<!doctype html><html><head><!-- one --><meta charset="utf-8"><!-- two -->' +
+      '<title>Charva</title><!-- three --></head><body><!-- four --></body></html>';
+
+    const html = injectHead(commented, '');
+
+    for (const text of ['<!-- one -->', '<!-- two -->', '<!-- three -->', '<!-- four -->']) {
+      expect(html).toContain(text);
+    }
+    expect(html).not.toContain('@@charva-comment');
+  });
 });
 
 describe('the sitemap', () => {
