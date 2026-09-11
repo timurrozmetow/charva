@@ -380,14 +380,24 @@ const ROUTE_META = {
   },
 } as const satisfies {
   /*
-   * Every route of every site, in every language that site offers.
+   * Every route of every site, in every language that site offers — and no fewer.
    *
-   * Not `Partial`: these are interface strings, and they are ours to write rather than
-   * something a translator still owes us (R-4 is about *content*). A missing Turkish title
-   * would otherwise fall back to Russian silently and stay that way, because a head is the one
-   * part of a page nobody looks at.
+   * Not `Partial` on the site's own languages: these are interface strings, ours to write
+   * rather than something a translator still owes us (R-4 is about *content*). A missing
+   * Turkish title would otherwise fall back to Russian silently and stay that way, because a
+   * head is the one part of a page nobody looks at.
+   *
+   * The intersection with `Partial<Record<Lang, …>>` is what lets a language be *retired*
+   * without its strings being thrown away. Turkish came off Global and the chooser in
+   * September because Stolzl has no `Ğ ğ İ` (Q-17), and its heads are still written below,
+   * costing nothing and answering the only question that matters on the day the font is
+   * sorted out: does the copy still exist. Without this the type would have demanded they be
+   * deleted, and «one edit to bring the language back» would have meant rewriting them.
    */
-  [S in Site]: Record<SiteRoute<S>, Record<SiteLang<S>, RouteMeta>>;
+  [S in Site]: Record<
+    SiteRoute<S>,
+    Record<SiteLang<S>, RouteMeta> & Partial<Record<Lang, RouteMeta>>
+  >;
 };
 
 /**

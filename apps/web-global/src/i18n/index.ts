@@ -16,9 +16,13 @@ import tr from './tr.json';
  * than `undefined` rendered as text in front of a visitor — which is exactly what a runtime
  * lookup table gives you instead.
  *
- * Both remain provisional until question Q-3 is answered, and Turkish cannot be released at all
- * until Q-17 is: Stolzl has no `Ğ ğ İ`, so a Turkish page renders tofu in the font's own
- * alphabet.
+ * Both remain provisional until question Q-3 is answered.
+ *
+ * Turkish is still here and is no longer served. `SITE_LANGS.global` dropped it — Stolzl has no
+ * `Ğ ğ İ` and every second Turkish word came out in two typefaces (Q-17) — but the file is four
+ * hundred strings of real work, so it stays, it stays under `copy.test.ts`, and it keeps being
+ * type-checked against the Russian shape. The intersection below is what allows that: the site's
+ * own languages are required, a retired one is merely permitted.
  */
 export type Copy = typeof ru;
 
@@ -26,12 +30,12 @@ export const COPY = {
   ru,
   en: en satisfies Copy,
   tr: tr satisfies Copy,
-} as const satisfies Record<SiteLang<'global'>, Copy>;
+} as const satisfies Record<SiteLang<'global'>, Copy> & Partial<Record<Lang, Copy>>;
 
 export function copyFor(lang: Lang): Copy {
   /*
    * `lang` is validated before it reaches here, but it is typed as one of four and this site
-   * speaks three — so the lookup is written against the wider type and falls back to Russian.
+   * speaks two — so the lookup is written against the wider type and falls back to Russian.
    * A `tm` arriving from anywhere is a routing bug, and rendering Russian is better than
    * rendering nothing while somebody finds it.
    */

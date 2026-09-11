@@ -21,10 +21,27 @@ export type Lang = (typeof LANGS)[number];
 /**
  * Languages offered per site, in the order the switcher lists them.
  * The first entry of each tuple is that site's default.
+ *
+ * **Turkish is retired, not deleted.** Stolzl has no `Ğ ğ İ` (Q-17), and those are not rare
+ * letters — İpek Yolu, Doğa, mutfağı; one live API response for the Turkish homepage carries
+ * twenty-eight of them, and the interface copy another forty-six. The browser substitutes some
+ * other face for exactly those glyphs, so every second Turkish word was set in two typefaces at
+ * once. That is the thing D-26 refuses to ship for a star and a checkmark, and a page of prose
+ * is not a better place for it. The owner chose to take the language down until the foundry
+ * supplies a cut with Latin Extended-A.
+ *
+ * It comes off the chooser as well as Global, because the chooser's Turkish existed to hand a
+ * Turkish speaker to Global's Turkish: Umrah is `tm`/`ru` and always was, so a Turkish chooser
+ * with no Turkish destination is a dead end with extra steps.
+ *
+ * **This line is the whole switch.** `tr.json` stays in both apps and stays under its key-shape
+ * test, the Turkish heads stay in `seo.ts`, and the Turkish content in the database is
+ * untouched — that is the bulk of the work and none of it is lost. Putting `'tr'` back in these
+ * two tuples serves it all again.
  */
 export const SITE_LANGS = {
-  choice: ['ru', 'en', 'tr', 'tm'],
-  global: ['ru', 'en', 'tr'],
+  choice: ['ru', 'en', 'tm'],
+  global: ['ru', 'en'],
   umrah: ['tm', 'ru'],
 } as const satisfies Record<Site, readonly Lang[]>;
 

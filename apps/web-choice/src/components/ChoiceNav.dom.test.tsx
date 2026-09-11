@@ -16,7 +16,7 @@ import { ChoiceNav } from './ChoiceNav';
  */
 
 describe('ChoiceNav', () => {
-  it('offers the four languages the chooser supports, as links', async () => {
+  it('offers the languages the chooser supports, as links', async () => {
     await renderWithRouter(<ChoiceNav lang="ru" />);
 
     await userEvent.click(screen.getByRole('button', { name: /Язык/ }));
@@ -24,11 +24,15 @@ describe('ChoiceNav', () => {
     for (const [name, href] of [
       ['Русский', '/ru'],
       ['English', '/en'],
-      ['Türkçe', '/tr'],
       ['Türkmen', '/tm'],
     ]) {
       expect(screen.getByRole('link', { name: new RegExp(name!) })).toHaveAttribute('href', href!);
     }
+
+    // Turkish is retired, not hidden by CSS: Stolzl has no `Ğ ğ İ` (Q-17) and `SITE_LANGS` is
+    // what the switcher reads, so there is no entry to find and `/tr` redirects like any other
+    // language the site does not speak.
+    expect(screen.queryByRole('link', { name: /Türkçe/ })).toBeNull();
   });
 
   it('marks the language already in the URL', async () => {

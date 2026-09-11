@@ -1,3 +1,4 @@
+import { SITE_LANGS } from '@charva/contracts';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -57,10 +58,18 @@ describe('resolving the language', () => {
     expect((await tour('?lang=en')).title).toBe('Classic Turkmenistan');
   });
 
-  it('falls back rather than leaving a heading blank', async () => {
-    // Partial translation is the normal state for months, not an error. A visitor seeing the
-    // wrong language is a translation bug; a visitor seeing an empty heading is a broken page.
-    expect((await tour('?lang=tr')).title).toBe('Classic Turkmenistan');
+  it('turns down Turkish now that Global does not speak it', async () => {
+    /*
+     * Inverted, not deleted. This asked `?lang=tr` and expected the fallback chain to answer in
+     * English, which was the right question while Global offered Turkish. It no longer does
+     * (Q-17), so `tr` on this site is what `tm` has always been: a caller asking for something
+     * that is not on offer, and 400 is the answer — falling back would return Russian and look
+     * like it had worked, hiding a broken request from the program that made it (D-54).
+     *
+     * The fallback chain itself is not left untested by this. It is a pure function and it is
+     * tested as one, in `packages/contracts/src/i18n.test.ts`, where it still walks tr -> en.
+     */
+    expect((await tour('?lang=tr')).statusCode).toBe(400);
   });
 
   it('resolves server-side, so a client is never sent three copies of every sentence', async () => {
@@ -125,7 +134,7 @@ describe('the default per site', () => {
     const umrah = await context.app.inject({ method: 'GET', url: `${API_PREFIX}/umrah/settings` });
 
     expect(global.json<SettingsShape>().defaultLang).toBe('ru');
-    expect(global.json<SettingsShape>().langs).toEqual(['ru', 'en', 'tr']);
+    expect(global.json<SettingsShape>().langs).toEqual([...SITE_LANGS.global]);
 
     expect(umrah.json<SettingsShape>().defaultLang).toBe('tm');
     expect(umrah.json<SettingsShape>().langs).toEqual(['tm', 'ru']);

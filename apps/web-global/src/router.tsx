@@ -78,18 +78,27 @@ const indexRoute = createRoute({
  * that outlived a change, and the Russian catalogue is more use to them than a dead end. The API
  * answers 400 to the same mistake, because there the caller is a program and a silent fallback
  * would hide a broken request.
+ *
+ * The rest of the path comes with them. It used to be dropped — every wrong language landed on
+ * the homepage — which was tolerable while the only way to get here was mistyping. It stopped
+ * being tolerable when Turkish was retired (Q-17): `/tr/tours` and `/tr/hotels/…` are addresses
+ * that worked, that people were sent, and that search engines have. Sending all of them to the
+ * homepage throws away the one thing the visitor actually asked for, and it is the difference
+ * between a language being taken down and a hundred links being broken.
  */
 const langRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/$lang',
-  beforeLoad: ({ params }) => {
+  beforeLoad: ({ params, location }) => {
     if (!isGlobalLang(params.lang)) {
+      const lang = bestLang(navigator.languages);
+      // `/tr/tours?filter=desert` -> `/ru/tours?filter=desert`. Everything after the language
+      // segment is carried across verbatim, including the query and the hash: a filtered list
+      // or a scrolled-to section is what was shared, not the page it lives on.
+      const rest = location.href.slice(`/${params.lang}`.length);
+
       // eslint-disable-next-line @typescript-eslint/only-throw-error
-      throw redirect({
-        to: '/$lang',
-        params: { lang: bestLang(navigator.languages) },
-        replace: true,
-      });
+      throw redirect({ href: `/${lang}${rest}`, replace: true });
     }
   },
   loader: ({ context, params }) => {

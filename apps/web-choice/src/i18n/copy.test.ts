@@ -29,9 +29,18 @@ function at(source: unknown, path: string): string {
 }
 
 describe('every language has every string', () => {
-  it('covers the four the chooser offers', () => {
+  it('carries every language of the project, and offers the ones the chooser serves', () => {
+    /*
+     * Two different statements, and they stopped being the same statement when Turkish was
+     * retired (Q-17). The file still holds all four — that is the point of retiring rather than
+     * deleting, and it is what keeps the Turkish strings under the placeholder and shape checks
+     * below instead of rotting until somebody needs them. What the switcher lists is the second
+     * line, and it is a subset.
+     */
     expect(Object.keys(COPY).sort()).toEqual([...LANGS].sort());
-    expect(Object.keys(COPY).sort()).toEqual([...SITE_LANGS.choice].sort());
+
+    for (const lang of SITE_LANGS.choice) expect(Object.keys(COPY)).toContain(lang);
+    expect(SITE_LANGS.choice as readonly string[]).not.toContain('tr');
   });
 
   it('keeps the placeholders a template needs', () => {

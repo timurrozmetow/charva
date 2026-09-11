@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SITES, SITE_LANGS } from './constants';
+import { bcp47, SITES, SITE_LANGS } from './constants';
 import { contentMeta, hreflangSet, routeMeta, SITE_BRAND, SITE_ROUTES } from './seo';
 
 /**
@@ -87,11 +87,29 @@ describe('content meta', () => {
 
 describe('hreflang', () => {
   it('offers every language of the site plus x-default', () => {
-    const global = hreflangSet('global');
-    expect(global.map((entry) => entry.hreflang)).toEqual(['ru', 'en', 'tr', 'x-default']);
+    /*
+     * Derived from `SITE_LANGS` rather than written out. The list used to be spelled
+     * `['ru', 'en', 'tr', 'x-default']`, and when Turkish was retired (Q-17) that was a test
+     * failing for naming the old answer rather than for anything being wrong — which teaches
+     * whoever reads it next to edit the expectation, and an expectation that gets edited to
+     * match is not one.
+     *
+     * What this is actually for is the two things the derivation cannot say: that every entry
+     * is present, in order, and that `x-default` is appended once and points at the default.
+     */
+    for (const site of SITES) {
+      const set = hreflangSet(site);
+      const expected = [...SITE_LANGS[site].map(bcp47), 'x-default'];
 
-    // x-default is not a fourth language: it points at the one this site starts in.
-    expect(global.at(-1)?.lang).toBe('ru');
+      expect(
+        set.map((entry) => entry.hreflang),
+        site,
+      ).toEqual(expected);
+      // x-default is not an extra language: it points at the one this site starts in.
+      expect(set.at(-1)?.lang, site).toBe(SITE_LANGS[site][0]);
+    }
+
+    expect(hreflangSet('global').at(-1)?.lang).toBe('ru');
     expect(hreflangSet('umrah').at(-1)?.lang).toBe('tm');
   });
 
@@ -103,7 +121,6 @@ describe('hreflang', () => {
     expect(hreflangSet('choice').map((entry) => entry.hreflang)).toEqual([
       'ru',
       'en',
-      'tr',
       'tk',
       'x-default',
     ]);

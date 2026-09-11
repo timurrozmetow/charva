@@ -1,3 +1,4 @@
+import { SITE_LANGS } from '@charva/contracts';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -191,8 +192,18 @@ describe('the form screen', () => {
     await renderPage(<ResourceFormPage resource="tours" id={7} />);
 
     const tabs = await screen.findAllByRole('tab');
-    // Global speaks three. Umrah would show two, and neither would show four.
-    expect(tabs).toHaveLength(3);
+
+    /*
+     * One tab per language the site *serves*, read from `SITE_LANGS` rather than counted here —
+     * the number changed the day Turkish was retired (Q-17) and a literal would have made that
+     * look like a regression in the admin.
+     *
+     * Worth naming what this means for the editor: the Turkish content already in the database
+     * is preserved and no longer reachable from this screen. That is the right trade while the
+     * language is off — there is nothing to proofread against, because nothing renders it — and
+     * putting `'tr'` back in `SITE_LANGS` brings the tab and the existing text back together.
+     */
+    expect(tabs).toHaveLength(SITE_LANGS.global.length);
     expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
   });
 

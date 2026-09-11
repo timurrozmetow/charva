@@ -1,3 +1,4 @@
+import { SITE_LANGS } from '@charva/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { buildTestApp, type TestApp } from '../test/app';
@@ -48,12 +49,18 @@ describe('coverage', () => {
      * «exactly 100%» claim against a freshly seeded schema, and this file measures whatever the
      * schema holds — which by the time it runs may include a tour some other suite typed in.
      */
-    expect(global.percent.en).toBeGreaterThanOrEqual(READY_PERCENT);
-    expect(global.percent.tr).toBeGreaterThanOrEqual(READY_PERCENT);
+    for (const lang of SITE_LANGS.global) {
+      expect(global.percent[lang], lang).toBeGreaterThanOrEqual(READY_PERCENT);
+    }
+
+    // Turkish is retired rather than deleted (Q-17), so the report no longer measures it — the
+    // rows are still in the database and are simply not served. That is the report answering
+    // «what can we offer today», which is the question it was built for.
+    expect(global.percent.tr).toBeUndefined();
 
     const catalogue = global.fields.find((field) => field.table === 'tours');
     expect(catalogue).toBeDefined();
-    for (const lang of ['en', 'tr'] as const) {
+    for (const lang of SITE_LANGS.global) {
       expect(catalogue!.filled[lang], lang).toBeGreaterThan(0);
     }
   });
@@ -101,11 +108,11 @@ describe('coverage', () => {
 
 describe('what may be published', () => {
   it('offers every language the content is actually in', async () => {
-    // Was `['ru']`, and that was the truth until the dictionary was written. All three now, and
-    // Umrah's two — which is what «offerable today» is for: it answers from the database rather
-    // than from what somebody intended.
+    // Was `['ru']` before the dictionary was written and `['ru', 'en', 'tr']` after, and it is
+    // the site's own list either way — which is what «offerable today» means: it answers from
+    // what the database holds *and* what the site serves, not from what somebody intended.
     const global = await collectCoverage(context.app.db, 'global');
-    expect(readyLanguages(global)).toEqual(['ru', 'en', 'tr']);
+    expect(readyLanguages(global)).toEqual([...SITE_LANGS.global]);
 
     const umrah = await collectCoverage(context.app.db, 'umrah');
     expect(readyLanguages(umrah)).toEqual(['tm', 'ru']);
@@ -115,12 +122,12 @@ describe('what may be published', () => {
     const almost = {
       site: 'global' as const,
       fields: [],
-      percent: { ru: 100, en: READY_PERCENT - 0.1, tr: READY_PERCENT },
+      percent: { ru: 100, en: READY_PERCENT - 0.1 },
     };
 
     // A language at 89.9% is one where a visitor meets an untranslated page roughly every
     // tenth click, which is worse than not offering it: it reads as a broken site rather than
     // an unfinished one.
-    expect(readyLanguages(almost)).toEqual(['ru', 'tr']);
+    expect(readyLanguages(almost)).toEqual(['ru']);
   });
 });

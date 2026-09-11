@@ -1,3 +1,4 @@
+import { bcp47, SITE_LANGS } from '@charva/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { buildTestApp, type TestApp } from '../../test/app';
@@ -97,7 +98,7 @@ describe('matching a path to a page', () => {
     // the route id against the fallback made every chooser URL a 404 — the homepage included.
     // Browsers render a 404 body perfectly well, so the only readers who ever saw it were the
     // two this whole shell exists for: the crawler and the Telegram card.
-    for (const path of ['/', '/ru', '/en', '/tr', '/tm']) {
+    for (const path of ['/', ...SITE_LANGS.choice.map((lang) => `/${lang}`)]) {
       const { found } = await render('choice', path);
       expect(found, `chooser ${path}`).toBe(true);
     }
@@ -115,7 +116,7 @@ describe('a list page', () => {
     expect(page.links('canonical')[0]?.attributes?.['href']).toBe(`${ORIGIN}/ru/tours`);
 
     const alternates = page.links('alternate').map((link) => link.attributes?.['hreflang']);
-    expect(alternates).toEqual(['ru', 'en', 'tr', 'x-default']);
+    expect(alternates).toEqual([...SITE_LANGS.global.map(bcp47), 'x-default']);
 
     // x-default is not a fourth language: it points at the one this site starts in.
     const xDefault = page.links('alternate').at(-1)?.attributes?.['href'];
@@ -312,14 +313,21 @@ describe('the sitemap', () => {
 
     const locations = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 
-    // Three languages × every entry, and nothing outside this origin.
-    expect(locations).toHaveLength(entries.length * 3);
+    // One URL per entry per language the site serves, and nothing outside this origin. The
+    // multiplier is read from `SITE_LANGS` rather than written: it was three until Turkish was
+    // retired (Q-17), and a literal there fails for naming yesterday rather than for a fault.
+    expect(locations).toHaveLength(entries.length * SITE_LANGS.global.length);
     expect(locations.every((url) => url?.startsWith(ORIGIN))).toBe(true);
 
-    expect(locations).toContain(`${ORIGIN}/ru/tours`);
-    expect(locations).toContain(`${ORIGIN}/en/tours`);
-    expect(locations).toContain(`${ORIGIN}/tr/tours`);
+    for (const lang of SITE_LANGS.global) {
+      expect(locations, lang).toContain(`${ORIGIN}/${lang}/tours`);
+    }
     expect(locations).toContain(`${ORIGIN}/ru/tours/klassicheskiy-turkmenistan`);
+
+    // A retired language leaves the sitemap, which is the point of building it from
+    // `SITE_LANGS`: telling a crawler about a URL that now redirects is how a redirect gets
+    // treated as a soft 404 instead of a move.
+    expect(locations).not.toContain(`${ORIGIN}/tr/tours`);
   });
 
   it('gives each URL the whole alternate set, itself included', () => {

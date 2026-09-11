@@ -17,9 +17,14 @@ import tr from './tr.json';
  * to one file and forgotten in another is a type error at build time rather than an `undefined`
  * rendered as text — the failure mode a runtime lookup table has and this does not.
  *
- * The English and Turkish copy is provisional: it is a working translation of twenty-odd
- * strings so the language chooser does something, not the reviewed copy question Q-3 asks for.
- * Turkish additionally cannot be released at all until Q-17 is answered — Stolzl has no `Ğ ğ İ`.
+ * The English copy is provisional: a working translation of twenty-odd strings so the language
+ * chooser does something, not the reviewed copy question Q-3 asks for.
+ *
+ * Turkish is kept and no longer offered. `SITE_LANGS.choice` dropped it with Global's — the
+ * chooser's Turkish existed to hand a Turkish speaker to Global's Turkish, and Umrah is `tm`/`ru`
+ * — so the switcher lists three. The table below still names all four languages of the project,
+ * which is a stricter promise than the site needs and happens to be exactly what keeps this file
+ * ready: one entry in `SITE_LANGS` serves it again.
  */
 export type Copy = typeof ru;
 
