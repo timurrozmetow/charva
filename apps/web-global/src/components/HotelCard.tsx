@@ -1,4 +1,4 @@
-import { formatMoney, type HotelCard as HotelCardData, type Lang } from '@charva/contracts';
+import { type HotelCard as HotelCardData, type Lang } from '@charva/contracts';
 import { Badge, cardClass, imageSizes, ImageSlot, StarRating } from '@charva/ui';
 import { Link } from '@tanstack/react-router';
 
@@ -90,22 +90,13 @@ export function HotelCard({ hotel, lang, priority = false }: HotelCardProps) {
           )}
 
           {/*
-            A hotel nobody has quoted says so, rather than «от 0 $».
+            No price line, and no «цена по запросу» in its place.
 
-            The column was `NOT NULL` until the sixteen real hotels arrived without a rate, so
-            this line could only ever be a figure. Null is the honest state and the operator
-            fills it in from the admin when there is one to fill in.
+            The card carried «от N $» while the column was `NOT NULL`, then said «по запросу»
+            for the sixteen real hotels that arrived without a rate. The owner removed both: a
+            line whose only content is that there is no content earns its space from nobody, and
+            a visitor who wants a figure is going to ask either way.
           */}
-          {hotel.priceFrom === null ? (
-            <p className="mt-1 text-cardTitle font-medium text-ink">{copy.hotel.onRequest}</p>
-          ) : (
-            <p className="mt-1 text-bodySm text-muted">
-              {copy.common.perNight} {copy.common.from}{' '}
-              <span className="text-cardTitle font-medium text-ink">
-                {formatMoney(hotel.priceFrom)}
-              </span>
-            </p>
-          )}
         </div>
       </Link>
     </article>

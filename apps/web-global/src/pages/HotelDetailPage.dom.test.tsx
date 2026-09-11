@@ -37,21 +37,24 @@ describe('a hotel detail page', () => {
     expect(screen.getByText(/2 мест\. · 74 м² · Вид на площадь\./)).toBeInTheDocument();
   });
 
-  it('falls back to the hotel’s own rate for a room that has no price of its own', async () => {
+  it('quotes nothing anywhere on the page', async () => {
     /*
-     * `price: null` means «this hotel quotes one nightly rate», not «this room is free» — and
-     * the seeds leave it null everywhere, because what a duplex costs at a particular hotel is
-     * a commercial fact nobody in this repository knows. Printing a zero there would be the
-     * worst of the three possible readings.
+     * Inverted. This used to check the fallback chain: a room with no price of its own printed
+     * the hotel's nightly rate, and neither printed a zero when both were null.
+     *
+     * There is no chain left. The owner removed hotel prices from the site — the figure, and
+     * then the «цена по запросу» that briefly stood in for it — so the card, the header, the
+     * room rows and the aside all say nothing about money at all. `hotels.price_from_minor` and
+     * `hotel_rooms.price_minor` are still columns an operator can fill; they are notes to
+     * whoever quotes rather than anything the page repeats.
+     *
+     * The sweep is for any currency rather than for the two figures that used to be here,
+     * because naming them passes on the day some other number appears beside them.
      */
-    await render();
+    const { container } = await render();
 
     await screen.findByText('Номера');
-    // The suite carries 320 $ of its own; the double falls back to the hotel's 145 $.
-    expect(screen.getByText(/320/)).toBeInTheDocument();
-    expect(screen.getAllByText(/145/).length).toBeGreaterThan(0);
-    // Exactly this string, not a pattern: `/0 \$/` also matches «320 $».
-    expect(screen.queryByText((text) => text.trim() === 'от 0 $')).not.toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/[$€₽]|USD|TMT/);
   });
 
   it('says nothing at all about rooms when the hotel has none', async () => {

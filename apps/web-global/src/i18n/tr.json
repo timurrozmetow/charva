@@ -435,8 +435,6 @@
     "amenitiesTitle": "Olanaklar",
     "formTitle": "Oda ayırtın",
     "formLead": "Tarihleri yazın — müsaitliği kontrol edip tur hesabına dahil edelim.",
-    "priceLabel": "Fiyat",
-    "priceNote": "Oda başına, gecelik. Kahvaltı, sunulduğu yerlerde dahildir.",
     "allHotels": "Tüm oteller",
     "facts": {
       "city": "Şehir",
@@ -449,8 +447,6 @@
     "roomCapacity": "{count} kişilik",
     "roomSize": "{size} m²",
     "galleryTitle": "Fotoğraflar",
-    "perNight": "gecelik",
-    "onRequest": "Fiyat talep üzerine",
     "addressLabel": "Adres"
   },
   "article": {

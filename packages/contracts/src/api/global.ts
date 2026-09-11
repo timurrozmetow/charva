@@ -115,15 +115,19 @@ export const hotelCardSchema = z.object({
    * unrepresentable.
    */
   filterKey: z.string(),
-  /**
-   * Null means «по запросу», not nought.
+  /*
+   * No price. Not a nullable one, and not a «по запросу» in its place.
    *
-   * The column was `NOT NULL`, so every hotel had a figure and every card said «от N $». The
-   * sixteen real hotels arrived without one and the owner's answer was the same as for the
-   * builder: an operator quotes, the site does not. A zero here would render as a genuine offer
-   * of nothing, which is worse than admitting there is no number.
+   * The column was `NOT NULL`, so every hotel had a figure and every card said «от N $»; then
+   * the sixteen real hotels arrived without one and it became nullable with the page saying so;
+   * then the owner removed the line altogether. An operator quotes a hotel the same way they
+   * quote a tour now.
+   *
+   * Out of the schema rather than merely unrendered, for the reason D-12 exists: a response
+   * schema is the serialiser, so a figure that is not in it cannot reach a page by accident.
+   * `hotels.price_from_minor` is still there and still editable — it is a note to the operator,
+   * not something the site says.
    */
-  priceFrom: moneySchema.nullable(),
   cover: mediaRefSchema.nullable(),
   amenities: z.array(amenitySchema),
 });
@@ -133,9 +137,12 @@ export type HotelCard = z.infer<typeof hotelCardSchema>;
 /**
  * One kind of room in one hotel.
  *
- * `price` is nullable and means «the hotel's own nightly price»: most hotels quote a single
- * number, and a required price per room would let the card's «от 96 $» disagree with the list
- * printed under it.
+ * No price on it. There was one — nullable, meaning «the hotel's own nightly rate» — and it went
+ * with every other figure when the owner took hotel prices off the site. What distinguishes one
+ * room from another here is what it holds and how big it is.
+ *
+ * `hotel_rooms.price_minor` is still a column, and still fillable from the admin. It is a note
+ * to whoever quotes, not something the page says.
  */
 export const hotelRoomSchema = z.object({
   /** The dictionary's stable code — `duplex`, `suite`. Never the translated label. */
@@ -144,7 +151,6 @@ export const hotelRoomSchema = z.object({
   description: z.string(),
   capacity: z.number().int(),
   sizeSqm: z.number().int().nullable(),
-  price: moneySchema.nullable(),
   cover: mediaRefSchema.nullable(),
 });
 
@@ -172,7 +178,8 @@ export const hotelsQuery = z.object({
   perPage: z.coerce.number().int().min(1).max(100).default(16),
   /** One of the derived keys above, so a chip cannot ask for a combination that has no rows. */
   filter: z.string().max(40).optional(),
-  sort: z.enum(['popular', 'price_asc', 'price_desc', 'stars_desc']).default('popular'),
+  // Ordering by a price nothing shows would sort a catalogue by an invisible column.
+  sort: z.enum(['popular', 'stars_desc']).default('popular'),
 });
 
 export const hotelsResponse = z.object({

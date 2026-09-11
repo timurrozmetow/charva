@@ -1,4 +1,4 @@
-import { formatMoney, type Lang, type Money } from '@charva/contracts';
+import { type Lang } from '@charva/contracts';
 import {
   buttonClass,
   Container,
@@ -114,25 +114,12 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                   <HotelShowcase hotel={hotel} lang={lang} />
                 </div>
 
-                <div className="mt-9 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-b border-line pb-7">
+                {/* The price used to sit opposite the name, which is why this row was a
+                    a space-between flex. With nothing on the right it is a heading and a rule. */}
+                <div className="mt-9 border-b border-line pb-7">
                   <Heading level={1} size="h2">
                     {hotel.name}
                   </Heading>
-                  <p className="m-0 text-body font-light text-muted">
-                    {hotel.priceFrom === null ? (
-                      <span className="text-h3 font-medium text-accent-text">
-                        {copy.hotel.onRequest}
-                      </span>
-                    ) : (
-                      <>
-                        {copy.common.from}{' '}
-                        <span className="text-h3 font-medium text-accent-text">
-                          {formatMoney(hotel.priceFrom)}
-                        </span>{' '}
-                        {copy.hotel.perNight}
-                      </>
-                    )}
-                  </p>
                 </div>
 
                 {/*
@@ -225,15 +212,9 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                                   .filter((part) => part !== null)
                                   .join(' · ')}
                               </span>
-                              {/* A room falls back to the hotel's own nightly price (D-109),
-                                  and when the hotel has none either there is nothing to fall
-                                  back to — so the row says so instead of printing a zero.
-
-                                  Named rather than repeated inside the ternary: written twice,
-                                  the second reading needed a `!` to convince the compiler that
-                                  the first had already ruled out null, which is the assertion
-                                  the linter forbids and is right to. */}
-                              <RoomPrice price={room.price ?? hotel.priceFrom} lang={lang} />
+                              {/* No price on a room either. What distinguishes one from
+                                  another here is what it holds and how big it is, which is what
+                                  the line above says. */}
                             </li>
                           ))}
                         </ul>
@@ -242,16 +223,14 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                   </div>
 
                   <aside className="sticky top-28 rounded-block border border-line bg-surface p-8 tab:static mob:p-6">
-                    <p className="text-label font-bold uppercase text-muted">
-                      {copy.hotel.priceLabel}
-                    </p>
-                    <p className="mt-2 text-h2Sm font-medium text-ink">
-                      {hotel.priceFrom === null
-                        ? copy.hotel.onRequest
-                        : `${copy.common.from} ${formatMoney(hotel.priceFrom)}`}
-                    </p>
-                    <p className="mt-2 text-bodySm font-light text-muted">{copy.hotel.priceNote}</p>
+                    {/*
+                      The aside is the two ways to act, and nothing above them.
 
+                      It used to open with a price, a figure and a note about what the figure
+                      covered. All three went when the owner took hotel prices off the site: what
+                      is left is the enquiry and the way back to the catalogue, which is what an
+                      aside beside a hotel is for.
+                    */}
                     {/* No table of city, class and stars here any more: all three are above
                         the fold now, and repeating them made the aside a second, worse copy of
                         the page. What is left is what the aside is for — the price and the
@@ -303,24 +282,5 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
         </Container>
       </Section>
     </>
-  );
-}
-
-/**
- * What one room costs, or that nobody has said.
- *
- * A component rather than a ternary inline, because reading `room.price ?? hotel.priceFrom`
- * twice — once to test it, once to format it — needs a non-null assertion to convince the
- * compiler that the first reading ruled the second one out. The linter forbids those, and it is
- * right to: the two readings are only guaranteed equal because nothing between them can change,
- * which is a fact about today's code rather than about the expression.
- */
-function RoomPrice({ price, lang }: { price: Money | null; lang: Lang }) {
-  const copy = copyFor(lang);
-
-  return (
-    <span className="text-body font-medium text-accent-text">
-      {price === null ? copy.hotel.onRequest : `${copy.common.from} ${formatMoney(price)}`}
-    </span>
   );
 }

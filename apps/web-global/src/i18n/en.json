@@ -435,8 +435,6 @@
     "amenitiesTitle": "Amenities",
     "formTitle": "Book a room",
     "formLead": "Send us the dates — we will check availability and fold it into the tour price.",
-    "priceLabel": "Price",
-    "priceNote": "Per room per night. Breakfast where it is served.",
     "allHotels": "All hotels",
     "facts": {
       "city": "City",
@@ -449,8 +447,6 @@
     "roomCapacity": "sleeps {count}",
     "roomSize": "{size} m²",
     "galleryTitle": "Photographs",
-    "perNight": "per night",
-    "onRequest": "Price on request",
     "addressLabel": "Address"
   },
   "article": {

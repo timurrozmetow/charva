@@ -137,7 +137,6 @@ export function hotel(overrides: Partial<HotelCard> = {}): HotelCard {
     stars: 5,
     category: 'hotel',
     filterKey: '5star',
-    priceFrom: { minor: 14_500, currency: 'USD' },
     cover: null,
     amenities: [
       { code: 'pool', name: 'Бассейн', icon: null },
@@ -157,15 +156,14 @@ export function hotelDetail(overrides: Partial<HotelDetail> = {}): HotelDetail {
     checkIn: '14:00',
     checkOut: '12:00',
     rooms: [
-      // One with its own price and one without, because the fallback to the hotel's nightly
-      // figure is the part of the room list most likely to be got wrong.
+      // One with a size and a description and one without: what a room row still has to render
+      // correctly, now that neither carries a price.
       {
         code: 'double',
         name: 'Двухместный',
         description: '',
         capacity: 2,
         sizeSqm: 26,
-        price: null,
         cover: null,
       },
       {
@@ -174,7 +172,6 @@ export function hotelDetail(overrides: Partial<HotelDetail> = {}): HotelDetail {
         description: 'Вид на площадь.',
         capacity: 2,
         sizeSqm: 74,
-        price: { minor: 32_000, currency: 'USD' },
         cover: null,
       },
     ],

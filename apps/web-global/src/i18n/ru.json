@@ -435,8 +435,6 @@
     "amenitiesTitle": "Удобства",
     "formTitle": "Забронировать номер",
     "formLead": "Напишите даты — проверим наличие и включим в расчёт тура.",
-    "priceLabel": "Цена",
-    "priceNote": "За номер за ночь. Завтрак — там, где он есть.",
     "allHotels": "Все отели",
     "facts": {
       "city": "Город",
@@ -449,8 +447,6 @@
     "roomCapacity": "{count} мест.",
     "roomSize": "{size} м²",
     "galleryTitle": "Фотографии",
-    "perNight": "за ночь",
-    "onRequest": "Цена по запросу",
     "addressLabel": "Адрес"
   },
   "article": {

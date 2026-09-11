@@ -229,10 +229,15 @@ type HotelRow = typeof t.hotels.$inferSelect;
 
 const hotelPublished = eq(t.hotels.isPublished, true);
 
+/**
+ * Two orders, not four.
+ *
+ * `price_asc` and `price_desc` went with the price itself: a hotel's nightly rate is no longer
+ * anything the site says, so ordering a catalogue by it would sort visible rows by an invisible
+ * column — and every row is null now anyway, which makes both of them the same order twice.
+ */
 const HOTEL_ORDER = {
   popular: [asc(t.hotels.sortOrder), asc(t.hotels.id)],
-  price_asc: [asc(t.hotels.priceFromMinor)],
-  price_desc: [desc(t.hotels.priceFromMinor)],
   stars_desc: [desc(t.hotels.stars)],
 } as const;
 
@@ -288,12 +293,6 @@ function hotelCard(
     stars: row.stars,
     category: row.category,
     filterKey: hotelFilterKey(row.category, row.stars),
-    // Null all the way out rather than a zero: «по запросу» is the page's job to say, and a
-    // minor amount of nought would read as a real offer of nothing.
-    priceFrom:
-      row.priceFromMinor === null
-        ? null
-        : { minor: row.priceFromMinor, currency: row.priceCurrency },
     cover: mediaRef(row.coverMediaId, media),
     amenities,
   };
@@ -412,10 +411,6 @@ export async function getHotel(context: Context, slug: string) {
       description: text(row.description, lang),
       capacity: row.capacity,
       sizeSqm: row.sizeSqm,
-      // Null is «ask the hotel's own price», not «free»: the page falls back to the card's
-      // figure rather than printing a zero nobody meant.
-      price:
-        row.priceMinor === null ? null : { minor: row.priceMinor, currency: hotel.priceCurrency },
       cover: mediaRef(row.coverMediaId, media),
     })),
     gallery: pictures.flatMap((picture) => {
