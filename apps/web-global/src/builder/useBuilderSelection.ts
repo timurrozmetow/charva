@@ -76,6 +76,20 @@ export function useBuilderSelection(basePath: string): BuilderState {
           );
         },
         replace: true,
+        /*
+         * Do not scroll.
+         *
+         * Every answer in the builder is a navigation, because the whole selection lives in the
+         * URL (D-58) — that is what makes a half-built tour something you can send to whoever
+         * you are travelling with. The router's default is to treat a navigation as a new page
+         * and put the window back at the top, which is right when the page really changed and
+         * wrong here: tapping «Ашхабад» threw the reader to the top of the homepage and made
+         * them scroll back down to the builder to tap the next one. Nine steps, nine scrolls.
+         *
+         * The owner reported it on the homepage, where the builder sits well below the fold and
+         * the effect is worst, but `/builder` has it too.
+         */
+        resetScroll: false,
       });
     },
     [navigate, basePath],

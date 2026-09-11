@@ -83,6 +83,25 @@ describe('Carousel', () => {
     }
   });
 
+  it('keeps its own stacking inside itself', () => {
+    /*
+     * The slides layer against each other with `z-[1]` and `z-[2]`; without a stacking context
+     * on this root those numbers are measured against whatever else is on the page. Both
+     * homepages put the carousel in a plain `absolute inset-0` inside a `relative` section and
+     * lay the hero copy over it in a `relative` container with no z-index — and a positive
+     * z-index paints above `auto` regardless of document order, so the photograph covered the
+     * headline. It shipped that way for a day.
+     *
+     * jsdom computes no layout, so this asserts the mechanism rather than the result: the root
+     * declares a stacking context, and the slides are the reason it has to.
+     */
+    const { container } = render(<Carousel slides={SLIDES} labels={LABELS} />);
+    const root = container.querySelector('[role="region"]');
+
+    expect(root?.className).toContain('isolate');
+    expect(container.querySelector('[role="group"]')?.className).toMatch(/z-\[\d\]/);
+  });
+
   it('holds the outgoing slide opaque underneath, then lets it go', () => {
     /*
      * A cross-fade dips. Both slides transitioning opacity at once means each is at 0.5 halfway

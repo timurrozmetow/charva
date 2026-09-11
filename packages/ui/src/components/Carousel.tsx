@@ -164,7 +164,23 @@ export function Carousel({
       onBlurCapture={() => {
         setInteracting(false);
       }}
-      className={cn('relative', className)}
+      /*
+       * `isolate` — a stacking context, so the slides' z-indexes stay inside this component.
+       *
+       * Not decoration. The slides carry `z-[1]` and `z-[2]` so the arriving one can fade over
+       * the one it replaces instead of cross-fading through to the page behind. Neither this
+       * element, nor the wrapper both homepages put it in, nor the `<section>` around that
+       * establishes a context on its own — `position: relative` with `z-index: auto` does not —
+       * so those numbers escaped and competed with the hero's text column, which is `relative`
+       * with no z-index of its own. A positive z-index paints above `auto` whatever the document
+       * order, so the photograph covered the headline, the paragraph and the search bar on both
+       * homepages. The owner saw the text appear for a moment and then vanish, which is exactly
+       * what it looks like: the copy renders before the slides arrive, and is buried when they do.
+       *
+       * One word here rather than a z-index on every caller: a component that introduces
+       * layering is the thing responsible for containing it.
+       */
+      className={cn('relative isolate', className)}
     >
       <>
         {slides.map((slide, position) => {
