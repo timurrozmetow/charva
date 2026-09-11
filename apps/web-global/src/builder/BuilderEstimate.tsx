@@ -1,44 +1,45 @@
 import {
   type BuilderConfigResponse,
   type BuilderSelection,
-  formatMoney,
   type Lang,
-  type Quote,
+  selectionCounts,
 } from '@charva/contracts';
 
 import { copyFor } from '../i18n';
 
 export interface BuilderEstimateProps {
   lang: Lang;
-  quote: Quote;
   config: BuilderConfigResponse;
   selection: BuilderSelection;
-  /** True while the debounced confirmation is in flight. The number does not move; it settles. */
-  confirming: boolean;
 }
 
 /**
- * The estimate panel.
+ * The summary panel: what has been chosen, and who works out what it costs.
  *
- * The number in it is produced by `quote()` from `@charva/contracts` — the same pure function
- * the server runs — so it moves the instant an option is clicked rather than after a round
- * trip, and it cannot disagree with the authoritative answer because there is no second
- * implementation to disagree with (D-11).
+ * It used to carry a live total. The owner decided on 2026-09-11 that the site does not quote —
+ * an operator prices the selection and sends it back — and the figure was worth losing on its
+ * own merits: the rates behind it are the designer's invention that Q-10 never confirmed, so the
+ * «1 296 $» a visitor met before touching anything was a made-up number wearing the authority of
+ * a total. It is gone from the wire as well as from here (the config response carries no rates
+ * and there is no quote route any more), which is the same reasoning as D-12: a price that is
+ * not in a response schema cannot come back by accident.
  *
- * An unanswered step shows «—» rather than the default it is silently using. The default is
- * real — six nights at the four-star rate is what produces the 1 296 $ a visitor sees before
- * touching anything — but presenting it as a choice they made would be a lie, so the line is
- * blank and the note under the total says the figure is provisional.
+ * Nights and people stay, because they are counts rather than terms — they are what the visitor
+ * said about the trip, and the operator needs them read back.
+ *
+ * An unanswered step shows «—» rather than the default it is silently using. The default is real
+ * — six nights, two people, until those steps are reached — but presenting it as a choice they
+ * made would be a lie.
  */
-export function BuilderEstimate({
-  lang,
-  quote,
-  config,
-  selection,
-  confirming,
-}: BuilderEstimateProps) {
+export function BuilderEstimate({ lang, config, selection }: BuilderEstimateProps) {
   const copy = copyFor(lang);
   const labels: Record<string, string> = copy.builder.steps;
+
+  const counts = selectionCounts(
+    selection,
+    config.steps.flatMap((step) => step.options),
+    config.defaults,
+  );
 
   const nameOf = (code: string) =>
     config.steps.flatMap((step) => step.options).find((option) => option.code === code)?.name ??
@@ -82,32 +83,15 @@ export function BuilderEstimate({
 
         <div className="flex items-center justify-between gap-4 border-b border-line py-[11px]">
           <dt className="text-bodySm text-muted">{copy.builder.estimate.nights}</dt>
-          <dd className="text-bodySm text-ink">{quote.nights}</dd>
-        </div>
-        <div className="flex items-center justify-between gap-4 border-b border-line py-[11px]">
-          <dt className="text-bodySm text-muted">{copy.builder.estimate.pax}</dt>
-          <dd className="text-bodySm text-ink">{quote.pax}</dd>
+          <dd className="text-bodySm text-ink">{counts.nights}</dd>
         </div>
         <div className="flex items-center justify-between gap-4 py-[11px]">
-          <dt className="text-bodySm text-muted">{copy.builder.estimate.perPerson}</dt>
-          <dd className="text-bodySm text-ink">{formatMoney(quote.perPerson)}</dd>
+          <dt className="text-bodySm text-muted">{copy.builder.estimate.pax}</dt>
+          <dd className="text-bodySm text-ink">{counts.pax}</dd>
         </div>
       </dl>
 
-      <p className="mt-4 text-bodySm text-muted">{copy.builder.estimate.total}</p>
-      <p
-        // Announced on change, so a screen-reader user hears the new total after choosing an
-        // option instead of having to go looking for it.
-        aria-live="polite"
-        aria-busy={confirming}
-        className="text-h2Sm font-medium text-ink"
-      >
-        {formatMoney(quote.total)}
-      </p>
-
-      <p className="mt-4 text-bodySm font-light text-muted">
-        {quote.isEstimate ? copy.builder.estimate.estimateNote : copy.builder.estimate.finalNote}
-      </p>
+      <p className="mt-5 text-bodySm font-light text-muted">{copy.builder.estimate.priceNote}</p>
     </aside>
   );
 }

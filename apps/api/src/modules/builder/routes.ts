@@ -1,9 +1,4 @@
-import {
-  builderConfigResponse,
-  builderQuoteRequest,
-  builderQuoteResponse,
-  langQueryFor,
-} from '@charva/contracts';
+import { builderConfigResponse, langQueryFor } from '@charva/contracts';
 import { type FastifyPluginAsync } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 
@@ -12,15 +7,20 @@ import { localePlugin } from '../../plugins/locale';
 import * as service from './service';
 
 /**
- * The tour builder: rates out, quote back.
+ * The tour builder: the nine steps and their options.
  *
- * `POST` rather than `GET` for the quote, despite it being a pure read, because a selection is
- * nine fields — three of which are arrays — and putting that in a query string means URL length
- * limits, encoding of Cyrillic option labels that should not be there anyway, and a cache key
- * nobody can read in a log.
+ * There used to be a second route here, `POST /quote`, which priced a selection and was the
+ * authority the panel's live figure was checked against. Both are gone: the owner decided on
+ * 2026-09-11 that the site does not quote — an operator works the selection out and sends a
+ * price — and the rates it quoted from were the designer's invention that Q-10 never confirmed.
  *
- * Deliberately not cached. It is cheap, it is a POST, and the whole point is that the panel
- * responds to the click that just happened.
+ * Removed rather than left unused. An endpoint that answers «1 296 $» to anyone who asks is a
+ * price channel whether or not a screen renders it, and the response schema is the serialiser
+ * (D-12), so the way to make a price unreachable is for there to be no field and no route.
+ *
+ * The arithmetic itself survives where it is still wanted: `quote()` runs once, server-side,
+ * when a lead arrives, so the operator opens an enquiry with the system's own figure beside the
+ * selection.
  */
 export const builderRoutes: FastifyPluginAsync = async (instance) => {
   const app = instance.withTypeProvider<ZodTypeProvider>();
@@ -33,32 +33,15 @@ export const builderRoutes: FastifyPluginAsync = async (instance) => {
       config: { cache: true },
       schema: {
         tags: ['builder'],
-        summary: 'The nine steps, their options and the rates',
+        summary: 'The nine steps and their options',
         description:
-          'The client applies the same `quote()` from @charva/contracts to this, on every ' +
-          'click, so the estimate moves at once. Decision D-11: there is no second ' +
-          'implementation for the two sides to disagree with.',
+          'Carries no money: the options, and the two counts an unanswered step falls back to ' +
+          'so the panel can say «Ночей 6» before the visitor reaches that step. Rates are not ' +
+          'public — the site does not quote.',
         querystring: langQueryFor('global'),
         response: { 200: builderConfigResponse },
       },
     },
     (request) => service.getConfigForDisplay(app.db, request.lang),
-  );
-
-  app.post(
-    '/quote',
-    {
-      schema: {
-        tags: ['builder'],
-        summary: 'Price a selection. The authoritative answer.',
-        description:
-          'Accepts option codes and nothing else — never a price. An empty selection is a ' +
-          'valid request and returns 1 296 $, which is what a visitor sees before their first ' +
-          'click: six nights at the four-star rate, for two people, plus the base fee.',
-        body: builderQuoteRequest,
-        response: { 200: builderQuoteResponse },
-      },
-    },
-    (request) => service.priceSelection(app.db, request.body.selection),
   );
 };

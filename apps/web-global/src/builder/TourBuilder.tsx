@@ -1,14 +1,9 @@
-import {
-  type BuilderOption,
-  type BuilderStep,
-  type Lang,
-  quote as priceQuote,
-} from '@charva/contracts';
+import { type BuilderStep, type Lang } from '@charva/contracts';
 import { Skeleton } from '@charva/ui';
 import { useQuery } from '@tanstack/react-query';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode } from 'react';
 
-import { builderConfigQuery, postQuote } from '../api/queries';
+import { builderConfigQuery } from '../api/queries';
 
 import { BuilderEstimate } from './BuilderEstimate';
 import { BuilderPanel } from './BuilderPanel';
@@ -34,79 +29,20 @@ export interface TourBuilderProps {
  * different brown, and the last option of step two says something else. Every one of those is a
  * divergence nobody chose.
  *
- * The price comes from `quote()` in `@charva/contracts`, run locally on every click. The
- * debounced `POST /builder/quote` that follows is the authority, and its answer is asserted
- * against the local one rather than displayed instead of it: they are the same function, so a
- * difference is a bug worth knowing about rather than a number to quietly prefer.
+ * It used to price itself: `quote()` locally on every click, confirmed by a debounced
+ * `POST /builder/quote`. Both are gone — the owner decided on 2026-09-11 that the site does not
+ * quote, and an operator prices the selection instead. What is left is nine questions and a
+ * panel that reads the answers back, which is the part that was ever doing any work: the total
+ * came from rates the designer invented and Q-10 never confirmed.
+ *
+ * The consolation is that a click is now free. Every answer used to schedule a round trip to
+ * confirm a figure nobody is shown.
  */
 export function TourBuilder({ lang, basePath, renderForm }: TourBuilderProps) {
   const config = useQuery(builderConfigQuery(lang));
   const { selection, step, pick, goToStep, answered } = useBuilderSelection(basePath);
-  const [confirming, setConfirming] = useState(false);
 
-  /** The flat option list `quote()` wants, derived from the step tree the API sends. */
-  const pricingConfig = useMemo(() => {
-    const steps = config.data?.steps ?? [];
-    const options: BuilderOption[] = steps.flatMap((s) =>
-      s.options.map((option) => ({
-        code: option.code,
-        step: s.code,
-        numericValue: option.numericValue,
-        priceModifierMinor: option.priceModifierMinor,
-        modifierType: option.modifierType,
-      })),
-    );
-    return { options, rules: config.data?.rules };
-  }, [config.data]);
-
-  const estimate = useMemo(() => {
-    if (pricingConfig.rules === undefined) return null;
-    return priceQuote(selection, { options: pricingConfig.options, rules: pricingConfig.rules });
-  }, [selection, pricingConfig]);
-
-  /*
-   * The authoritative recalculation, debounced.
-   *
-   * It confirms rather than produces: the panel already shows the right number, because both
-   * sides run the same function over the same rates. What this catches is the case that matters
-   * — an editor changing a rate in the admin while somebody has the builder open — and a
-   * mismatch is logged rather than swallowed, because under D-11 it should be impossible.
-   */
-  const abortRef = useRef<AbortController>();
-  useEffect(() => {
-    if (estimate === null) return;
-
-    const timer = setTimeout(() => {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-      setConfirming(true);
-
-      postQuote(lang, { selection }, controller.signal)
-        .then((authoritative) => {
-          if (authoritative.total.minor !== estimate.total.minor) {
-            // function has stopped being shared, which is exactly what D-11 rules out.
-            console.warn('builder: local estimate disagrees with the server', {
-              local: estimate.total.minor,
-              server: authoritative.total.minor,
-            });
-          }
-        })
-        .catch(() => {
-          // A failed confirmation leaves the local estimate standing. It is the same arithmetic
-          // over the same rates, and a visitor with a flaky connection should still see a price.
-        })
-        .finally(() => {
-          setConfirming(false);
-        });
-    }, 400);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [selection, estimate, lang]);
-
-  if (config.isPending || estimate === null || config.data === undefined) {
+  if (config.isPending || config.data === undefined) {
     return (
       <div className="grid grid-cols-builder gap-[30px] tab:grid-cols-1" aria-busy="true">
         <Skeleton className="h-[420px] rounded-panel" />
@@ -162,13 +98,7 @@ export function TourBuilder({ lang, basePath, renderForm }: TourBuilderProps) {
         {...(renderForm === undefined ? {} : { form: renderForm({ selection }) })}
       />
 
-      <BuilderEstimate
-        lang={lang}
-        quote={estimate}
-        config={config.data}
-        selection={selection}
-        confirming={confirming}
-      />
+      <BuilderEstimate lang={lang} config={config.data} selection={selection} />
     </div>
   );
 }

@@ -120,7 +120,6 @@ export async function getConfigForDisplay(db: Database, lang: Lang) {
         name: t.builderOptions.name,
         note: t.builderOptions.note,
         numericValue: t.builderOptions.numericValue,
-        priceModifierMinor: t.builderOptions.priceModifierMinor,
         modifierType: t.builderOptions.modifierType,
         isExclusive: t.builderOptions.isExclusive,
         sortOrder: t.builderOptions.sortOrder,
@@ -150,23 +149,38 @@ export async function getConfigForDisplay(db: Database, lang: Lang) {
               name: text(option.name, lang),
               note: text(option.note, lang),
               numericValue: option.numericValue,
-              priceModifierMinor: option.priceModifierMinor,
               modifierType: option.modifierType,
               isExclusive: option.isExclusive,
             })),
         },
       ];
     }),
-    rules,
+    /*
+     * Two counts, not the rate table.
+     *
+     * `loadRules` still reads all six values because `quote()` needs them when a lead arrives;
+     * what leaves the building is the pair that decides what an unanswered step counts as. The
+     * rest — base fee, city fee, activity fee, the default hotel rate and the currency — are
+     * commercial terms, and a site that does not quote has no reason to hand them to a browser.
+     */
+    defaults: { defaultNights: rules.defaultNights, defaultPax: rules.defaultPax },
   };
 }
 
 /**
- * The authoritative price.
+ * The price, for the operator.
  *
- * Called by `POST /builder/quote` and, separately, when a lead is submitted — at which point the
- * result is stored in `leads.quote_snapshot` and whatever the browser sent is ignored. A lead is
- * a commercial commitment; a number that arrived from a client is a number the sender chose.
+ * Called once, when a lead is submitted, and the result is stored in `leads.quote_snapshot`.
+ * Nothing else calls it: `POST /builder/quote` used to, and went when the site stopped quoting
+ * (2026-09-11), because an endpoint that answers with a total is a price channel whether or not
+ * a screen renders it.
+ *
+ * Whatever the browser sent is ignored, and always was. A lead is a commercial commitment; a
+ * number that arrived from a client is a number the sender chose.
+ *
+ * Worth naming what this figure is: the rates behind it are the designer's invention and Q-10
+ * has never confirmed them. It is the system's own arithmetic beside the selection, which is
+ * useful to somebody who knows that — and was misleading on a page that showed it as a total.
  */
 export async function priceSelection(db: Database, selection: BuilderSelection) {
   const result = quote(selection, await loadConfig(db));

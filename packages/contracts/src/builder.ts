@@ -129,13 +129,56 @@ function chosen(selection: BuilderSelection, step: BuilderStep): string[] {
   return typeof value === 'string' ? [value] : [...value];
 }
 
-function findOption(config: BuilderConfig, code: string | undefined): BuilderOption | undefined {
+/**
+ * Generic on the option shape, because two callers need two different amounts of it.
+ *
+ * `quote()` hands it the full `BuilderOption` — it goes on to read a rate. `selectionCounts()`
+ * hands it whatever the public config carries, which since 2026-09-11 is a code and a number
+ * and no money at all. Asking for `BuilderOption` in both places would have meant the panel
+ * needing fields the server no longer sends it.
+ */
+function findOption<T extends { code: string }>(
+  options: readonly T[],
+  code: string | undefined,
+): T | undefined {
   if (code === undefined) return undefined;
-  return config.options.find((option) => option.code === code);
+  return options.find((option) => option.code === code);
+}
+
+/**
+ * How many nights and how many people a selection means.
+ *
+ * Split out of `quote()` because the two answers are not the same kind of thing. A count is a
+ * fact about the trip the visitor is describing; a total is a commercial term. Since the owner
+ * decided the site does not quote (2026-09-11), the browser is given the first and never the
+ * second — so the panel can still say «Ночей 7 · Человек 4» without the rate table having to
+ * travel with it.
+ *
+ * The defaults are what an unanswered step counts as, and they are counts too: six nights and
+ * two people are what the panel shows before the visitor reaches those steps.
+ */
+export function selectionCounts(
+  selection: BuilderSelection,
+  /** A code and what it counts as. Deliberately not `BuilderOption`: there is no rate here. */
+  options: readonly { code: string; numericValue: number | null }[],
+  defaults: { defaultNights: number; defaultPax: number },
+): { nights: number; pax: number } {
+  const value = (step: BuilderStep, fallback: number) =>
+    findOption(options, chosen(selection, step)[0])?.numericValue ?? fallback;
+
+  return {
+    nights: value('dates', defaults.defaultNights),
+    pax: value('people', defaults.defaultPax),
+  };
 }
 
 /**
  * Prices a selection.
+ *
+ * Runs on the server only, now that the site does not quote: once when a lead arrives, so the
+ * operator opens an enquiry with the system's own arithmetic beside what was chosen. The
+ * function is unchanged — it is the rates behind it that were never confirmed (Q-10), and the
+ * decision was to stop showing their output rather than to stop computing it.
  *
  * Integer arithmetic throughout, so the same selection produces byte-identical output every
  * time and on both sides of the wire.
@@ -143,11 +186,9 @@ function findOption(config: BuilderConfig, code: string | undefined): BuilderOpt
 export function quote(selection: BuilderSelection, config: BuilderConfig): Quote {
   const { rules } = config;
 
-  const nights =
-    findOption(config, chosen(selection, 'dates')[0])?.numericValue ?? rules.defaultNights;
-  const pax = findOption(config, chosen(selection, 'people')[0])?.numericValue ?? rules.defaultPax;
+  const { nights, pax } = selectionCounts(selection, config.options, rules);
   const hotelRate =
-    findOption(config, chosen(selection, 'hotel')[0])?.priceModifierMinor ??
+    findOption(config.options, chosen(selection, 'hotel')[0])?.priceModifierMinor ??
     rules.defaultHotelRateMinor;
 
   const cities = chosen(selection, 'dest').length;

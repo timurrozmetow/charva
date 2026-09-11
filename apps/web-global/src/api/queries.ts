@@ -3,7 +3,6 @@ import {
   type ArticlesResponse,
   type BuilderConfigResponse,
   type BuilderSelection,
-  type BuilderQuoteResponse,
   type CountryResponse,
   createApiClient,
   type CreditsResponse,
@@ -189,32 +188,6 @@ export function builderConfigQuery(lang: Lang) {
 }
 
 /**
- * The authoritative price.
- *
- * Not a query — it is a POST, debounced by the caller, and its answer confirms rather than
- * produces the number on screen. There is no second implementation for it to disagree with.
- */
-export function postQuote(
-  lang: Lang,
-  /**
-   * The domain type, not the schema's inferred one.
-   *
-   * `BuilderSelection` holds `readonly string[]` because nothing should mutate a selection in
-   * place; zod infers a mutable array for the same field because that is what it parses into.
-   * The client speaks the domain type and the server validates the wire type, which is the
-   * right way round — the request is what the client *means*, and the schema is the server's
-   * check on what arrived.
-   */
-  body: { selection: BuilderSelection },
-  signal?: AbortSignal,
-): Promise<BuilderQuoteResponse> {
-  return api.post<BuilderQuoteResponse>('/global/builder/quote', body, {
-    query: { lang },
-    ...(signal === undefined ? {} : { signal }),
-  });
-}
-
-/**
  * The signed moment a form was rendered — anti-spam layer three.
  *
  * Fetched when the form mounts rather than when it submits, because the whole mechanism is the
@@ -232,7 +205,7 @@ export function formTokenQuery() {
 }
 
 /**
- * The domain type again, for the same reason `postQuote` takes one.
+ * The domain type rather than the schema's inferred one.
  *
  * `BuilderSelection` holds `readonly string[]`; zod infers the mutable array it parses into.
  * The client sends what it *means* and the server validates what arrived, which is the right

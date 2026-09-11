@@ -1,18 +1,26 @@
 import { DEFAULT_PRICING_RULES, formatMoney, quote } from '@charva/contracts';
-import { type LightMyRequestResponse } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { buildTestApp, problem, type TestApp } from '../../test/app';
+import { buildTestApp, type TestApp } from '../../test/app';
 
-import { loadConfig } from './service';
+import { loadConfig, priceSelection } from './service';
 
 /**
- * The builder over the wire.
+ * The builder.
  *
- * The point of these is decision D-11: the client computes its instant estimate with the same
- * `quote()` this endpoint calls, so the two cannot disagree — there is no second implementation
- * to disagree with. The last test in this file is what proves that claim rather than asserting
- * it, by running the shared function directly and comparing it to what the API answered.
+ * The arithmetic used to be reached through `POST /builder/quote`, and these tests posted to it.
+ * The route went when the owner took pricing off the site (2026-09-11) — an endpoint answering
+ * «1 296 $» to anyone who asks is a price channel whether or not a screen renders it.
+ *
+ * The formula did not go, and neither did its tests. It runs once now, server-side, when a lead
+ * arrives, so the figure the operator opens an enquiry with is exactly what is checked below.
+ * Calling `priceSelection` directly rather than through a route is not a weaker test: the route
+ * was one line handing the body to this function, and what was ever worth asserting is that
+ * seven nights is seven nights and that twenty identical selections give one identical answer.
+ *
+ * What could not survive is the pair that tested the route's own validation — a step nobody
+ * defined, a body carrying a price. There is no body any more. The schema that refused them,
+ * `builderSelectionSchema`, is still the one the lead endpoint validates a selection with.
  */
 
 let context: TestApp;
@@ -25,15 +33,12 @@ afterAll(async () => {
   await context.close();
 });
 
-async function postQuote(body: Record<string, unknown>): Promise<LightMyRequestResponse> {
-  return context.app.inject({
-    method: 'POST',
-    url: `${context.prefix}/global/builder/quote`,
-    payload: body,
-  });
+/** What the operator's figure is computed from, straight out of the database. */
+async function price(selection: Record<string, string | string[]> = {}) {
+  return priceSelection(context.app.db, selection);
 }
 
-describe('POST /builder/quote', () => {
+describe('the price the operator is shown', () => {
   it('prices an untouched builder at 1 296 $', async () => {
     /*
      * The phase's headline number and the one every visitor sees before their first click:
@@ -41,10 +46,7 @@ describe('POST /builder/quote', () => {
      * three default rules as much as out of the rates — question Q-10 asks the owner to bless
      * all six numbers.
      */
-    const response = await postQuote({});
-    expect(response.statusCode).toBe(200);
-
-    const body = response.json<{ total: { minor: number; currency: 'USD' } }>();
+    const body = await price();
     expect(body.total.minor).toBe(129_600);
     // Non-breaking spaces, written as escapes: the separator `formatMoney` uses is
     // indistinguishable from an ordinary space in a diff, and phase 2 already lost time to it.
@@ -54,48 +56,35 @@ describe('POST /builder/quote', () => {
   it('gives byte-identical answers to twenty identical requests', async () => {
     // Integer arithmetic throughout, so there is no float drifting in the last cent between the
     // instant estimate and the authoritative one.
-    const selection = { selection: { dest: ['dest_ashgabat', 'dest_mary'], dates: 'nights_7' } };
+    const selection = { dest: ['dest_ashgabat', 'dest_mary'], dates: 'nights_7' };
     const bodies = new Set<string>();
 
     for (let attempt = 0; attempt < 20; attempt += 1) {
-      const response = await postQuote(selection);
-      expect(response.statusCode).toBe(200);
-      bodies.add(response.body);
+      bodies.add(JSON.stringify(await price(selection)));
     }
 
-    expect(bodies.size, 'twenty requests produced more than one body').toBe(1);
+    expect(bodies.size, 'twenty runs produced more than one answer').toBe(1);
   });
 
   it('reads what an option means separately from what it costs', async () => {
     // `nights_7` is seven nights, not seven dollars — decision D-10, and the mistake the
     // handoff's single `price_modifier` column forces.
-    const seven = (await postQuote({ selection: { dates: 'nights_7' } })).json<{
-      nights: number;
-    }>();
+    const seven = await price({ dates: 'nights_7' });
     expect(seven.nights).toBe(7);
 
-    const people = (await postQuote({ selection: { people: 'pax_6_10' } })).json<{ pax: number }>();
+    const people = await price({ people: 'pax_6_10' });
     // «6–10» means eight, which is one of the numbers question Q-10 asks about.
     expect(people.pax).toBe(8);
   });
 
   it('multiplies by people and adds per city and per activity', async () => {
-    const body = (
-      await postQuote({
-        selection: {
-          dates: 'nights_7',
-          hotel: 'hotel_4star',
-          dest: ['dest_ashgabat', 'dest_mary'],
-          activities: ['act_darvaza'],
-          people: 'pax_2',
-        },
-      })
-    ).json<{
-      perPerson: { minor: number };
-      total: { minor: number };
-      pax: number;
-      breakdown: { kind: string; count: number; amountMinor: number }[];
-    }>();
+    const body = await price({
+      dates: 'nights_7',
+      hotel: 'hotel_4star',
+      dest: ['dest_ashgabat', 'dest_mary'],
+      activities: ['act_darvaza'],
+      people: 'pax_2',
+    });
 
     const accommodation = body.breakdown.find((line) => line.kind === 'accommodation');
     expect(accommodation?.count).toBe(7);
@@ -109,50 +98,37 @@ describe('POST /builder/quote', () => {
   });
 
   it('says which priced steps are still guesses', async () => {
-    const untouched = (await postQuote({})).json<{
-      isEstimate: boolean;
-      missingSteps: string[];
-    }>();
+    const untouched = await price();
     expect(untouched.isEstimate).toBe(true);
     expect(untouched.missingSteps).toContain('hotel');
 
-    const answered = (
-      await postQuote({
-        selection: {
-          dest: ['dest_ashgabat'],
-          dates: 'nights_7',
-          hotel: 'hotel_4star',
-          activities: ['act_darvaza'],
-          people: 'pax_2',
-        },
-      })
-    ).json<{ isEstimate: boolean; missingSteps: string[] }>();
+    const answered = await price({
+      dest: ['dest_ashgabat'],
+      dates: 'nights_7',
+      hotel: 'hotel_4star',
+      activities: ['act_darvaza'],
+      people: 'pax_2',
+    });
 
     expect(answered.missingSteps).toEqual([]);
     expect(answered.isEstimate).toBe(false);
   });
 
-  it('refuses a step nobody defined rather than silently ignoring it', async () => {
-    // A quietly dropped field is a quote that looks right and prices something else.
-    const response = await postQuote({ selection: { hotels: 'hotel_4star' } });
-    expect(response.statusCode).toBe(400);
-    expect(problem(response).error.code).toBe('validation_failed');
+  it('ignores a step nobody defined rather than pricing it', async () => {
+    // A quietly priced unknown field is a quote that looks right and charges for something
+    // else. The route used to refuse this with a 400; the function is now reached only from
+    // the lead endpoint, which validates with the same `builderSelectionSchema` first, so what
+    // matters here is that the arithmetic is untouched by a key it does not know.
+    expect((await price({ hotels: 'hotel_4star' })).total.minor).toBe((await price()).total.minor);
   });
 
-  it('refuses a body carrying a price', async () => {
-    // There is no field for one, and `.strict()` makes that a rejection rather than a silently
-    // ignored key. The client never sends a total; the server computes it.
-    const response = await postQuote({ selection: {}, total: { minor: 1, currency: 'USD' } });
-    expect(response.statusCode).toBe(400);
-  });
-
-  it('agrees exactly with the function the browser runs — on twenty random selections', async () => {
+  it('is the same arithmetic the package exports — on twenty random selections', async () => {
     /*
-     * Decision D-11, proven rather than asserted.
+     * What is left of decision D-11, and still worth proving.
      *
-     * `quote()` here is the identical import the SPA uses; the config is what `GET /config`
-     * hands the client. If these ever diverged it would mean somebody wrote a second
-     * implementation, which is the thing the decision exists to prevent.
+     * The browser no longer prices anything, so the two sides cannot disagree by construction.
+     * What this now guards is narrower and still real: that `priceSelection` is a thin wrapper
+     * over the exported `quote()` and not a second implementation that grew its own rules.
      */
     const config = await loadConfig(context.app.db);
     const byStep = new Map<string, string[]>();
@@ -177,29 +153,31 @@ describe('POST /builder/quote', () => {
           step === 'dest' || step === 'activities' || step === 'food' ? [pick] : pick;
       }
 
-      const clientSide = quote(selection, config);
-      const server = (await postQuote({ selection })).json<{
-        total: { minor: number };
-        perPerson: { minor: number };
-      }>();
+      const direct = quote(selection, config);
+      const server = await price(selection);
 
-      expect(server.total.minor, JSON.stringify(selection)).toBe(clientSide.total.minor);
-      expect(server.perPerson.minor, JSON.stringify(selection)).toBe(clientSide.perPerson.minor);
+      expect(server.total.minor, JSON.stringify(selection)).toBe(direct.total.minor);
+      expect(server.perPerson.minor, JSON.stringify(selection)).toBe(direct.perPerson.minor);
     }
   });
 });
 
 describe('GET /builder/config', () => {
-  it('hands over nine steps keyed by stable ASCII codes', async () => {
-    const response = await context.app.inject({
+  let response: Awaited<ReturnType<TestApp['app']['inject']>>;
+
+  beforeAll(async () => {
+    response = await context.app.inject({
       method: 'GET',
       url: `${context.prefix}/global/builder/config`,
     });
+  });
+
+  it('hands over nine steps keyed by stable ASCII codes', () => {
     expect(response.statusCode).toBe(200);
 
     const body = response.json<{
       steps: { code: string; title: string; options: { code: string }[] }[];
-      rules: { defaultNights: number; defaultPax: number };
+      defaults: { defaultNights: number; defaultPax: number };
     }>();
 
     expect(body.steps).toHaveLength(9);
@@ -211,8 +189,24 @@ describe('GET /builder/config', () => {
       }
     }
 
-    expect(body.rules.defaultNights).toBe(DEFAULT_PRICING_RULES.defaultNights);
-    expect(body.rules.defaultPax).toBe(DEFAULT_PRICING_RULES.defaultPax);
+    expect(body.defaults.defaultNights).toBe(DEFAULT_PRICING_RULES.defaultNights);
+    expect(body.defaults.defaultPax).toBe(DEFAULT_PRICING_RULES.defaultPax);
+  });
+
+  it('carries no money at all', () => {
+    /*
+     * The structural half of the owner's decision, and the reason it is not just a hidden
+     * element: a response schema is the serialiser (D-12), so a rate that is not in it cannot
+     * reach a browser however the query is written.
+     *
+     * The sweep is over the raw body rather than over named fields, because naming them is
+     * exactly the check that passes while a seventh one is added beside them.
+     */
+    // `response.body`, not the response: stringifying the whole object drags in Fastify's
+    // socket, its headers and a `content-length`, and the sweep matches on those instead.
+    for (const word of ['priceModifier', 'Minor', 'currency', 'USD', 'baseFee', 'cityFee']) {
+      expect(response.body, word).not.toContain(word);
+    }
   });
 
   it('translates the labels and leaves the codes alone', async () => {

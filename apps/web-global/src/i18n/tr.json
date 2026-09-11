@@ -175,18 +175,9 @@
     "estimate": {
       "title": "Turunuz",
       "empty": "—",
-      "perPerson": "Kişi başı",
-      "total": "Toplam",
       "pax": "Kişi",
       "nights": "Gece",
-      "estimateNote": "Ön hesap: bazı adımlar hâlâ varsayılan değerlerde.",
-      "finalNote": "Kesin fiyatı yönetici onaylar — tarihlere ve müsaitliğe bağlıdır.",
-      "breakdown": {
-        "accommodation": "Konaklama",
-        "cities": "Şehirler",
-        "activities": "Etkinlikler",
-        "base": "Organizasyon"
-      }
+      "priceNote": "Fiyatı operatör hesaplar ve talebinizden sonra gönderir — tarihlere, otele ve müsaitliğe bağlıdır."
     },
     "steps": {
       "dest": "Yön",

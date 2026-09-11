@@ -2,19 +2,25 @@ import { z } from 'zod';
 
 import { BUILDER_STEPS, MODIFIER_TYPES } from '../builder';
 
-import { moneySchema } from './common';
-
 /**
  * The tour builder, across the wire.
  *
- * `GET /builder/config` hands over the rates and the options; the client applies the same pure
- * `quote()` from this package on every click so the estimate moves at once, and a debounced
- * `POST /builder/quote` returns the authoritative number. There is no second implementation for
- * them to disagree with — decision D-11.
+ * **No money crosses it.** The owner decided on 2026-09-11 that the site does not quote: an
+ * operator works the selection out and sends a price back. The rates it would have quoted from
+ * are the designer's invention and were never confirmed (Q-10) — the «1 296 $» a visitor met
+ * before clicking anything was a made-up number wearing the authority of a total.
  *
- * The request carries option *codes* and nothing else. It never carries a price: a number that
- * arrived from a browser is a number the sender chose, and when a lead is submitted the server
- * recalculates from the database and ignores whatever came with it.
+ * So this is structural rather than a hidden element, for the same reason D-12 is: a response
+ * schema is also the serialiser, and a field that is not in it cannot be added back by a careless
+ * `select *`. `GET /builder/config` hands over the options and two counts — how many nights and
+ * how many people an unanswered step means — and nothing that could be turned into a price.
+ * `POST /builder/quote` is gone with it; it existed to confirm a number nobody is shown.
+ *
+ * The pure `quote()` in this package stays, and the server still runs it when a lead arrives, so
+ * the operator opens an enquiry with the system's own arithmetic beside the selection. That is
+ * the one place a figure is still useful, and it is not a place a visitor can reach.
+ *
+ * The request carries option *codes* and nothing else — the reason D-10 made them stable ASCII.
  */
 
 export const builderOptionSchema = z.object({
@@ -22,10 +28,14 @@ export const builderOptionSchema = z.object({
   code: z.string(),
   name: z.string(),
   note: z.string(),
-  /** What the option *means* as a number. `7 дней` is seven nights, not seven dollars. */
+  /**
+   * What the option *means* as a number. `7 дней` is seven nights, not seven dollars.
+   *
+   * This survives where `priceModifierMinor` does not, and the difference is the whole of D-10:
+   * a count is a fact about the trip and a rate is a commercial term. The panel still says «7»
+   * beside «Ночей» because that is what the visitor chose, not what it costs.
+   */
   numericValue: z.number().int().nullable(),
-  /** What it *costs*, in minor units. Only hotel options carry one. */
-  priceModifierMinor: z.number().int().nullable(),
   modifierType: z.enum(MODIFIER_TYPES),
   /**
    * Cannot be held together with anything else on its step.
@@ -47,21 +57,23 @@ export const builderStepSchema = z.object({
   options: z.array(builderOptionSchema),
 });
 
-export const pricingRulesSchema = z.object({
-  baseFeeMinor: z.number().int(),
-  cityFeeMinor: z.number().int(),
-  activityFeeMinor: z.number().int(),
-  /** The three defaults matter as much as the rates: they produce the 1 296 $ shown before
-   * a visitor has clicked anything at all. Question Q-10. */
+/**
+ * What an unanswered step counts as — and nothing else.
+ *
+ * This is the public remnant of `pricing_rules`. The rates went with the quote: a base fee, a
+ * city fee, an activity fee, a default hotel rate and a currency are commercial terms, and a
+ * site that does not quote has no business shipping them to every browser that opens the
+ * builder. These two are counts, and the panel needs them to say «Ночей 6» before the visitor
+ * has reached that step.
+ */
+export const builderDefaultsSchema = z.object({
   defaultNights: z.number().int(),
-  defaultHotelRateMinor: z.number().int(),
   defaultPax: z.number().int(),
-  currency: z.enum(['USD', 'TMT']),
 });
 
 export const builderConfigResponse = z.object({
   steps: z.array(builderStepSchema),
-  rules: pricingRulesSchema,
+  defaults: builderDefaultsSchema,
 });
 
 /**
@@ -75,34 +87,7 @@ export const builderSelectionSchema = z.record(
   z.union([z.string().max(60), z.array(z.string().max(60)).max(20)]),
 );
 
-export const builderQuoteRequest = z
-  .object({
-    selection: builderSelectionSchema.default({}),
-  })
-  .strict();
-
-export const breakdownLineSchema = z.object({
-  kind: z.enum(['accommodation', 'cities', 'activities', 'base']),
-  /** How many nights, cities or activities. One for the base fee. */
-  count: z.number().int(),
-  unitMinor: z.number().int(),
-  amountMinor: z.number().int(),
-});
-
-export const builderQuoteResponse = z.object({
-  perPerson: moneySchema,
-  total: moneySchema,
-  pax: z.number().int(),
-  nights: z.number().int(),
-  breakdown: z.array(breakdownLineSchema),
-  /** Priced steps still on their default. What makes the panel say «предварительно». */
-  missingSteps: z.array(z.enum(BUILDER_STEPS)),
-  isEstimate: z.boolean(),
-});
-
 export type BuilderOptionDto = z.infer<typeof builderOptionSchema>;
 export type BuilderStepDto = z.infer<typeof builderStepSchema>;
 export type BuilderConfigResponse = z.infer<typeof builderConfigResponse>;
-export type BuilderQuoteRequest = z.infer<typeof builderQuoteRequest>;
-export type BuilderQuoteResponse = z.infer<typeof builderQuoteResponse>;
-export type BreakdownLineDto = z.infer<typeof breakdownLineSchema>;
+export type BuilderDefaults = z.infer<typeof builderDefaultsSchema>;

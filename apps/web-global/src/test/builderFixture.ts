@@ -11,7 +11,10 @@ export function builderConfig(
   overrides: Partial<BuilderConfigResponse> = {},
 ): BuilderConfigResponse {
   return {
-    rules: DEFAULT_PRICING_RULES,
+    defaults: {
+      defaultNights: DEFAULT_PRICING_RULES.defaultNights,
+      defaultPax: DEFAULT_PRICING_RULES.defaultPax,
+    },
     steps: [
       {
         code: 'dest',
@@ -47,18 +50,11 @@ export function builderConfig(
         railLabel: 'Отель',
         isRequired: false,
         options: [
-          opt('hotel_3star', '3 ★', 'Просто и чисто', {
-            priceModifierMinor: 4600,
-            modifierType: 'per_night',
-          }),
-          opt('hotel_4star', '4 ★', 'Комфорт', {
-            priceModifierMinor: 7800,
-            modifierType: 'per_night',
-          }),
-          opt('hotel_5star', '5 ★', 'Премиум', {
-            priceModifierMinor: 14_500,
-            modifierType: 'per_night',
-          }),
+          // No rates: the config does not carry them any more, because the site does not
+          // quote. The hotel step is still a choice, it just is not a price.
+          opt('hotel_3star', '3 ★', 'Просто и чисто', { modifierType: 'per_night' }),
+          opt('hotel_4star', '4 ★', 'Комфорт', { modifierType: 'per_night' }),
+          opt('hotel_5star', '5 ★', 'Премиум', { modifierType: 'per_night' }),
         ],
       },
       {
@@ -144,7 +140,6 @@ function opt(
     name,
     note,
     numericValue: null,
-    priceModifierMinor: null,
     modifierType: 'none',
     isExclusive: false,
     ...extra,

@@ -1,4 +1,3 @@
-import { quote } from '@charva/contracts';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -23,65 +22,50 @@ afterEach(() => {
 });
 
 async function render(path = '/ru/builder') {
-  stubApi({
-    '/global/builder/config': builderConfig(),
-    // The debounced confirmation. It agrees, because it is the same function over the same rates.
-    '/global/builder/quote': {
-      perPerson: { minor: 64_800, currency: 'USD' },
-      total: { minor: 129_600, currency: 'USD' },
-      pax: 2,
-      nights: 6,
-      breakdown: [],
-      missingSteps: ['dest', 'dates', 'hotel', 'activities', 'people'],
-      isEstimate: true,
-    },
-  });
+  // One call, and no quote: the site does not price a selection any more, so there is no
+  // second endpoint to stub and no round trip on a click.
+  stubApi({ '/global/builder/config': builderConfig() });
   return renderPage(<TourBuilder lang="ru" basePath="/ru/builder" />, { path });
 }
 
 describe('the tour builder', () => {
-  it('prices an untouched builder at 1 296 $ before anything is clicked', async () => {
-    await render();
-
+  it('quotes nothing, and says who will', async () => {
     /*
-     * The figure every visitor sees first, and it is not a literal anywhere.
+     * Inverted, not deleted. These two used to assert «1 296 $» before a click and «1 416 $»
+     * after one — the figure the local `quote()` produced from the rates in `pricing_rules`.
      *
-     * Six nights at the four-star rate, plus the base fee, times two people — the three
-     * defaults in `pricing_rules` are what produce it, which is why they are as editable as
-     * the rates themselves. Question Q-10 asks the owner to bless the numbers.
+     * The owner took the price off the site on 2026-09-11: an operator works a selection out
+     * and sends it. The figure was worth losing on its own merits too — the rates behind it are
+     * the designer's invention and Q-10 never confirmed them, so «1 296 $» was a made-up number
+     * wearing the authority of a total, shown to every visitor before they touched anything.
+     *
+     * What replaces it is the assertion that no currency reaches the panel at all. Naming the
+     * old totals would pass while some *other* price crept in; a sweep for the symbol does not.
      */
-    expect(await screen.findByText('1 296 $')).toBeInTheDocument();
+    await render();
+    const panel = await screen.findByRole('complementary', { name: 'Ваш тур' });
+
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Ашхабад/ }));
+    await waitFor(() => {
+      expect(within(panel).getByText('Ашхабад')).toBeInTheDocument();
+    });
+
+    // Any currency, not the two totals that used to be here: naming them would pass while
+    // some other price crept in, and a sweep for the symbols cannot.
+    expect(panel.textContent).not.toMatch(/[$€₽]|TMT|USD/);
+    expect(within(panel).getByText(/рассчитает оператор/)).toBeInTheDocument();
   });
 
-  it('moves the price on a click, without waiting for the server', async () => {
+  it('reads the counts back, because those are what was chosen', async () => {
+    // Nights and people survive the price going: they are facts about the trip the visitor
+    // described, not commercial terms, and the operator needs them read back.
     await render();
-    await screen.findByRole('radiogroup', { name: /Куда|Сколько/ }).catch(() => null);
+    const panel = await screen.findByRole('complementary', { name: 'Ваш тур' });
 
-    // Fourteen nights instead of the default six, at the same rate: the local `quote()` runs
-    // synchronously, so the new total is on screen before any request could have returned.
-    await userEvent.click(await screen.findByRole('checkbox', { name: /Ашхабад/ }));
-
-    const expected = quote(
-      { dest: ['dest_ashgabat'] },
-      {
-        options: builderConfig().steps.flatMap((step) =>
-          step.options.map((option) => ({
-            code: option.code,
-            step: step.code,
-            numericValue: option.numericValue,
-            priceModifierMinor: option.priceModifierMinor,
-            modifierType: option.modifierType,
-          })),
-        ),
-        rules: builderConfig().rules,
-      },
-    );
-
-    // 1 296 $ + one city at 60 $ per person, doubled: 1 416 $.
-    await waitFor(() => {
-      expect(screen.getByText('1 416 $')).toBeInTheDocument();
-    });
-    expect(expected.total.minor).toBe(141_600);
+    expect(within(panel).getByText('Ночей')).toBeInTheDocument();
+    // `getAllByText` for it, because the panel says it twice on purpose — once as the step
+    // whose answer is echoed, once as the count that answer resolves to.
+    expect(within(panel).getAllByText('Человек').length).toBeGreaterThan(0);
   });
 
   it('puts the selection in the URL so a half-built tour can be sent to somebody', async () => {
@@ -210,11 +194,13 @@ describe('the tour builder', () => {
   it('leaves an unanswered line blank rather than showing the default it is using', async () => {
     await render();
 
-    // Six nights and the four-star rate are real defaults, and presenting them as choices the
-    // visitor made would be a lie. The note under the total says the figure is provisional.
+    // Six nights and two people are real defaults, and presenting them as choices the visitor
+    // made would be a lie — so the step lines stay blank while the counts show what is being
+    // assumed. The note underneath used to say the total was provisional; now it says who works
+    // the price out, which is the same job done honestly rather than a figure hedged.
     const panel = await screen.findByRole('complementary', { name: 'Ваш тур' });
     expect(within(panel).getAllByText('—').length).toBeGreaterThan(4);
-    expect(within(panel).getByText(/Предварительный расчёт/)).toBeInTheDocument();
+    expect(within(panel).getByText(/рассчитает оператор/)).toBeInTheDocument();
   });
 
   it('is fully operable from the keyboard', async () => {

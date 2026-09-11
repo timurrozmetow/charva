@@ -175,18 +175,9 @@
     "estimate": {
       "title": "Your tour",
       "empty": "—",
-      "perPerson": "Per person",
-      "total": "Total",
       "pax": "People",
       "nights": "Nights",
-      "estimateNote": "Provisional: some steps are still on their defaults.",
-      "finalNote": "A manager confirms the final price — it depends on dates and availability.",
-      "breakdown": {
-        "accommodation": "Accommodation",
-        "cities": "Cities",
-        "activities": "Activities",
-        "base": "Organisation"
-      }
+      "priceNote": "An operator works the price out and sends it after your enquiry — it depends on the dates, the hotel and availability."
     },
     "steps": {
       "dest": "Destination",
