@@ -235,6 +235,32 @@ describe('the Umrah departure', () => {
     expect(((trip?.seatsTaken ?? 0) / (trip?.seatsTotal ?? 1)) * 100).toBeCloseTo(73.33, 1);
   });
 
+  it('is still ahead of whoever is running this, with the list open', async () => {
+    /*
+     * The seed used to write `2026-09-18` and a close date of `2026-09-04`, and on the fifth of
+     * September it stopped meaning «the next departure» without anybody editing anything. Every
+     * pilgrimage signup started answering 409 — six API tests with it — and a fortnight later
+     * the departure itself would have passed, leaving the Umrah site with no trip at all.
+     *
+     * Asserting «open» is not enough on its own: `status` is a stored column and the seed sets
+     * it. What decides whether a visitor can sign up is `deriveTripState` reading these two
+     * instants against the clock, so those are what this checks.
+     */
+    const [trip] = await db.select().from(t.umrahTrips);
+    const now = Date.now();
+
+    const departAt = new Date(`${(trip?.departAt ?? '').replace(' ', 'T')}Z`).getTime();
+    const closesAt = new Date(`${(trip?.signupClosesAt ?? '').replace(' ', 'T')}Z`).getTime();
+    const returnAt = new Date(`${(trip?.returnAt ?? '').replace(' ', 'T')}Z`).getTime();
+
+    expect(closesAt).toBeGreaterThan(now);
+    expect(departAt).toBeGreaterThan(closesAt);
+    expect(returnAt).toBeGreaterThan(departAt);
+
+    // A month of headroom, so this does not start failing the week before it matters.
+    expect(departAt - now).toBeGreaterThan(30 * 24 * 60 * 60 * 1000);
+  });
+
   it('has ten programme days and nine places, across four cities', async () => {
     expect(await db.select().from(t.umrahProgramDays)).toHaveLength(10);
 

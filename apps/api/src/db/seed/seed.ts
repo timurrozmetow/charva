@@ -88,9 +88,42 @@ export const SEEDED_TABLES: readonly string[] = [
   'media',
 ];
 
-/** The Umrah departure the whole site is built around. */
-const DEPART_AT = '2026-09-18 06:00:00';
-const RETURN_AT = '2026-09-28 06:00:00';
+/**
+ * The Umrah departure the whole site is built around — counted from the day the seed runs.
+ *
+ * It used to be the design's literal `2026-09-18`, on the reasoning that the date should exist
+ * exactly once and be greppable. The first half of that still holds and this is still the one
+ * place it is written; the second half was a mistake, because this row does not mean «the 18th
+ * of September». It means **the next departure**, and a fixed date stops meaning that on its
+ * own, without anybody touching the repository.
+ *
+ * It did. On 2026-09-04 the seeded `signup_closes_at` passed and every pilgrimage signup began
+ * answering 409 — six API tests with it — and on the 18th the departure itself would have gone,
+ * leaving `openTrip` with nothing to attach to and the Umrah site with no trip at all. Exactly
+ * the failure D-72 describes, arriving by the calendar rather than by a decision.
+ *
+ * Sixty days out, closing two weeks before, as the design says. A freshly seeded database is
+ * therefore always showing an open list, on any day anybody clones this.
+ *
+ * The `18.09.2026` in the fact list of `content_blocks` is deliberately left alone: it is a
+ * content string an editor owns, it is the key its own translation is stored under (D-135), and
+ * rewriting it here would break the lookup to fix a demo inconsistency. In production both come
+ * from the admin panel anyway.
+ */
+const SEED_NOW = new Date();
+
+/** `2026-09-18 06:00:00`, as MySQL wants it, from a number of days ahead of the seed. */
+function daysFromNow(days: number, hourUtc = 6): string {
+  const at = new Date(SEED_NOW);
+  at.setUTCDate(at.getUTCDate() + days);
+  at.setUTCHours(hourUtc, 0, 0, 0);
+  return at.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+const DEPART_AT = daysFromNow(60);
+const RETURN_AT = daysFromNow(70);
+/** Two weeks before departure, which is when the design says the list closes. */
+const SIGNUP_CLOSES_AT = daysFromNow(46);
 
 export async function seedAll(db: Database): Promise<SeedCounts> {
   const counts: SeedCounts = {};
@@ -687,14 +720,14 @@ async function seedContentBlocks(db: Database): Promise<number> {
  * One departure.
  *
  * The date the prototypes hardcode in three JavaScript files and type into eight more. After
- * this it exists once, and `rg "2026-09-18|18\.09\.2026"` finds it only here.
+ * this it exists once — see `DEPART_AT` above for why it is now counted from the seed rather
+ * than written out.
  */
 async function seedTrips(db: Database): Promise<number> {
   await db.insert(t.umrahTrips).values({
     departAt: DEPART_AT,
     returnAt: RETURN_AT,
-    // Two weeks before departure, which is when the design says the list closes.
-    signupClosesAt: '2026-09-04 06:00:00',
+    signupClosesAt: SIGNUP_CLOSES_AT,
     seatsTotal: 45,
     seatsTaken: 33,
     durationDays: 10,
