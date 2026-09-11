@@ -7,6 +7,12 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Google Search Console. Lives in the SPA template rather than in the shell that renders
+         the rest of the head (D-4): the shell strips only <title> and the description, so a tag
+         written here survives into the crawler-facing HTML *and* into the static file, and it
+         keeps working if a page is ever served without the shell. -->
+    <meta name="google-site-verification" content="-rJxKrNubr4ENJA7vvR4Cz_HXdrpksXgnEwCqLighQA" />
     <meta name="description" content="Umra ziyaraty — turkmen topary bilen." />
     <title>Charva Umrah</title>
 
