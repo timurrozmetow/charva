@@ -449,7 +449,9 @@
     "roomCapacity": "sleeps {count}",
     "roomSize": "{size} m²",
     "galleryTitle": "Photographs",
-    "perNight": "per night"
+    "perNight": "per night",
+    "onRequest": "Price on request",
+    "addressLabel": "Address"
   },
   "article": {
     "breadcrumb": "Journal",

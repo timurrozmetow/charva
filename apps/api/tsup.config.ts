@@ -28,6 +28,9 @@ export default defineConfig({
     // a hundred and sixteen files is a hundred megabytes over a connection from Ashgabat, and
     // the VPS can fetch them from Wikimedia directly in a fraction of the time.
     'import-stock': 'src/db/import-stock.ts',
+    // The operator's real hotels, from their older site's API. Ships for the same reason: the
+    // eighty-four photographs travel between two servers rather than through anybody's laptop.
+    'import-hotels': 'src/db/import-hotels.ts',
   },
   format: ['esm'],
   target: 'node20',

@@ -288,7 +288,12 @@ function hotelCard(
     stars: row.stars,
     category: row.category,
     filterKey: hotelFilterKey(row.category, row.stars),
-    priceFrom: { minor: row.priceFromMinor, currency: row.priceCurrency },
+    // Null all the way out rather than a zero: «по запросу» is the page's job to say, and a
+    // minor amount of nought would read as a real offer of nothing.
+    priceFrom:
+      row.priceFromMinor === null
+        ? null
+        : { minor: row.priceFromMinor, currency: row.priceCurrency },
     cover: mediaRef(row.coverMediaId, media),
     amenities,
   };
@@ -396,6 +401,9 @@ export async function getHotel(context: Context, slug: string) {
   return {
     ...hotelCard(hotel, media, lang, amenities.get(hotel.id) ?? []),
     body: text(hotel.body, lang),
+    // Resolved to one string here like every other piece of prose (D-47); the column holds it
+    // per language because a street name is written differently in each.
+    address: text(hotel.address, lang),
     checkIn: hotel.checkIn,
     checkOut: hotel.checkOut,
     rooms: rows.map((row) => ({

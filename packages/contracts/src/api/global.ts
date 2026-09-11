@@ -115,7 +115,15 @@ export const hotelCardSchema = z.object({
    * unrepresentable.
    */
   filterKey: z.string(),
-  priceFrom: moneySchema,
+  /**
+   * Null means «по запросу», not nought.
+   *
+   * The column was `NOT NULL`, so every hotel had a figure and every card said «от N $». The
+   * sixteen real hotels arrived without one and the owner's answer was the same as for the
+   * builder: an operator quotes, the site does not. A zero here would render as a genuine offer
+   * of nothing, which is worse than admitting there is no number.
+   */
+  priceFrom: moneySchema.nullable(),
   cover: mediaRefSchema.nullable(),
   amenities: z.array(amenitySchema),
 });
@@ -144,6 +152,13 @@ export type HotelRoom = z.infer<typeof hotelRoomSchema>;
 
 export const hotelDetailSchema = hotelCardSchema.extend({
   body: z.string(),
+  /**
+   * The street address, empty while nobody has given one.
+   *
+   * Translatable in the column because a street name is written differently in each language;
+   * resolved to one string here, like every other piece of prose that crosses the wire (D-47).
+   */
+  address: z.string(),
   /** `14:00`, or null while nobody has said. Printed, never compared — see the column's note. */
   checkIn: z.string().nullable(),
   checkOut: z.string().nullable(),

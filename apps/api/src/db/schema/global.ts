@@ -156,8 +156,27 @@ export const hotels = mysqlTable(
     /** 3, 4 or 5. Null for a boutique or a camp, which is the point of the pair. */
     stars: tinyint(),
     category: mysqlEnum(['hotel', 'boutique', 'camp']).notNull().default('hotel'),
-    /** Per night. Kept apart from the builder's rates — decision D-22. */
-    priceFromMinor: bigint({ mode: 'number' }).notNull(),
+    /**
+     * Where the hotel is. Translatable, because a street name is written differently in each.
+     *
+     * Added with the sixteen real hotels, which carry one and had nowhere to put it. It is the
+     * thing a guest wants that nothing else on the page answers — a class and a photograph do
+     * not say which side of the city it is on.
+     */
+    address: json().$type<LocalizedColumn>(),
+    /**
+     * Per night, and nullable.
+     *
+     * It was `NOT NULL`, which forced a number onto every hotel and made «от 96 $» the only
+     * thing a card could say. The sixteen real hotels do not come with one, and the owner's
+     * answer on 2026-09-11 was the same as for the builder: an operator quotes, the site does
+     * not. Null means «по запросу» rather than nought — a zero price would render as a real
+     * offer of nothing, which is worse than saying there is no figure.
+     *
+     * Kept apart from the builder's rates — decision D-22 — although there are no builder rates
+     * left to be confused with.
+     */
+    priceFromMinor: bigint({ mode: 'number' }),
     priceCurrency: mysqlEnum(['USD', 'TMT']).notNull().default('USD'),
     /**
      * `14:00`. A wall-clock rule printed on a page, never a moment — so a string, not a TIME.

@@ -89,12 +89,23 @@ export function HotelCard({ hotel, lang, priority = false }: HotelCardProps) {
             </ul>
           )}
 
-          <p className="mt-1 text-bodySm text-muted">
-            {copy.common.perNight} {copy.common.from}{' '}
-            <span className="text-cardTitle font-medium text-ink">
-              {formatMoney(hotel.priceFrom)}
-            </span>
-          </p>
+          {/*
+            A hotel nobody has quoted says so, rather than «от 0 $».
+
+            The column was `NOT NULL` until the sixteen real hotels arrived without a rate, so
+            this line could only ever be a figure. Null is the honest state and the operator
+            fills it in from the admin when there is one to fill in.
+          */}
+          {hotel.priceFrom === null ? (
+            <p className="mt-1 text-cardTitle font-medium text-ink">{copy.hotel.onRequest}</p>
+          ) : (
+            <p className="mt-1 text-bodySm text-muted">
+              {copy.common.perNight} {copy.common.from}{' '}
+              <span className="text-cardTitle font-medium text-ink">
+                {formatMoney(hotel.priceFrom)}
+              </span>
+            </p>
+          )}
         </div>
       </Link>
     </article>

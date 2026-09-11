@@ -449,7 +449,9 @@
     "roomCapacity": "{count} kişilik",
     "roomSize": "{size} m²",
     "galleryTitle": "Fotoğraflar",
-    "perNight": "gecelik"
+    "perNight": "gecelik",
+    "onRequest": "Fiyat talep üzerine",
+    "addressLabel": "Adres"
   },
   "article": {
     "breadcrumb": "Dergi",

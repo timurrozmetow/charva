@@ -1,4 +1,4 @@
-import { formatMoney, type Lang } from '@charva/contracts';
+import { formatMoney, type Lang, type Money } from '@charva/contracts';
 import {
   buttonClass,
   Container,
@@ -119,13 +119,35 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                     {hotel.name}
                   </Heading>
                   <p className="m-0 text-body font-light text-muted">
-                    {copy.common.from}{' '}
-                    <span className="text-h3 font-medium text-accent-text">
-                      {formatMoney(hotel.priceFrom)}
-                    </span>{' '}
-                    {copy.hotel.perNight}
+                    {hotel.priceFrom === null ? (
+                      <span className="text-h3 font-medium text-accent-text">
+                        {copy.hotel.onRequest}
+                      </span>
+                    ) : (
+                      <>
+                        {copy.common.from}{' '}
+                        <span className="text-h3 font-medium text-accent-text">
+                          {formatMoney(hotel.priceFrom)}
+                        </span>{' '}
+                        {copy.hotel.perNight}
+                      </>
+                    )}
                   </p>
                 </div>
+
+                {/*
+                  The address, when there is one.
+
+                  It sits under the name rather than in the facts row below, because the facts
+                  row carries only what appears nowhere else (D-120) and an address is prose —
+                  a street, a district, a landmark — not a figure with an icon beside it.
+                */}
+                {hotel.address !== '' && (
+                  <p className="mt-3 text-bodySm font-light text-muted">
+                    <span className="font-medium text-ink">{copy.hotel.addressLabel}: </span>
+                    {hotel.address}
+                  </p>
+                )}
 
                 <div className="py-9">
                   <HotelFacts hotel={hotel} lang={lang} />
@@ -203,9 +225,15 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                                   .filter((part) => part !== null)
                                   .join(' · ')}
                               </span>
-                              <span className="text-body font-medium text-accent-text">
-                                {copy.common.from} {formatMoney(room.price ?? hotel.priceFrom)}
-                              </span>
+                              {/* A room falls back to the hotel's own nightly price (D-109),
+                                  and when the hotel has none either there is nothing to fall
+                                  back to — so the row says so instead of printing a zero.
+
+                                  Named rather than repeated inside the ternary: written twice,
+                                  the second reading needed a `!` to convince the compiler that
+                                  the first had already ruled out null, which is the assertion
+                                  the linter forbids and is right to. */}
+                              <RoomPrice price={room.price ?? hotel.priceFrom} lang={lang} />
                             </li>
                           ))}
                         </ul>
@@ -218,7 +246,9 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                       {copy.hotel.priceLabel}
                     </p>
                     <p className="mt-2 text-h2Sm font-medium text-ink">
-                      {copy.common.from} {formatMoney(hotel.priceFrom)}
+                      {hotel.priceFrom === null
+                        ? copy.hotel.onRequest
+                        : `${copy.common.from} ${formatMoney(hotel.priceFrom)}`}
                     </p>
                     <p className="mt-2 text-bodySm font-light text-muted">{copy.hotel.priceNote}</p>
 
@@ -273,5 +303,24 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
         </Container>
       </Section>
     </>
+  );
+}
+
+/**
+ * What one room costs, or that nobody has said.
+ *
+ * A component rather than a ternary inline, because reading `room.price ?? hotel.priceFrom`
+ * twice — once to test it, once to format it — needs a non-null assertion to convince the
+ * compiler that the first reading ruled the second one out. The linter forbids those, and it is
+ * right to: the two readings are only guaranteed equal because nothing between them can change,
+ * which is a fact about today's code rather than about the expression.
+ */
+function RoomPrice({ price, lang }: { price: Money | null; lang: Lang }) {
+  const copy = copyFor(lang);
+
+  return (
+    <span className="text-body font-medium text-accent-text">
+      {price === null ? copy.hotel.onRequest : `${copy.common.from} ${formatMoney(price)}`}
+    </span>
   );
 }

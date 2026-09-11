@@ -449,7 +449,9 @@
     "roomCapacity": "{count} мест.",
     "roomSize": "{size} м²",
     "galleryTitle": "Фотографии",
-    "perNight": "за ночь"
+    "perNight": "за ночь",
+    "onRequest": "Цена по запросу",
+    "addressLabel": "Адрес"
   },
   "article": {
     "breadcrumb": "Журнал",

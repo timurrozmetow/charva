@@ -151,6 +151,9 @@ export function hotelDetail(overrides: Partial<HotelDetail> = {}): HotelDetail {
   return {
     ...hotel(),
     body: 'Описание отеля.',
+    // Empty is the normal state for a hotel nobody has typed one for; a test that wants the
+    // line rendered overrides it.
+    address: '',
     checkIn: '14:00',
     checkOut: '12:00',
     rooms: [
