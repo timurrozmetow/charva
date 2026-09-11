@@ -164,25 +164,30 @@ export function Carousel({
       onBlurCapture={() => {
         setInteracting(false);
       }}
-      /*
-       * `isolate` — a stacking context, so the slides' z-indexes stay inside this component.
-       *
-       * Not decoration. The slides carry `z-[1]` and `z-[2]` so the arriving one can fade over
-       * the one it replaces instead of cross-fading through to the page behind. Neither this
-       * element, nor the wrapper both homepages put it in, nor the `<section>` around that
-       * establishes a context on its own — `position: relative` with `z-index: auto` does not —
-       * so those numbers escaped and competed with the hero's text column, which is `relative`
-       * with no z-index of its own. A positive z-index paints above `auto` whatever the document
-       * order, so the photograph covered the headline, the paragraph and the search bar on both
-       * homepages. The owner saw the text appear for a moment and then vanish, which is exactly
-       * what it looks like: the copy renders before the slides arrive, and is buried when they do.
-       *
-       * One word here rather than a z-index on every caller: a component that introduces
-       * layering is the thing responsible for containing it.
-       */
-      className={cn('relative isolate', className)}
+      className={cn('relative', className)}
     >
-      <>
+      {/*
+        The slides get a stacking context of their own; the controls stay outside it.
+
+        They carry `z-[1]` and `z-[2]` so the arriving slide can fade *over* the one it replaces
+        rather than both fading through to the page behind. Nothing around them establishes a
+        context — `position: relative` with `z-index: auto` does not, and that is all the root
+        below, the wrapper the homepages put it in, and the `<section>` around that have — so
+        those numbers escaped and were measured against the hero's text column. A positive
+        z-index paints above `auto` whatever the document order, and the photograph buried the
+        headline, the paragraph and the search bar on both homepages.
+
+        The first fix put `isolate` on the root, which trapped the indicators' `z-[4]` with it.
+        That number was never decoration either: the hero lays a full-height `<Container>` over
+        the carousel, later in document order, and the rail only ever reached the pointer by
+        sitting above it. Trapped, the rail went under a transparent element that swallowed
+        every click — the text came back and the slider stopped responding.
+
+        So the boundary belongs here rather than around everything: this is the layer that has
+        internal ordering to contain. The controls keep the one thing they need, which is to be
+        above whatever the page lays on top of the photograph.
+      */}
+      <div className="absolute inset-0 isolate">
         {slides.map((slide, position) => {
           const showing = position === index;
           // Still painted, but only as a backdrop for the one arriving over it.
@@ -225,24 +230,24 @@ export function Carousel({
             </div>
           );
         })}
+      </div>
 
-        {indicators !== 'none' && total > 1 && (
-          <Indicators
-            slides={slides}
-            index={index}
-            onSelect={setIndex}
-            labels={labels}
-            variant={indicators}
-            running={running}
-            stopped={stopped}
-            onToggleStopped={() => {
-              setStopped((current) => !current);
-            }}
-            className={indicatorsClassName}
-            idBase={base}
-          />
-        )}
-      </>
+      {indicators !== 'none' && total > 1 && (
+        <Indicators
+          slides={slides}
+          index={index}
+          onSelect={setIndex}
+          labels={labels}
+          variant={indicators}
+          running={running}
+          stopped={stopped}
+          onToggleStopped={() => {
+            setStopped((current) => !current);
+          }}
+          className={indicatorsClassName}
+          idBase={base}
+        />
+      )}
     </div>
   );
 }

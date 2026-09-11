@@ -83,23 +83,36 @@ describe('Carousel', () => {
     }
   });
 
-  it('keeps its own stacking inside itself', () => {
+  it('contains the slides’ stacking, and leaves the controls outside it', () => {
     /*
-     * The slides layer against each other with `z-[1]` and `z-[2]`; without a stacking context
-     * on this root those numbers are measured against whatever else is on the page. Both
-     * homepages put the carousel in a plain `absolute inset-0` inside a `relative` section and
-     * lay the hero copy over it in a `relative` container with no z-index — and a positive
-     * z-index paints above `auto` regardless of document order, so the photograph covered the
-     * headline. It shipped that way for a day.
+     * Two failures, one after the other, and the second was the fix for the first.
      *
-     * jsdom computes no layout, so this asserts the mechanism rather than the result: the root
-     * declares a stacking context, and the slides are the reason it has to.
+     * The slides layer against each other with `z-[1]` and `z-[2]` so the arriving one fades
+     * over the outgoing one. Nothing around them established a stacking context, so those
+     * numbers escaped and were measured against the hero's text column — a positive z-index
+     * paints above `auto` whatever the document order, and the photograph covered the headline
+     * on both homepages.
+     *
+     * Putting `isolate` on the root fixed that and trapped the indicators' `z-[4]` with it. The
+     * hero lays a full-height `<Container>` over the carousel, later in document order, and the
+     * rail only ever reached the pointer by sitting above it: trapped, it went under a
+     * transparent element that ate every click. The text came back and the slider stopped
+     * working.
+     *
+     * jsdom computes no layout, so this asserts the arrangement rather than the result — which
+     * is the whole of the bug either way.
      */
     const { container } = render(<Carousel slides={SLIDES} labels={LABELS} />);
-    const root = container.querySelector('[role="region"]');
 
-    expect(root?.className).toContain('isolate');
-    expect(container.querySelector('[role="group"]')?.className).toMatch(/z-\[\d\]/);
+    const slide = container.querySelector('[role="group"]');
+    const isolated = slide?.parentElement;
+    expect(isolated?.className).toContain('isolate');
+    expect(slide?.className).toMatch(/z-\[\d\]/);
+
+    // The rail is a sibling of that box, not a child of it.
+    const rail = screen.getByRole('button', { name: /слайду 1/ }).closest('div');
+    expect(rail?.className).toMatch(/z-\[\d\]/);
+    expect(isolated?.contains(rail ?? null)).toBe(false);
   });
 
   it('holds the outgoing slide opaque underneath, then lets it go', () => {
