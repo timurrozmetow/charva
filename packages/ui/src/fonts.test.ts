@@ -28,6 +28,18 @@ const REQUIRED = {
   turkmen: 'ÄŇÖŞÜÝŽäňöşüýž',
   /** The Turkish letters Stolzl does have. */
   turkishPartial: 'ÇIÖŞÜçıöşü',
+  /**
+   * The two symbols that are typed as text rather than drawn as icons.
+   *
+   * Every call to action on all three sites ends in a `→`, and the middle dot separates meta
+   * items — «Май 2026 · 4 мин». They are here rather than in `KNOWN_GAPS` below because Stolzl
+   * genuinely has both, which is the whole reason D-26 does not apply to them: the star, the
+   * checkmark and the caret are absent and fall back to the operating system's font, so they
+   * became SVG. These do not, so they stay text — and this line is what keeps that true. A
+   * fuller cut of Stolzl that happened to drop them would otherwise change the arrow on every
+   * button on the site to whatever the reader's system supplies, with nothing failing.
+   */
+  symbolsInFont: '→·',
 } as const;
 
 /**

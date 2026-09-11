@@ -238,12 +238,25 @@ export function ToursPage({ lang }: ToursPageProps) {
                 {copy.tours.cta.text}
               </p>
             </div>
+            {/*
+              The arrow moves, the gap does not.
+
+              This nudged the arrow by animating `gap` from 14px to 22 — a layout property, so
+              every frame of a hover was a reflow of the row. `Button` and `LinkArrow` have both
+              done the same nudge with `translate-x` since they were written; this is the one
+              place that grew its own version.
+            */}
             <Link
               to={path.builder(lang)}
-              className="group inline-flex items-center gap-3.5 rounded-full bg-accent px-8 py-[18px] text-label font-black uppercase text-accent-on no-underline transition-all duration-colour hover:gap-[22px] hover:bg-accent-hover"
+              className="group inline-flex items-center gap-3.5 rounded-full bg-accent px-8 py-[18px] text-label font-black uppercase text-accent-on no-underline transition-colors duration-press ease-press hover:bg-accent-hover"
             >
               {copy.tours.cta.button}
-              <span aria-hidden="true">→</span>
+              <span
+                aria-hidden="true"
+                className="transition-transform duration-press ease-press group-hover:translate-x-1.5"
+              >
+                →
+              </span>
             </Link>
           </div>
         </Container>

@@ -93,7 +93,12 @@ export function BuilderPanel({
                   onPick(option.code);
                 }}
                 className={[
-                  'flex flex-col gap-1.5 rounded-media border p-5 text-left transition-all duration-option',
+                  'flex flex-col gap-1.5 rounded-media border p-5 text-left',
+                  // The named three are all that ever change here; `transition-all` also put
+                  // the panel's own layout on the transition list for nothing. And this is a
+                  // chip in everything but name — the press belongs on it for the same reason.
+                  'transition-[color,background-color,border-color,transform] duration-press ease-press',
+                  'active:scale-[0.98]',
                   on
                     ? 'border-accent bg-tint-strong text-accent'
                     : 'border-line bg-cream-fill text-dark-on hover:border-tint-line',

@@ -157,12 +157,26 @@ export function SiteNav({
             }}
             className="hidden h-tap w-tap place-items-center rounded-full text-ink transition-colors duration-colour hover:bg-line-soft tab:grid"
           >
-            {/* Three bars, the middle one folding away as the outer two cross. */}
+            {/*
+              Three bars, the middle one folding away as the outer two cross.
+
+              All three are pinned to the same `top-1/2` and moved with `translateY`, and that is
+              the whole of the fix: the outer bars used to travel by swapping `top-0` for
+              `top-1/2` and `bottom-0` for `top-1/2`. Swapping which edge positions an element
+              means the old property becomes `auto`, and `auto` does not interpolate — so the
+              bars *jumped* to the middle and only the rotation animated. `transition-all` was
+              hiding it by claiming to animate everything.
+
+              The offsets are the geometry: the box is 16px, the bars 1.5px, so a centred bar
+              sits at `-0.75px` and the outer two are ±7.25 from there — which is 8px up and
+              6.5px down.
+            */}
             <span aria-hidden="true" className="relative block h-4 w-5">
               <span
                 className={cn(
-                  'absolute left-0 h-[1.5px] w-5 rounded-full bg-current transition-all duration-drop',
-                  open ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0',
+                  'absolute left-0 top-1/2 h-[1.5px] w-5 rounded-full bg-current',
+                  'transition-transform duration-drop ease-drop',
+                  open ? '-translate-y-[0.75px] rotate-45' : '-translate-y-2',
                 )}
               />
               <span
@@ -173,8 +187,9 @@ export function SiteNav({
               />
               <span
                 className={cn(
-                  'absolute left-0 h-[1.5px] w-5 rounded-full bg-current transition-all duration-drop',
-                  open ? 'top-1/2 -translate-y-1/2 -rotate-45' : 'bottom-0',
+                  'absolute left-0 top-1/2 h-[1.5px] w-5 rounded-full bg-current',
+                  'transition-transform duration-drop ease-drop',
+                  open ? '-translate-y-[0.75px] -rotate-45' : 'translate-y-[6.5px]',
                 )}
               />
             </span>
@@ -186,7 +201,9 @@ export function SiteNav({
             ref={sheetRef}
             className={cn(
               'mt-3 hidden rounded-panel border border-line bg-island p-4 shadow-drop',
-              'backdrop-blur-drop animate-drop-in tab:block',
+              // Out of the bar above it — the sheet is full width, so the top edge is what
+              // stays put and the panel unrolls downwards. See `LangSwitcher` for the reasoning.
+              'origin-top backdrop-blur-drop animate-drop-in tab:block',
             )}
           >
             <ul className="m-0 flex list-none flex-col gap-1 p-0">

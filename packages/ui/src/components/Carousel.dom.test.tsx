@@ -83,6 +83,39 @@ describe('Carousel', () => {
     }
   });
 
+  it('holds the outgoing slide opaque underneath, then lets it go', () => {
+    /*
+     * A cross-fade dips. Both slides transitioning opacity at once means each is at 0.5 halfway
+     * through, and two half-transparent layers cover only 75% of what is behind them — so the
+     * hero photograph washed a quarter of the way to the cream page and back, every interval.
+     * Fading only the arriving slide over an opaque one covers everything at every instant.
+     *
+     * The outgoing slide must also be unreachable while it is held: it is the one slide that is
+     * painted without `visibility: hidden` to keep it out of the tab order.
+     */
+    vi.useFakeTimers();
+    try {
+      const { container } = render(
+        <Carousel slides={SLIDES} labels={LABELS} intervalMs={5000} transitionMs={1200} />,
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(5001);
+      });
+
+      const held = container.querySelector('[inert]');
+      expect(held?.textContent).toBe('Кратер Дарваза');
+      expect(held?.className).toContain('opacity-100');
+
+      act(() => {
+        vi.advanceTimersByTime(1300);
+      });
+      expect(container.querySelector('[inert]')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('restarts the clock when a slide is chosen by hand', () => {
     // The defect this component exists to fix: the prototypes leave the interval running, so
     // the slide the visitor just picked can be replaced a fraction of a second later.
@@ -114,13 +147,29 @@ describe('Carousel', () => {
     }
   });
 
+  /*
+   * These three assert «it stopped», and the honest way to ask that is «it is where it was»,
+   * not «it is on slide one».
+   *
+   * They used to name the first slide. That reads fine and is a race: the interval is 50ms on a
+   * real clock and `userEvent` yields to the event loop several times, so on a machine running
+   * eight other test processes the carousel legitimately advanced before the hover, the tab or
+   * the click landed — and the test failed for having moved before it was told to stop, which
+   * is not what it is about. Reading the slide after the interaction and comparing against that
+   * tests the same thing and cannot lose that race.
+   *
+   * The interval stays at 50ms on purpose. A long one would make these pass whether the pause
+   * works or not.
+   */
   it('does not move while the pointer is over it', async () => {
     const user = userEvent.setup();
     render(<Carousel slides={SLIDES} labels={LABELS} intervalMs={50} />);
 
     await user.hover(screen.getByRole('region'));
+    const held = showing();
+
     await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(showing()).toBe('Кратер Дарваза');
+    expect(showing()).toBe(held);
   });
 
   it('does not move while something inside it has focus', async () => {
@@ -128,8 +177,10 @@ describe('Carousel', () => {
     render(<Carousel slides={SLIDES} labels={LABELS} intervalMs={50} />);
 
     await user.tab();
+    const held = showing();
+
     await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(showing()).toBe('Кратер Дарваза');
+    expect(showing()).toBe(held);
   });
 
   it('stands still entirely when less motion is asked for', () => {
@@ -155,9 +206,10 @@ describe('Carousel', () => {
 
     await user.click(screen.getByRole('button', { name: 'Остановить' }));
     expect(screen.getByRole('button', { name: 'Продолжить' })).toBeInTheDocument();
+    const held = showing();
 
     await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(showing()).toBe('Кратер Дарваза');
+    expect(showing()).toBe(held);
   });
 
   it('marks the indicator of the slide being shown', async () => {

@@ -260,17 +260,30 @@ export function ChoiceHalf({
           control inside a link is both invalid and a second tab stop to the same destination.
           It is styled as the call to action and announced as part of the link it sits in.
         */}
+        {/*
+          The arrow moves, the gap does not — the same fix as the tours CTA.
+
+          Animating `gap` reflowed the row on every hover, and on this page the row sits inside
+          a half that is itself mid-`flex-grow` transition, so the two layout animations ran
+          against each other. `Button` and `LinkArrow` have always nudged the arrow with
+          `translate-x`; these two call sites had each written their own.
+        */}
         <span
           className={[
-            'inline-flex items-center rounded-full text-[13px] font-black uppercase tracking-[.14em]',
-            'gap-3.5 transition-all duration-colour group-hover:gap-[22px]',
+            'inline-flex items-center gap-3.5 rounded-full text-[13px] font-black uppercase tracking-[.14em]',
+            'transition-colors duration-press ease-press',
             umrah
               ? 'border border-tint-edge bg-cream-fill-strong px-[31px] py-[17px] text-cream-soft group-hover:bg-accent group-hover:text-accent-on'
               : 'bg-accent px-8 py-[18px] text-accent-on group-hover:bg-dark-on',
           ].join(' ')}
         >
           {cta}
-          <span aria-hidden="true">→</span>
+          <span
+            aria-hidden="true"
+            className="transition-transform duration-press ease-press group-hover:translate-x-1.5"
+          >
+            →
+          </span>
         </span>
       </div>
     </a>

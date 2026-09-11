@@ -161,7 +161,12 @@ export function LangSwitcher({ options, value, renderLink, label, className }: L
           className={cn(
             'absolute right-0 top-[calc(100%+12px)] z-50 m-0 min-w-[188px] list-none',
             'rounded-media border border-line bg-island p-2 shadow-drop backdrop-blur-drop',
-            'animate-drop-in',
+            // Grows out of the button it belongs to, not out of its own middle. `dropIn` scales
+            // from .97, and with the default centre origin that means the list expands from all
+            // four edges at once — which says «a panel appeared» where the corner says «this
+            // came from there». The list is pinned to the trigger's right edge, so that corner
+            // is the one that should not move.
+            'origin-top-right animate-drop-in',
           )}
         >
           {options.map((option) => {

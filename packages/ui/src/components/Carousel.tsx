@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useId, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 import { cn } from '../cn';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
@@ -81,6 +81,37 @@ export function Carousel({
   const total = slides.length;
   const running = total > 1 && !interacting && !stopped && !reducedMotion;
 
+  /*
+   * The slide being left, held opaque underneath until the new one has finished arriving.
+   *
+   * A cross-fade dips. Both slides were transitioning opacity at once, so halfway through each
+   * was at 0.5 and the pair covered 1 - 0.5x0.5 = 75% of what is behind them — the cream page.
+   * Every six and a half seconds the homepage photograph washed a quarter of the way to the
+   * background colour and back, on the largest element either site has.
+   *
+   * Fading only the incoming slide, over an outgoing one that stays fully opaque, is a fade
+   * rather than a cross-fade and covers everything at every instant. It costs this one piece of
+   * state: something has to know when the arrival is over so the slide underneath can be taken
+   * out of the page again.
+   */
+  const [leaving, setLeaving] = useState<number | null>(null);
+  const shown = useRef(index);
+
+  useEffect(() => {
+    if (shown.current === index) return;
+
+    setLeaving(shown.current);
+    shown.current = index;
+
+    const timer = setTimeout(() => {
+      setLeaving(null);
+    }, transitionMs);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [index, transitionMs]);
+
   useEffect(() => {
     if (!running) return;
 
@@ -138,6 +169,9 @@ export function Carousel({
       <>
         {slides.map((slide, position) => {
           const showing = position === index;
+          // Still painted, but only as a backdrop for the one arriving over it.
+          const holding = position === leaving;
+
           return (
             <div
               key={slide.id}
@@ -149,10 +183,26 @@ export function Carousel({
               // tree and the tab order; this states the same thing where it can be read
               // without a stylesheet — in a test, and before CSS applies.
               aria-hidden={showing ? undefined : true}
+              /*
+               * The held slide is the one case where a slide is visible and must not be
+               * reachable: `visibility: hidden` is doing that job for every other hidden slide,
+               * and this one is deliberately still painted. Without `inert` a reader tabbing
+               * during the second the fade takes could land on a link belonging to the slide
+               * that just left.
+               *
+               * Spread and lowercase because this is React 18, which drops `inert` written as a
+               * camel-cased prop with a warning and passes unknown lowercase attributes
+               * through — the same shape of problem as `fetchpriority` in D-94.
+               */
+              {...(holding ? ({ inert: '' } as Record<string, string>) : {})}
               style={{ transitionDuration: `${String(transitionMs)}ms` }}
               className={cn(
                 'absolute inset-0 transition-[opacity,visibility] ease-slide',
-                showing ? 'visible opacity-100' : 'invisible opacity-0',
+                showing
+                  ? 'visible z-[2] opacity-100'
+                  : holding
+                    ? 'visible z-[1] opacity-100'
+                    : 'invisible z-0 opacity-0',
               )}
             >
               {slide.content}
@@ -246,10 +296,19 @@ function Indicators({
                 {slide.label}
               </span>
             )}
+            {/*
+              The colour answers the click; the bar takes its time growing.
+
+              Both used to share `duration-indicator`, so pressing an indicator was acknowledged
+              over half a second — twice the budget a dropdown gets, on a direct response to a
+              press. Splitting them lets the acknowledgement be immediate while the bar keeps the
+              unhurried travel that matches the 1200ms cross-fade it is reporting on.
+            */}
             <span
               aria-hidden="true"
               className={cn(
-                'block h-[3px] rounded-full transition-all duration-indicator ease-slide',
+                'block h-[3px] rounded-full',
+                'transition-[background-color,width] [transition-duration:160ms,500ms] ease-slide',
                 showing ? 'bg-accent' : 'bg-line-chip',
                 rail ? (showing ? 'w-10' : 'w-[18px]') : showing ? 'w-[34px]' : 'w-[14px]',
               )}
