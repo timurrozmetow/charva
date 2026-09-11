@@ -9,7 +9,6 @@ import { parsePhone } from '../../lib/phone';
 import { seal } from '../../lib/secret-box';
 import { deriveTripState } from '../../lib/trip-status';
 import { ApiProblem } from '../../plugins/error-handler';
-import { priceSelection } from '../builder/service';
 
 /**
  * The two forms, and the layers behind them.
@@ -39,7 +38,7 @@ export interface SubmissionMeta {
 /**
  * `honeypot` means: answer 204 and write nothing. It is never an error.
  *
- * `stored` carries the phone in E.164 and the priced quote because the route notifies from this
+ * `stored` carries the phone in E.164 because the route notifies from this
  * and not from the request body: the number the business sees has to be the number that was
  * stored, and the total has to be the one the server computed. Reading either back off the
  * submission would be a second source for both.
@@ -51,7 +50,6 @@ export type LeadOutcome =
       id: number;
       isDuplicate: boolean;
       phone?: string;
-      quote?: { totalMinor: number; currency: string } | null;
       /** The departure a signup attached to, for the notification's subject line. */
       departsAt?: string | null;
     };
@@ -141,13 +139,19 @@ export async function submitLead(
   if (existing !== undefined) return { kind: 'stored', id: existing, isDuplicate: true };
 
   /*
-   * The price, recalculated here and nowhere else.
+   * No price is computed, and none is stored.
    *
-   * `leadRequest` has no field for a total, so there is nothing to ignore — but the selection
-   * is a client's, and this is where it becomes a number the business can stand behind.
+   * There was one: the server recalculated the selection from `pricing_rules` and wrote the
+   * total into `quote_snapshot`, on the reasoning that a figure the business can stand behind
+   * belongs beside the enquiry. The owner removed pricing from the site on 2026-09-11 and then
+   * from here too, and the second half is the one that was really wrong — the rates behind that
+   * total are the designer's invention that Q-10 never confirmed, so what the operator was being
+   * handed was not a starting point but a number with nothing behind it, in the one place it
+   * would be read as authoritative.
+   *
+   * What the enquiry carries is the selection: the cities, the nights, the hotel class, the
+   * people. That is what was actually said, and the price comes back from a person who knows.
    */
-  const quoteSnapshot =
-    input.selection === undefined ? null : await priceSelection(db, input.selection);
 
   const [result] = await db.insert(t.leads).values({
     kind: input.kind,
@@ -162,22 +166,12 @@ export async function submitLead(
     // is no branch here: a submission without it never reaches this function.
     consentAt: now,
     selection: input.selection ?? null,
-    quoteSnapshot,
     dedupeHash: hash,
     ipHash: hashIp(meta.ip, meta.ipHashSecret),
     userAgent: meta.userAgent?.slice(0, 255) ?? null,
   });
 
-  return {
-    kind: 'stored',
-    id: result.insertId,
-    isDuplicate: false,
-    phone,
-    quote:
-      quoteSnapshot === null
-        ? null
-        : { totalMinor: quoteSnapshot.total.minor, currency: quoteSnapshot.total.currency },
-  };
+  return { kind: 'stored', id: result.insertId, isDuplicate: false, phone };
 }
 
 // ----------------------------------------------------------------------------------------

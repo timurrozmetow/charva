@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { BUILDER_STEPS, MODIFIER_TYPES } from '../builder';
+import { BUILDER_STEPS } from '../builder';
 
 /**
  * The tour builder, across the wire.
@@ -36,7 +36,6 @@ export const builderOptionSchema = z.object({
    * beside «Ночей» because that is what the visitor chose, not what it costs.
    */
   numericValue: z.number().int().nullable(),
-  modifierType: z.enum(MODIFIER_TYPES),
   /**
    * Cannot be held together with anything else on its step.
    *

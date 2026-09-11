@@ -184,7 +184,6 @@ export const copy = {
     message: 'Сообщение',
     people: 'Человек',
     room: 'Номер',
-    quote: 'Расчёт на момент заявки',
     passport: 'Паспорт',
     passportHidden: 'Скрыт',
     passportNone: 'Не указан',

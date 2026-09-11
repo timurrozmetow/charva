@@ -1,4 +1,4 @@
-import { DEFAULT_PRICING_RULES } from '@charva/contracts';
+import { BUILDER_DEFAULTS } from '@charva/contracts';
 import { sql } from 'drizzle-orm';
 
 import { type Database } from '../client';
@@ -1022,36 +1022,28 @@ async function seedBuilder(db: Database): Promise<number> {
 
   await db.insert(t.builderOptions).values(optionValues);
 
-  const rules = DEFAULT_PRICING_RULES;
+  /*
+   * Two rows, where there were six.
+   *
+   * A base fee, a city fee, an activity fee, a default hotel rate and a currency were seeded
+   * here until 2026-09-11, when the owner took pricing off the site and then out of the
+   * enquiry. Nothing reads them now, and seeding a rate nothing applies is the dead data D-9
+   * exists to keep out — worse than dead, because the next person to open the admin would find
+   * a rate table and reasonably assume the site charges from it.
+   *
+   * What stays is the pair that are counts: what an unanswered step means in nights and in
+   * people, which is what the panel shows before the visitor reaches those steps.
+   */
   await db.insert(t.pricingRules).values([
     {
-      keyName: 'base_fee',
-      valueMinor: rules.baseFeeMinor,
-      unit: 'minor',
-      note: 'Organisation, transfers, paperwork',
-    },
-    { keyName: 'city_fee', valueMinor: rules.cityFeeMinor, unit: 'minor', note: 'Per city added' },
-    {
-      keyName: 'activity_fee',
-      valueMinor: rules.activityFeeMinor,
-      unit: 'minor',
-      note: 'Per activity added',
-    },
-    {
       keyName: 'default_nights',
-      valueMinor: rules.defaultNights,
+      valueMinor: BUILDER_DEFAULTS.defaultNights,
       unit: 'count',
       note: 'Before the visitor chooses',
     },
     {
-      keyName: 'default_hotel_rate',
-      valueMinor: rules.defaultHotelRateMinor,
-      unit: 'minor',
-      note: 'The four-star rate',
-    },
-    {
       keyName: 'default_pax',
-      valueMinor: rules.defaultPax,
+      valueMinor: BUILDER_DEFAULTS.defaultPax,
       unit: 'count',
       note: 'Before the visitor chooses',
     },

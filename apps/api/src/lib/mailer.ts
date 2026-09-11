@@ -38,8 +38,6 @@ export interface LeadNotification {
   topics: string[] | null;
   message: string | null;
   locale: string;
-  /** Minor units and currency, when a builder selection was priced. */
-  quote: { totalMinor: number; currency: string } | null;
 }
 
 export interface SignupNotification {
@@ -155,12 +153,10 @@ export function createMailer(env: Env, logger: MailerLogger): Mailer {
           line('Тип', n.kind),
           line('Гостей', n.guests),
           line('Интересует', n.topics?.join(', ') ?? null),
-          n.quote === null
-            ? ''
-            : line(
-                'Расчёт сборщика',
-                `${(n.quote.totalMinor / 100).toFixed(2)} ${n.quote.currency}`,
-              ),
+          // No figure. The site does not quote and neither does this letter: an operator
+          // prices the selection, and the rates that used to produce a line here were never
+          // confirmed (Q-10), so the number would have been read as authoritative in the one
+          // place that matters and stood for nothing.
           line('Язык страницы', n.locale),
           n.message === null || n.message === '' ? '' : `\nСообщение:\n${n.message}\n`,
           '\nОткрыть во «Входящих»: https://admin.charva-travel.com/inbox/leads\n',

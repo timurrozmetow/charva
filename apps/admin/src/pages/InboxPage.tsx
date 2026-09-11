@@ -1,4 +1,4 @@
-import { ApiRequestError, formatMoney } from '@charva/contracts';
+import { ApiRequestError } from '@charva/contracts';
 import { Badge, Button, EmptyState, Field, Input, Modal, QueryState, Select } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -25,20 +25,6 @@ const labels = {
   errorHint: copy.errors.offline,
   retry: copy.list.retry,
 };
-
-interface LeadRow {
-  id: number;
-  kind: string;
-  name: string;
-  phone: string;
-  email: string | null;
-  guests: number | null;
-  message: string | null;
-  status: string;
-  adminNotes: string | null;
-  createdAt: string;
-  quoteSnapshot: unknown;
-}
 
 export function LeadsPage() {
   const [status, setStatus] = useState('');
@@ -99,8 +85,6 @@ export function LeadsPage() {
                 {lead.message !== null && lead.message !== '' && (
                   <p className="mt-3 whitespace-pre-line text-bodySm text-body">{lead.message}</p>
                 )}
-
-                <Quote snapshot={(lead as unknown as LeadRow).quoteSnapshot} />
 
                 <RowActions
                   statuses={LEAD_STATUSES}
@@ -323,23 +307,6 @@ function RowActions({
 }
 
 /** The price the server worked out at submission — never a number that came from a browser. */
-function Quote({ snapshot }: { snapshot: unknown }) {
-  if (snapshot === null || typeof snapshot !== 'object') return null;
-
-  const quote = snapshot as { total?: { minor?: number; currency?: string } };
-  const total = quote.total;
-  if (total?.minor === undefined) return null;
-
-  return (
-    <p className="mt-3 text-bodySm text-muted">
-      {copy.inbox.quote}:{' '}
-      <strong className="text-ink">
-        {formatMoney({ minor: total.minor, currency: (total.currency ?? 'USD') as 'USD' | 'TMT' })}
-      </strong>
-    </p>
-  );
-}
-
 /**
  * The one dialog in this admin that writes to the log before it answers.
  *

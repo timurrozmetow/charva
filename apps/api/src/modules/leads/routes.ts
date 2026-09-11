@@ -84,10 +84,10 @@ export const leadRoutes: FastifyPluginAsync = async (instance) => {
           tags: ['forms'],
           summary: 'A tour enquiry or a question',
           description:
-            'Never accepts a price. When a builder selection is attached the server prices it ' +
-            'from the database and stores that in `quote_snapshot` — a total that arrived from ' +
-            'a browser is a total the sender chose. A second submission from the same phone ' +
-            'inside fifteen minutes returns the first lead id and writes no second row.',
+            'Carries no price in either direction. A builder selection is stored as the codes ' +
+            'that were chosen; an operator works out what it costs. A second submission from ' +
+            'the same phone inside fifteen minutes returns the first lead id and writes no ' +
+            'second row.',
           body: leadRequest,
           response: {
             201: leadResponse,
@@ -115,7 +115,6 @@ export const leadRoutes: FastifyPluginAsync = async (instance) => {
             topics: request.body.topics ?? null,
             message: request.body.message ?? null,
             locale: request.lang,
-            quote: outcome.quote ?? null,
           });
         }
 

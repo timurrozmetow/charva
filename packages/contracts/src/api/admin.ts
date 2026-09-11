@@ -296,9 +296,15 @@ export const SIGNUP_STATUSES = ['new', 'contacted', 'confirmed', 'cancelled', 's
 /**
  * An enquiry, as the inbox shows it.
  *
- * `quoteSnapshot` is the price the *server* worked out at the moment of submission, never a
- * number that arrived from a browser — so the figure the manager quotes on the phone is the one
- * the business actually stands behind.
+ * There was a `quoteSnapshot` on it — the price the server worked out at the moment of
+ * submission, so that the figure a manager quoted on the phone was one the business stood
+ * behind. It turned out not to be: the rates it came from are the designer's invention and Q-10
+ * never confirmed them, so the number carried authority it had not earned, in the one place
+ * somebody would act on it. The owner removed pricing from the site on 2026-09-11 and from here
+ * with it.
+ *
+ * The selection stays, and it is the thing that was ever being said: which cities, how many
+ * nights, which hotel class, how many people. An operator prices that.
  */
 export const adminLeadSchema = z.object({
   id: z.number().int(),
@@ -312,7 +318,6 @@ export const adminLeadSchema = z.object({
   locale: z.string(),
   consentAt: z.string().nullable(),
   selection: z.record(z.string(), z.unknown()).nullable(),
-  quoteSnapshot: z.unknown().nullable(),
   status: z.enum(LEAD_STATUSES),
   adminNotes: z.string().nullable(),
   createdAt: z.string(),

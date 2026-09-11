@@ -111,18 +111,26 @@ describe('a genuine submission', () => {
     expect(row?.ipHash).not.toContain('198.51.100.7');
   });
 
-  it('prices an attached builder selection itself', async () => {
+  it('stores an attached builder selection, and prices nothing', async () => {
     /*
-     * The request has no field for a total, so there is nothing to ignore — but the selection
-     * came from a browser, and this is where it becomes a number the business can stand behind.
+     * Inverted. This asserted that the server priced the selection itself and wrote the total
+     * into `quote_snapshot` — «a number the business can stand behind», which is what it was
+     * meant to be and never was: the rates are the designer's invention that Q-10 never
+     * confirmed, so the figure carried authority it had not earned in the one place a manager
+     * would act on it. The owner removed pricing from the site on 2026-09-11 and from the
+     * enquiry the day after.
+     *
+     * What is asserted instead is the thing that was ever being said. The codes are what go in,
+     * because a code survives an option being renamed in the admin and a label does not (D-10),
+     * and an operator prices what they describe.
      */
     await postLead(
       lead({ kind: 'builder', selection: { dates: 'nights_7', hotel: 'hotel_4star' } }),
     );
 
     const [row] = await context.app.db.select().from(t.leads).limit(1);
-    const snapshot = row?.quoteSnapshot as { total: { minor: number } } | null;
-    expect(snapshot?.total.minor).toBe((7 * 7_800 + 18_000) * 2);
+    expect(row?.selection).toEqual({ dates: 'nights_7', hotel: 'hotel_4star' });
+    expect(row?.quoteSnapshot ?? null).toBeNull();
   });
 });
 

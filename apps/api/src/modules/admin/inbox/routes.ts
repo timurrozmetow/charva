@@ -320,7 +320,6 @@ function presentLead(row: typeof t.leads.$inferSelect) {
     locale: row.locale,
     consentAt: row.consentAt?.toISOString() ?? null,
     selection: row.selection ?? null,
-    quoteSnapshot: row.quoteSnapshot ?? null,
     status: row.status,
     adminNotes: row.adminNotes,
     createdAt: row.createdAt.toISOString(),

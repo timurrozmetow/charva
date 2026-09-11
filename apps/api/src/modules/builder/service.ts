@@ -1,15 +1,4 @@
-import {
-  type BuilderConfig,
-  type BuilderOption,
-  type BuilderSelection,
-  BUILDER_STEPS,
-  type BuilderStep,
-  type Currency,
-  DEFAULT_PRICING_RULES,
-  type Lang,
-  type PricingRules,
-  quote,
-} from '@charva/contracts';
+import { BUILDER_DEFAULTS, BUILDER_STEPS, type BuilderStep, type Lang } from '@charva/contracts';
 import { asc, eq } from 'drizzle-orm';
 
 import { type Database } from '../../db/client';
@@ -17,49 +6,46 @@ import * as t from '../../db/schema';
 import { text } from '../../lib/serialize';
 
 /**
- * The builder's rates, and the one function that turns them into a price.
+ * The builder's nine steps and their options.
  *
- * `quote()` is imported from `@charva/contracts` rather than written here, and the browser
- * imports the identical function. That is decision D-11 and it is the whole reason the client
- * may compute an estimate at all: it does not have a second implementation to disagree with.
- * The instant estimate and the authoritative answer differ only in *when* they run.
+ * This file used to be about rates. It loaded all six rows of `pricing_rules`, assembled the
+ * option list `quote()` consumes, priced a selection for `POST /builder/quote` and priced it
+ * again when a lead arrived. All of that went on 2026-09-11 and the day after, when the owner
+ * took pricing off the site and then out of the enquiry: an operator works a selection out and
+ * sends the price back.
  *
- * Nothing here reads a display string. The rates are keyed by `hotel_3star` and `nights_7`;
- * the prototype keys its table by `«3 ★»` and `«3–5»` — with a real star and an en dash — so
- * renaming an option in the admin would silently reprice every open quote (D-10).
+ * Two rows of `pricing_rules` are still read, and they are the two that are counts rather than
+ * commercial terms — what an unanswered step means in nights and in people. That is the same
+ * line D-10 drew between `numeric_value` and `price_modifier_minor`, and it is why the panel
+ * can still say «Ночей 6» without a rate leaving the building.
+ *
+ * Nothing here reads a display string. Options are keyed `hotel_3star` and `nights_7`; the
+ * prototype keys its table by `«3 ★»` and `«3–5»` — a real star and an en dash — so renaming an
+ * option in the admin would have silently repriced every open quote, back when there were any.
  */
 
-/** The keys `pricing_rules` is expected to hold. A union, because it is only ever a type. */
-type RuleKey =
-  | 'base_fee'
-  | 'city_fee'
-  | 'activity_fee'
-  | 'default_nights'
-  | 'default_hotel_rate'
-  | 'default_pax';
+/** The two keys still read out of `pricing_rules`. A union, because it is only ever a type. */
+type CountKey = 'default_nights' | 'default_pax';
 
 /**
- * Loads the rates from `pricing_rules`, falling back per key.
+ * What an unanswered step counts as, from `pricing_rules`, falling back per key.
  *
  * Per key rather than all-or-nothing: a missing row is a gap in configuration, and answering
- * with a documented default is better than either refusing to price anything or quietly
- * treating the fee as zero. The defaults are the same constants the contracts package ships,
- * so a fresh database and a seeded one produce the same 1 296 $.
+ * with a documented default is better than refusing to draw the panel. The fallbacks are the
+ * constants the contracts package ships, so a fresh database and a seeded one agree.
  */
-export async function loadRules(db: Database, currency: Currency = 'USD'): Promise<PricingRules> {
+export async function loadDefaults(db: Database): Promise<{
+  defaultNights: number;
+  defaultPax: number;
+}> {
   const rows = await db.select().from(t.pricingRules);
   const byKey = new Map(rows.map((row) => [row.keyName, row.valueMinor]));
 
-  const value = (key: RuleKey, fallback: number): number => byKey.get(key) ?? fallback;
+  const value = (key: CountKey, fallback: number): number => byKey.get(key) ?? fallback;
 
   return {
-    baseFeeMinor: value('base_fee', DEFAULT_PRICING_RULES.baseFeeMinor),
-    cityFeeMinor: value('city_fee', DEFAULT_PRICING_RULES.cityFeeMinor),
-    activityFeeMinor: value('activity_fee', DEFAULT_PRICING_RULES.activityFeeMinor),
-    defaultNights: value('default_nights', DEFAULT_PRICING_RULES.defaultNights),
-    defaultHotelRateMinor: value('default_hotel_rate', DEFAULT_PRICING_RULES.defaultHotelRateMinor),
-    defaultPax: value('default_pax', DEFAULT_PRICING_RULES.defaultPax),
-    currency,
+    defaultNights: value('default_nights', BUILDER_DEFAULTS.defaultNights),
+    defaultPax: value('default_pax', BUILDER_DEFAULTS.defaultPax),
   };
 }
 
@@ -68,50 +54,9 @@ function asStep(code: string): BuilderStep | undefined {
   return (BUILDER_STEPS as readonly string[]).includes(code) ? (code as BuilderStep) : undefined;
 }
 
-/**
- * Every option, with the step it belongs to.
- *
- * This is what `quote()` consumes, and it is loaded for pricing as well as for the config
- * endpoint — the server never trusts the option list a client says it used.
- */
-export async function loadOptions(db: Database): Promise<BuilderOption[]> {
-  const rows = await db
-    .select({
-      code: t.builderOptions.code,
-      stepCode: t.builderSteps.code,
-      numericValue: t.builderOptions.numericValue,
-      priceModifierMinor: t.builderOptions.priceModifierMinor,
-      modifierType: t.builderOptions.modifierType,
-    })
-    .from(t.builderOptions)
-    .innerJoin(t.builderSteps, eq(t.builderSteps.id, t.builderOptions.stepId))
-    .where(eq(t.builderOptions.isPublished, true));
-
-  return rows.flatMap((row) => {
-    const step = asStep(row.stepCode);
-    // A step code the contracts package does not know is a schema drift, not a runtime choice:
-    // dropping the option is the safe half of that, and the pricing test would notice.
-    if (step === undefined) return [];
-    return [
-      {
-        code: row.code,
-        step,
-        numericValue: row.numericValue,
-        priceModifierMinor: row.priceModifierMinor,
-        modifierType: row.modifierType,
-      },
-    ];
-  });
-}
-
-export async function loadConfig(db: Database, currency: Currency = 'USD'): Promise<BuilderConfig> {
-  const [options, rules] = await Promise.all([loadOptions(db), loadRules(db, currency)]);
-  return { options, rules };
-}
-
-/** The `/builder/config` response: the same data, plus everything needed to draw the steps. */
+/** The `/builder/config` response: the steps, their options, and no money at all. */
 export async function getConfigForDisplay(db: Database, lang: Lang) {
-  const [steps, options, rules] = await Promise.all([
+  const [steps, options, defaults] = await Promise.all([
     db.select().from(t.builderSteps).orderBy(asc(t.builderSteps.sortOrder)),
     db
       .select({
@@ -120,14 +65,13 @@ export async function getConfigForDisplay(db: Database, lang: Lang) {
         name: t.builderOptions.name,
         note: t.builderOptions.note,
         numericValue: t.builderOptions.numericValue,
-        modifierType: t.builderOptions.modifierType,
         isExclusive: t.builderOptions.isExclusive,
         sortOrder: t.builderOptions.sortOrder,
       })
       .from(t.builderOptions)
       .where(eq(t.builderOptions.isPublished, true))
       .orderBy(asc(t.builderOptions.sortOrder)),
-    loadRules(db),
+    loadDefaults(db),
   ]);
 
   return {
@@ -149,47 +93,11 @@ export async function getConfigForDisplay(db: Database, lang: Lang) {
               name: text(option.name, lang),
               note: text(option.note, lang),
               numericValue: option.numericValue,
-              modifierType: option.modifierType,
               isExclusive: option.isExclusive,
             })),
         },
       ];
     }),
-    /*
-     * Two counts, not the rate table.
-     *
-     * `loadRules` still reads all six values because `quote()` needs them when a lead arrives;
-     * what leaves the building is the pair that decides what an unanswered step counts as. The
-     * rest — base fee, city fee, activity fee, the default hotel rate and the currency — are
-     * commercial terms, and a site that does not quote has no reason to hand them to a browser.
-     */
-    defaults: { defaultNights: rules.defaultNights, defaultPax: rules.defaultPax },
-  };
-}
-
-/**
- * The price, for the operator.
- *
- * Called once, when a lead is submitted, and the result is stored in `leads.quote_snapshot`.
- * Nothing else calls it: `POST /builder/quote` used to, and went when the site stopped quoting
- * (2026-09-11), because an endpoint that answers with a total is a price channel whether or not
- * a screen renders it.
- *
- * Whatever the browser sent is ignored, and always was. A lead is a commercial commitment; a
- * number that arrived from a client is a number the sender chose.
- *
- * Worth naming what this figure is: the rates behind it are the designer's invention and Q-10
- * has never confirmed them. It is the system's own arithmetic beside the selection, which is
- * useful to somebody who knows that — and was misleading on a page that showed it as a total.
- */
-export async function priceSelection(db: Database, selection: BuilderSelection) {
-  const result = quote(selection, await loadConfig(db));
-
-  // `Quote` holds readonly arrays, because nothing downstream of the formula should edit a
-  // priced breakdown. The wire shape is plain JSON, so they are copied rather than cast.
-  return {
-    ...result,
-    breakdown: [...result.breakdown],
-    missingSteps: [...result.missingSteps],
+    defaults,
   };
 }

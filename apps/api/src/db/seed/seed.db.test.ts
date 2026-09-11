@@ -1,4 +1,4 @@
-import { DEFAULT_PRICING_RULES, formatMoney, quote } from '@charva/contracts';
+import { BUILDER_DEFAULTS, formatMoney } from '@charva/contracts';
 import { eq } from 'drizzle-orm';
 import mysql from 'mysql2/promise';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -313,48 +313,26 @@ describe('the builder', () => {
     expect(byCode.get('pax_10_plus')?.numericValue).toBe(12);
   });
 
-  it('prices an untouched builder at 1 296 $ from the seeded rates', async () => {
-    // The phase's headline acceptance criterion, run against the database rather than against
-    // the defaults in contracts: what a visitor sees before their first click.
-    const options = await db.select().from(t.builderOptions);
-    const steps = await db.select().from(t.builderSteps);
-    const stepById = new Map(steps.map((step) => [step.id, step.code]));
+  it('seeds the two counts, and no rates at all', async () => {
+    /*
+     * Inverted. This used to price an untouched builder at «1 296 $» from the seeded rates, and
+     * a second test checked that the base, city and activity fees matched what contracts falls
+     * back to. Both were true and neither was worth anything: the rates were the designer's
+     * invention that Q-10 never confirmed, and on 2026-09-11 the owner took pricing off the site
+     * and then out of the enquiry.
+     *
+     * The assertion that replaces them is the one that would catch a rate creeping back — not
+     * that the five money keys are absent by name, which passes the day a sixth is added, but
+     * that nothing in the table is anything other than a count.
+     */
     const rules = await db.select().from(t.pricingRules);
     const byKey = new Map(rules.map((rule) => [rule.keyName, rule.valueMinor]));
 
-    const result = quote(
-      {},
-      {
-        options: options.map((option) => ({
-          code: option.code,
-          step: (stepById.get(option.stepId) ?? 'dest') as 'dest',
-          numericValue: option.numericValue,
-          priceModifierMinor: option.priceModifierMinor,
-          modifierType: option.modifierType,
-        })),
-        rules: {
-          baseFeeMinor: byKey.get('base_fee') ?? 0,
-          cityFeeMinor: byKey.get('city_fee') ?? 0,
-          activityFeeMinor: byKey.get('activity_fee') ?? 0,
-          defaultNights: byKey.get('default_nights') ?? 0,
-          defaultHotelRateMinor: byKey.get('default_hotel_rate') ?? 0,
-          defaultPax: byKey.get('default_pax') ?? 0,
-          currency: 'USD',
-        },
-      },
-    );
+    expect(byKey.get('default_nights')).toBe(BUILDER_DEFAULTS.defaultNights);
+    expect(byKey.get('default_pax')).toBe(BUILDER_DEFAULTS.defaultPax);
 
-    expect(result.total.minor).toBe(129_600);
-    expect(formatMoney(result.total)).toBe('1 296 $');
-  });
-
-  it('seeds the rates contracts falls back to', async () => {
-    const rules = await db.select().from(t.pricingRules);
-    const byKey = new Map(rules.map((rule) => [rule.keyName, rule.valueMinor]));
-
-    expect(byKey.get('base_fee')).toBe(DEFAULT_PRICING_RULES.baseFeeMinor);
-    expect(byKey.get('city_fee')).toBe(DEFAULT_PRICING_RULES.cityFeeMinor);
-    expect(byKey.get('activity_fee')).toBe(DEFAULT_PRICING_RULES.activityFeeMinor);
+    expect([...byKey.keys()].sort()).toEqual(['default_nights', 'default_pax']);
+    for (const rule of rules) expect(rule.unit, rule.keyName).toBe('count');
   });
 });
 

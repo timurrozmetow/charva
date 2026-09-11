@@ -1,4 +1,4 @@
-import { type BuilderConfigResponse, DEFAULT_PRICING_RULES } from '@charva/contracts';
+import { BUILDER_DEFAULTS, type BuilderConfigResponse } from '@charva/contracts';
 
 /**
  * A builder configuration shaped like the one the API serves.
@@ -11,10 +11,7 @@ export function builderConfig(
   overrides: Partial<BuilderConfigResponse> = {},
 ): BuilderConfigResponse {
   return {
-    defaults: {
-      defaultNights: DEFAULT_PRICING_RULES.defaultNights,
-      defaultPax: DEFAULT_PRICING_RULES.defaultPax,
-    },
+    defaults: BUILDER_DEFAULTS,
     steps: [
       {
         code: 'dest',
@@ -50,11 +47,11 @@ export function builderConfig(
         railLabel: 'Отель',
         isRequired: false,
         options: [
-          // No rates: the config does not carry them any more, because the site does not
-          // quote. The hotel step is still a choice, it just is not a price.
-          opt('hotel_3star', '3 ★', 'Просто и чисто', { modifierType: 'per_night' }),
-          opt('hotel_4star', '4 ★', 'Комфорт', { modifierType: 'per_night' }),
-          opt('hotel_5star', '5 ★', 'Премиум', { modifierType: 'per_night' }),
+          // No rates and no modifier type: the config carries neither, because the site does
+          // not quote. A hotel class is still a choice, it just is not a price.
+          opt('hotel_3star', '3 ★', 'Просто и чисто'),
+          opt('hotel_4star', '4 ★', 'Комфорт'),
+          opt('hotel_5star', '5 ★', 'Премиум'),
         ],
       },
       {
@@ -140,7 +137,6 @@ function opt(
     name,
     note,
     numericValue: null,
-    modifierType: 'none',
     isExclusive: false,
     ...extra,
   };

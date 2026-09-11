@@ -277,7 +277,7 @@ describe('the photograph checklist', () => {
 });
 
 describe('the inbox', () => {
-  it('shows an enquiry with the price the server worked out', async () => {
+  it('shows an enquiry, and quotes nothing on it', async () => {
     stubApi({
       '/admin/auth/refresh': sessionFor(),
       '/admin/resources': RESOURCES,
@@ -294,8 +294,7 @@ describe('the inbox', () => {
             message: 'Интересует тур',
             locale: 'ru',
             consentAt: '2026-08-01T10:00:00.000Z',
-            selection: null,
-            quoteSnapshot: { total: { minor: 129600, currency: 'USD' } },
+            selection: { dest: ['dest_ashgabat'], dates: 'nights_7' },
             status: 'new',
             adminNotes: null,
             createdAt: '2026-08-01T10:00:00.000Z',
@@ -308,9 +307,21 @@ describe('the inbox', () => {
     await renderPage(<LeadsPage />);
 
     expect(await screen.findByText('Мерджен')).toBeInTheDocument();
-    // Formatted by the one function allowed to format money, from the snapshot the server
-    // computed — never from a number a browser sent.
-    expect(screen.getByText(/1\s296\s?\$/)).toBeInTheDocument();
+    /*
+     * Inverted. This used to assert «1 296 $» — the snapshot the server computed at submission,
+     * on the reasoning that a manager quoting a figure on the phone should be quoting one the
+     * business stood behind.
+     *
+     * It did not stand behind it. The rates were the designer's invention that Q-10 never
+     * confirmed, so the number carried authority it had not earned in the one place somebody
+     * would act on it. The owner removed pricing from the site on 2026-09-11 and from the
+     * enquiry the day after: an operator prices the selection.
+     *
+     * The sweep is for any currency rather than for that total, because naming it would pass
+     * while some other figure appeared beside it.
+     */
+    const row = screen.getByText('Мерджен').closest('li') ?? document.body;
+    expect(row.textContent).not.toMatch(/[$€₽]|USD|TMT/);
   });
 
   it('offers the passport only to an account that may read one', async () => {
