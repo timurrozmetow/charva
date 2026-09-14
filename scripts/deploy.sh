@@ -29,7 +29,7 @@
 
 set -euo pipefail
 
-HOST="${DEPLOY_HOST:?set DEPLOY_HOST, e.g. 109.238.94.210}"
+HOST="${DEPLOY_HOST:?set DEPLOY_HOST, e.g. 159.200.240.75}"
 USER="${DEPLOY_USER:-charva}"
 PORT="${DEPLOY_PORT:-22}"
 KEY="${DEPLOY_KEY:-$HOME/.ssh/charva-deploy}"
