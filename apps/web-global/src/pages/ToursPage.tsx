@@ -19,6 +19,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { QueryState } from '../components/QueryState';
 import { TourCard } from '../components/TourCard';
 import { copyFor, fill } from '../i18n';
+import { cardGridClass } from '../lib/cardGrid';
 import { path } from '../lib/routes';
 import { useDocumentMeta } from '../lib/useDocumentMeta';
 
@@ -190,7 +191,7 @@ export function ToursPage({ lang }: ToursPageProps) {
               />
             ) : (
               <>
-                <ul className="grid list-none grid-cols-3 gap-[26px] p-0 lap:grid-cols-2 mob:grid-cols-1">
+                <ul className={cardGridClass(items.length)}>
                   {items.map((tour, index) => (
                     <li key={tour.id}>
                       <TourCard tour={tour} lang={lang} priority={index < 3} />

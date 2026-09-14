@@ -8,6 +8,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { FilteredGrid } from '../components/FilteredGrid';
 import { ReviewCard } from '../components/ReviewCard';
 import { copyFor } from '../i18n';
+import { cardGridClass } from '../lib/cardGrid';
 import { path } from '../lib/routes';
 import { useDocumentMeta } from '../lib/useDocumentMeta';
 import { useListSearch } from '../lib/useListSearch';
@@ -133,7 +134,7 @@ export function ReviewsPage({ lang }: ReviewsPageProps) {
         isError={query.isError}
         onRetry={() => void query.refetch()}
       >
-        <ul className="grid list-none grid-cols-3 gap-6 p-0 lap:grid-cols-2 mob:grid-cols-1">
+        <ul className={cardGridClass(items.length)}>
           {items.map((review) => (
             <li key={review.id}>
               <ReviewCard review={review} lang={lang} />

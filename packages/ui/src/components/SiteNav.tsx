@@ -52,7 +52,7 @@ export interface SiteNavProps {
 }
 
 const ITEM =
-  'flex min-h-tap items-center rounded-full px-[15px] py-[10px] text-bodySm text-nav transition-[background-color,color] duration-chip hover:bg-tint';
+  'flex min-h-tap items-center whitespace-nowrap rounded-full px-[15px] py-[10px] text-bodySm text-nav transition-[background-color,color] duration-chip hover:bg-tint';
 
 const ITEM_ACTIVE = 'bg-tint-strong font-semibold text-accent-active';
 
@@ -70,10 +70,16 @@ const ITEM_ACTIVE = 'bg-tint-strong font-semibold text-accent-active';
  * On the two homepages it floats over the photograph rather than standing on cream above it —
  * see `overlay`.
  *
- * Below `tab:` the menu collapses into a sheet, which the design describes in prose and does
- * not draw: the prototypes are fixed at `min-width: 1280px` with no media query anywhere in
- * the package. The sheet traps focus and closes on Escape, because a menu overlaying the page
- * that a keyboard user can tab out of is worse than no menu.
+ * Below `navbar:` — 1239px, its own breakpoint and not `tab:` — the menu collapses into a sheet,
+ * which the design describes in prose and does not draw: the prototypes are fixed at
+ * `min-width: 1280px` with no media query anywhere in the package. The sheet traps focus and
+ * closes on Escape, because a menu overlaying the page that a keyboard user can tab out of is
+ * worse than no menu.
+ *
+ * The island runs out of room two hundred pixels before the page does — seven Russian labels, a
+ * logo, a language switcher and a call to action on one row — so it collapses on its own
+ * schedule. At `tab:` it was still trying: «Сборщик туров» wrapped to two lines from 1240 and
+ * the bar grew to 65 pixels, and below 1180 the logo was squeezed out of existence entirely.
  */
 export function SiteNav({
   items,
@@ -132,21 +138,30 @@ export function SiteNav({
             'shadow-island backdrop-blur-island tab:gap-3 tab:pl-4',
           )}
         >
-          {logo}
+          {/*
+            The logo never shrinks.
 
-          <Divider orientation="vertical" className="h-[26px] tab:hidden" />
+            It was a flex child with nothing stopping it, and the menu beside it is `flex-1` —
+            so between 1180 and 1024 pixels the browser took the width it needed out of the one
+            element that would give: 57px at 1280, 48 at 1150, 24 at 1100, and at 1024 the
+            logo was zero pixels wide and simply gone. The site had no mark on it at exactly
+            the widths of an iPad in landscape and a window snapped to half a 1080p screen.
+          */}
+          <span className="shrink-0">{logo}</span>
 
-          <ul className="m-0 flex flex-1 list-none justify-center gap-0.5 p-0 tab:hidden">
+          <Divider orientation="vertical" className="h-[26px] navbar:hidden" />
+
+          <ul className="m-0 flex flex-1 list-none justify-center gap-0.5 p-0 navbar:hidden">
             {items.map((item) => (
               <li key={item.key}>{link(item)}</li>
             ))}
           </ul>
 
           {/* Pushes the controls right once the menu itself is gone. */}
-          <span className="hidden flex-1 tab:block" />
+          <span className="hidden flex-1 navbar:block" />
 
           {langSwitcher}
-          <span className="tab:hidden">{cta}</span>
+          <span className="navbar:hidden">{cta}</span>
 
           <button
             type="button"
@@ -155,7 +170,7 @@ export function SiteNav({
             onClick={() => {
               setOpen((was) => !was);
             }}
-            className="hidden h-tap w-tap place-items-center rounded-full text-ink transition-colors duration-colour hover:bg-line-soft tab:grid"
+            className="hidden h-tap w-tap place-items-center rounded-full text-ink transition-colors duration-colour hover:bg-line-soft navbar:grid"
           >
             {/*
               Three bars, the middle one folding away as the outer two cross.
@@ -203,7 +218,7 @@ export function SiteNav({
               'mt-3 hidden rounded-panel border border-line bg-island p-4 shadow-drop',
               // Out of the bar above it — the sheet is full width, so the top edge is what
               // stays put and the panel unrolls downwards. See `LangSwitcher` for the reasoning.
-              'origin-top backdrop-blur-drop animate-drop-in tab:block',
+              'origin-top backdrop-blur-drop animate-drop-in navbar:block',
             )}
           >
             <ul className="m-0 flex list-none flex-col gap-1 p-0">

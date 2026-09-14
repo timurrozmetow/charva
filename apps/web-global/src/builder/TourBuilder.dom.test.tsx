@@ -181,25 +181,32 @@ describe('the tour builder', () => {
     expect(router.state.location.searchStr).toContain('step=6');
   });
 
-  it('counts progress over the eight steps that take an answer', async () => {
+  it('counts answers over the eight steps that take one, and says so', async () => {
     await render();
-    expect(await screen.findByText('Заполнено 0 из 8')).toBeInTheDocument();
+    expect(await screen.findByText('Ответов: 0 из 8')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('checkbox', { name: /Ашхабад/ }));
     await waitFor(() => {
-      expect(screen.getByText('Заполнено 1 из 8')).toBeInTheDocument();
+      expect(screen.getByText('Ответов: 1 из 8')).toBeInTheDocument();
     });
   });
 
   it('leaves an unanswered line blank rather than showing the default it is using', async () => {
     await render();
 
-    // Six nights and two people are real defaults, and presenting them as choices the visitor
-    // made would be a lie — so the step lines stay blank while the counts show what is being
-    // assumed. The note underneath used to say the total was provisional; now it says who works
-    // the price out, which is the same job done honestly rather than a figure hedged.
+    /*
+     * Six nights and two people are real defaults, and presenting them as choices the visitor
+     * made would be a lie — so every line stays blank until it has been answered, the two
+     * count lines included. They did not: the panel printed «Ночей 6» and «Человек 2» on an
+     * untouched form, two rows below the same questions answered «—», because
+     * `selectionCounts` returns a number either way and nothing asked which kind it was.
+     *
+     * The note underneath used to say the total was provisional; now it says who works the
+     * price out, which is the same job done honestly rather than a figure hedged.
+     */
     const panel = await screen.findByRole('complementary', { name: 'Ваш тур' });
-    expect(within(panel).getAllByText('—').length).toBeGreaterThan(4);
+    // Every line of the panel, including nights and people: nine questions plus the two counts.
+    expect(within(panel).getAllByText('—').length).toBeGreaterThanOrEqual(10);
     expect(within(panel).getByText(/рассчитает оператор/)).toBeInTheDocument();
   });
 

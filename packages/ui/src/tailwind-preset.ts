@@ -52,6 +52,7 @@ export const charvaPreset = {
   theme: {
     screens: {
       lap: { max: px(breakpoint.lap) },
+      navbar: { max: px(breakpoint.navbar) },
       tab: { max: px(breakpoint.tab) },
       mob: { max: px(breakpoint.mob) },
     },

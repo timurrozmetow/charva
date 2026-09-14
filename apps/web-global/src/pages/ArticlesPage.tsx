@@ -7,6 +7,7 @@ import { ArticleCard } from '../components/ArticleCard';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { QueryState } from '../components/QueryState';
 import { copyFor, fill } from '../i18n';
+import { cardGridClass } from '../lib/cardGrid';
 import { path } from '../lib/routes';
 import { useDocumentMeta } from '../lib/useDocumentMeta';
 import { useListSearch } from '../lib/useListSearch';
@@ -80,7 +81,7 @@ export function ArticlesPage({ lang }: ArticlesPageProps) {
                   {fill(copy.common.shown, { shown: items.length, total })}
                 </p>
 
-                <ul className="mt-6 grid list-none grid-cols-3 gap-6 p-0 lap:grid-cols-2 mob:grid-cols-1">
+                <ul className={`mt-6 ${cardGridClass(items.length)}`}>
                   {items.map((article) => (
                     <li key={article.id}>
                       <ArticleCard article={article} lang={lang} />

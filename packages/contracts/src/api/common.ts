@@ -115,6 +115,27 @@ export const siteSettingsSchema = z.object({
   }),
   langs: z.array(z.string()),
   defaultLang: z.string(),
+  /**
+   * Which sections have anything in them today.
+   *
+   * The navigation and the footer are written once and cannot see the catalogue, so they
+   * offered «Видео» and «Отзывы» to every visitor while both held zero rows — two of seven menu
+   * entries leading to «Здесь пока пусто». For a destination people are already unsure about,
+   * a menu that promises and does not deliver costs more trust than a shorter menu would.
+   *
+   * The sitemap already omits an empty section for the same reason (a URL a crawler finds
+   * empty is a soft 404), and this is that rule applied to the reader rather than to the robot.
+   * Each entry comes back the moment something is published there, with nothing to remember.
+   *
+   * Only sections that can legitimately be empty are listed. A site with no tours or no hotels
+   * is not a state to design a menu around.
+   */
+  sections: z.object({
+    video: z.boolean(),
+    reviews: z.boolean(),
+    gallery: z.boolean(),
+    articles: z.boolean(),
+  }),
 });
 
 export type SiteSettings = z.infer<typeof siteSettingsSchema>;

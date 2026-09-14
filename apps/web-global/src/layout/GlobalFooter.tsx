@@ -26,6 +26,9 @@ export interface GlobalFooterProps {
 export function GlobalFooter({ lang, settings }: GlobalFooterProps) {
   const copy = copyFor(lang);
   const contacts = settings?.contacts;
+  // The same rule as the menu: a link into an empty section is a dead end, and it comes back
+  // by itself the day something is published there.
+  const has = settings?.sections;
 
   const columns: FooterColumn[] = [
     {
@@ -44,9 +47,15 @@ export function GlobalFooter({ lang, settings }: GlobalFooterProps) {
       links: [
         { key: 'country', label: copy.footer.links.country, href: path.country(lang) },
         { key: 'journal', label: copy.footer.links.journal, href: path.articles(lang) },
-        { key: 'gallery', label: copy.footer.links.gallery, href: path.gallery(lang) },
-        { key: 'video', label: copy.footer.links.video, href: path.video(lang) },
-        { key: 'reviews', label: copy.footer.links.reviews, href: path.reviews(lang) },
+        ...(has?.gallery === true
+          ? [{ key: 'gallery', label: copy.footer.links.gallery, href: path.gallery(lang) }]
+          : []),
+        ...(has?.video === true
+          ? [{ key: 'video', label: copy.footer.links.video, href: path.video(lang) }]
+          : []),
+        ...(has?.reviews === true
+          ? [{ key: 'reviews', label: copy.footer.links.reviews, href: path.reviews(lang) }]
+          : []),
         // A licence obligation, not a navigation aid — which is why it is last and quiet.
         { key: 'credits', label: copy.footer.links.credits, href: path.credits(lang) },
       ],

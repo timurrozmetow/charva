@@ -109,6 +109,9 @@ export function settings(overrides: Partial<UmrahSettingsResponse> = {}): UmrahS
     },
     socials: { instagram: '#', telegram: '#', whatsapp: '#', youtube: '#' },
     legal: { license: 'TM-1428', unconfirmed: true },
+    // Umrah has none of Global's four sections, so `false` is the true answer rather than a
+    // placeholder — its menu never asks.
+    sections: { video: false, reviews: false, gallery: false, articles: false },
     langs: ['tm', 'ru'],
     defaultLang: 'tm',
     ...overrides,

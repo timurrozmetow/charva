@@ -31,6 +31,45 @@ export interface ShareImage {
   width: number | null;
   height: number | null;
   alt: string;
+  /**
+   * The same candidates the `<img>` will offer, relative like its own.
+   *
+   * Only used by the preload, and only so that the preload asks for the file the page is
+   * actually going to use — see the note on `preloadTags`.
+   */
+  srcSet: string | null;
+}
+
+/**
+ * The hint that tells the browser to start the hero before the bundle has parsed — and the
+ * reason it has to carry the whole candidate list rather than one URL.
+ *
+ * It used to preload `og:image`, which is a single fixed width. The hero renders through `Img`
+ * with a seven-candidate `srcSet` and `sizes="100vw"`, so on a 1600-pixel window the browser
+ * preloaded `?w=1280` (255 KB), then read the markup, picked `?w=1600` (353 KB) and fetched
+ * that too. A quarter of a megabyte wasted at the most expensive moment of the load, on the
+ * element LCP is measured against — the preload was making the number it exists to improve
+ * worse. Handing it `imagesrcset` and `imagesizes` makes it run the same selection the `<img>`
+ * will run, so both land on one file.
+ *
+ * Only the two homepages get one. Their hero is full-bleed, so `100vw` is known to be right.
+ * Everywhere else the largest image is a cover whose displayed width depends on the layout, and
+ * a preload that guesses wrong is exactly the fault above; no hint beats a wrong hint.
+ */
+function preloadTags(context: ShellContext, image: ShareImage): HeadTag[] {
+  if (context.route !== 'home' || context.site === 'choice') return [];
+
+  return [
+    {
+      tag: 'link',
+      attributes: {
+        rel: 'preload',
+        as: 'image',
+        href: image.url,
+        ...(image.srcSet === null ? {} : { imagesrcset: image.srcSet, imagesizes: '100vw' }),
+      },
+    },
+  ];
 }
 
 export interface ShellContext {
@@ -167,8 +206,7 @@ export function buildHead(context: ShellContext): HeadTag[] {
        */
       { tag: 'meta', attributes: { name: 'twitter:card', content: 'summary_large_image' } },
       { tag: 'meta', attributes: { name: 'twitter:image', content: image.url } },
-      // The LCP element on almost every page here is this same photograph.
-      { tag: 'link', attributes: { rel: 'preload', as: 'image', href: image.url } },
+      ...preloadTags(context, image),
     );
 
     if (image.width !== null && image.height !== null) {

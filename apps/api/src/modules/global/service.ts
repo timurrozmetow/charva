@@ -8,7 +8,7 @@ import {
   pageSlice,
   type SiteSettings,
 } from '@charva/contracts';
-import { and, asc, avg, count, desc, eq, inArray, ne, sql } from 'drizzle-orm';
+import { and, asc, avg, count, desc, eq, inArray, isNotNull, ne, sql } from 'drizzle-orm';
 
 import { type Database } from '../../db/client';
 import * as t from '../../db/schema';
@@ -883,7 +883,61 @@ export async function getSettings(
     },
     langs: [...langs],
     defaultLang,
+    sections: await sectionsWithContent(db, site),
   };
+}
+
+/**
+ * Which sections have a published row behind them right now.
+ *
+ * Asked here because `getSettings` is the one request every page already makes for its footer,
+ * so the menu learns this without a second round trip. Four counts against indexed columns;
+ * the response is cached for a minute like everything else.
+ *
+ * A video needs a file as well as a flag — six rows exist with neither, waiting for shoots that
+ * have not happened — and a review is published by `status` rather than by the `is_published`
+ * its table also carries.
+ */
+async function sectionsWithContent(db: Database, site: 'global' | 'umrah') {
+  // The four are Global's menu. Umrah has none of them — its sections are the package, the
+  // ziyarat places, the programme, the photographs and the signup — so «false» there is a true
+  // statement rather than a default, and its navigation never asks.
+  if (site === 'umrah') return { video: false, reviews: false, gallery: false, articles: false };
+
+  const any = async (rows: Promise<unknown[]>): Promise<boolean> => (await rows).length > 0;
+
+  const [video, reviewsLive, gallery, articles] = await Promise.all([
+    any(
+      db
+        .select({ id: t.videos.id })
+        .from(t.videos)
+        .where(and(eq(t.videos.isPublished, true), isNotNull(t.videos.mediaId)))
+        .limit(1),
+    ),
+    any(
+      db
+        .select({ id: t.reviews.id })
+        .from(t.reviews)
+        .where(eq(t.reviews.status, 'published'))
+        .limit(1),
+    ),
+    any(
+      db
+        .select({ id: t.galleryItems.id })
+        .from(t.galleryItems)
+        .where(eq(t.galleryItems.isPublished, true))
+        .limit(1),
+    ),
+    any(
+      db
+        .select({ id: t.articles.id })
+        .from(t.articles)
+        .where(eq(t.articles.isPublished, true))
+        .limit(1),
+    ),
+  ]);
+
+  return { video, reviews: reviewsLive, gallery, articles };
 }
 
 // ----------------------------------------------------------------------------------------

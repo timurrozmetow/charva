@@ -359,6 +359,16 @@ async function imageFor(
     width,
     height,
     alt: text(row.alt, lang),
+    /*
+     * Relative, exactly as `Img` builds it in the browser.
+     *
+     * The two strings have to produce identical URLs or the preload fetches a second copy of
+     * the same photograph — which is what it was doing. `Img` starts from `media.url`, which is
+     * relative now that photographs come from the page's own origin (D-141), so this does too.
+     */
+    srcSet: IMAGE_WIDTHS.map(
+      (candidate) => `${imageUrl(row.key, candidate)} ${String(candidate)}w`,
+    ).join(', '),
   };
 }
 

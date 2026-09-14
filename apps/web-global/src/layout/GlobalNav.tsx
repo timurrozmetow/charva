@@ -1,7 +1,9 @@
 import { type Lang, LANG_NAMES, SITE_LANGS } from '@charva/contracts';
 import { buttonClass, LangSwitcher, type NavItem, SiteNav } from '@charva/ui';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation } from '@tanstack/react-router';
 
+import { settingsQuery } from '../api/queries';
 import logoMark from '../assets/logo-mark-brown.png';
 import { copyFor } from '../i18n';
 import { path } from '../lib/routes';
@@ -26,16 +28,39 @@ export interface GlobalNavProps {
 export function GlobalNav({ lang, overlay = false }: GlobalNavProps) {
   const copy = copyFor(lang);
   const { pathname } = useLocation();
+  const settings = useQuery(settingsQuery(lang));
 
   const items: NavItem[] = [
     { key: 'tours', label: copy.nav.items.tours, href: path.tours(lang) },
     { key: 'builder', label: copy.nav.items.builder, href: path.builder(lang) },
     { key: 'hotels', label: copy.nav.items.hotels, href: path.hotels(lang) },
     { key: 'turkmenistan', label: copy.nav.items.turkmenistan, href: path.country(lang) },
-    { key: 'gallery', label: copy.nav.items.gallery, href: path.gallery(lang) },
-    { key: 'video', label: copy.nav.items.video, href: path.video(lang) },
-    { key: 'reviews', label: copy.nav.items.reviews, href: path.reviews(lang) },
   ];
+
+  /*
+   * A section with nothing in it is not offered.
+   *
+   * «Видео» and «Отзывы» sat in the menu with zero rows behind them — two of seven entries
+   * leading to «Здесь пока пусто». For a destination people are already unsure about, a menu
+   * that promises and does not deliver costs more trust than a shorter menu would. The sitemap
+   * has omitted empty sections since the SEO pass, for the same reason applied to a crawler;
+   * this is the reader getting the same courtesy.
+   *
+   * Each entry returns by itself the day something is published there. Until the settings
+   * request answers, the optional entries are simply absent — appearing is a smaller surprise
+   * than vanishing, and the four that are always there carry the bar in the meantime.
+   */
+  const has = settings.data?.sections;
+
+  if (has?.gallery === true) {
+    items.push({ key: 'gallery', label: copy.nav.items.gallery, href: path.gallery(lang) });
+  }
+  if (has?.video === true) {
+    items.push({ key: 'video', label: copy.nav.items.video, href: path.video(lang) });
+  }
+  if (has?.reviews === true) {
+    items.push({ key: 'reviews', label: copy.nav.items.reviews, href: path.reviews(lang) });
+  }
 
   /*
    * Longest match wins, so `/ru/tours/klassicheskiy-turkmenistan` keeps «Туры» lit.

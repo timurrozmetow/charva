@@ -158,7 +158,7 @@
   "builder": {
     "breadcrumb": "Tur oluşturucu",
     "title": "Türkmenistan turunuzu kendiniz kurun",
-    "lead": "Dokuz adım: şehirler, süre, otel, yemek, ulaşım ve etkinlikler. Fiyat her tıklamada yeniden hesaplanır ve hesap sizi bağlamaz.",
+    "lead": "Dokuz adım: şehirler, süre, otel, yemek, ulaşım ve etkinlikler. Rotayı kurun ve gönderin; operatör fiyatlandırıp programı geri gönderir.",
     "stats": {
       "steps": "Adım",
       "reply": "Yönetici yanıtı",
@@ -173,7 +173,7 @@
     "back": "Geri",
     "next": "İleri",
     "submit": "Başvuruyu gönder",
-    "filled": "{total} adımdan {filled} tanesi dolduruldu",
+    "filled": "Yanıtlanan: {filled} / {total}",
     "clearHint": "Tekrar tıklayınca seçim kalkar",
     "estimate": {
       "title": "Turunuz",
@@ -203,8 +203,8 @@
         },
         {
           "n": "02",
-          "title": "Fiyatı anında görün",
-          "text": "Hesap her tıklamada yenilenir, form göndermeden."
+          "title": "Özeti kontrol edin",
+          "text": "Tüm yanıtlar tek listede — ne seçtiğiniz ve neyin açık kaldığı görünür."
         },
         {
           "n": "03",
@@ -313,7 +313,7 @@
     "builder": {
       "eyebrow": "Tur kurucu",
       "title": "Turu kendinize göre kurun",
-      "lead": "Şehirler, süre, otel sınıfı, yemek ve geziler. Fiyat her tıklamada yeniden hesaplanır."
+      "lead": "Şehirler, süre, otel sınıfı, yemek ve geziler. Fiyatlı yanıt bir iş günü içinde gelir."
     },
     "hotels": {
       "eyebrow": "Konaklama",

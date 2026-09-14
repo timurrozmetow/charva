@@ -2,6 +2,7 @@ import {
   type BuilderConfigResponse,
   type BuilderSelection,
   type Lang,
+  type BuilderStep,
   selectionCounts,
 } from '@charva/contracts';
 
@@ -40,6 +41,13 @@ export function BuilderEstimate({ lang, config, selection }: BuilderEstimateProp
     config.steps.flatMap((step) => step.options),
     config.defaults,
   );
+
+  /** Whether the visitor has answered a step at all — as opposed to the form using a default. */
+  const answered = (step: BuilderStep): boolean => {
+    const chosen = selection[step];
+    if (chosen === undefined) return false;
+    return typeof chosen === 'string' ? chosen !== '' : chosen.length > 0;
+  };
 
   const nameOf = (code: string) =>
     config.steps.flatMap((step) => step.options).find((option) => option.code === code)?.name ??
@@ -81,13 +89,29 @@ export function BuilderEstimate({ lang, config, selection }: BuilderEstimateProp
           </div>
         ))}
 
+        {/*
+          Nights and people, and «—» until they have been chosen.
+
+          They used to print the fallback — six nights and two people — on an untouched form,
+          two lines below the same two questions answered «—». The paragraph above this function
+          says an unanswered step must not present its default as a choice the visitor made; the
+          rows below it did exactly that, because `selectionCounts` returns a number either way
+          and nothing here asked which kind of number it was.
+
+          The fallback is still real and still used by whoever prices the trip. It is simply not
+          something to show a person as though they had said it.
+        */}
         <div className="flex items-center justify-between gap-4 border-b border-line py-[11px]">
           <dt className="text-bodySm text-muted">{copy.builder.estimate.nights}</dt>
-          <dd className="text-bodySm text-ink">{counts.nights}</dd>
+          <dd className={answered('dates') ? 'text-bodySm text-ink' : 'text-bodySm text-muted'}>
+            {answered('dates') ? counts.nights : copy.builder.estimate.empty}
+          </dd>
         </div>
         <div className="flex items-center justify-between gap-4 py-[11px]">
           <dt className="text-bodySm text-muted">{copy.builder.estimate.pax}</dt>
-          <dd className="text-bodySm text-ink">{counts.pax}</dd>
+          <dd className={answered('people') ? 'text-bodySm text-ink' : 'text-bodySm text-muted'}>
+            {answered('people') ? counts.pax : copy.builder.estimate.empty}
+          </dd>
         </div>
       </dl>
 

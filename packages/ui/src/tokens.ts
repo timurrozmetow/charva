@@ -445,6 +445,16 @@ export const lift = {
 export const breakpoint = {
   /** 1024–1279: grids 3 -> 2, gallery 4 -> 3, the builder rail becomes a horizontal strip. */
   lap: 1279,
+  /**
+   * Where the navigation island gives up and becomes a burger.
+   *
+   * Its own number rather than `tab`, because the island runs out of room long before the page
+   * does: seven Russian labels, a logo, a language switcher and a call to action on one row. At
+   * 1240 «Сборщик туров» wrapped to two lines and the bar grew to 65px; below 1180 the logo —
+   * the only shrinkable flex child — was squeezed to nothing, and at 1024 it was 0px wide. The
+   * burger used to arrive at 1023, two hundred pixels after it was needed.
+   */
+  navbar: 1239,
   /** 768–1023: nav collapses to a burger, hero drops to 70vh. */
   tab: 1023,
   /** Below 768: single column, the Choice split becomes vertical. */

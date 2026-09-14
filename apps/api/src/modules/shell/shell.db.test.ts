@@ -407,6 +407,36 @@ describe('the picture a shared link shows', () => {
     expect(head(tags).og('og:image:alt')).toBe('Пустыня на рассвете');
   });
 
+  it('preloads the file the page will actually ask for, and only on a homepage', async () => {
+    /*
+     * The hint was making the number it exists to improve worse.
+     *
+     * It preloaded `og:image` — one fixed width — while the hero renders through `Img` with
+     * seven candidates and `sizes="100vw"`. On a wide window the browser fetched `?w=1280` from
+     * the preload and then `?w=1600` from the markup: a quarter of a megabyte spent twice on
+     * the element LCP is measured against. With `imagesrcset` and `imagesizes` it runs the same
+     * selection the `<img>` will, so both land on one file.
+     */
+    const { tags } = await render('global', '/ru');
+    const preload = head(tags).links('preload')[0]?.attributes;
+
+    expect(preload?.['as']).toBe('image');
+    expect(preload?.['imagesizes']).toBe('100vw');
+    // Relative, like the `srcSet` the browser builds from `media.url` (D-141) — the two have to
+    // produce identical URLs or the deduplication this exists for does not happen.
+    expect(preload?.['imagesrcset']).toContain('/api/v1/img/');
+    expect(preload?.['imagesrcset']).not.toContain('http');
+    expect(preload?.['imagesrcset']?.split(', ').length).toBeGreaterThan(4);
+
+    // And nowhere else: on a detail page the largest image is a cover whose width depends on
+    // the layout, and a hint that guesses wrong is the fault above. No hint beats a wrong one.
+    const detail = await render('global', '/ru/tours/klassicheskiy-turkmenistan');
+    expect(head(detail.tags).links('preload')).toHaveLength(0);
+
+    const chooser = await render('choice', '/ru');
+    expect(head(chooser.tags).links('preload')).toHaveLength(0);
+  });
+
   it('says so plainly when there is no photograph anywhere', async () => {
     // `summary_large_image` with nothing to fill it renders as a bare link in some clients —
     // worse than the small card, which at least shows the title.

@@ -26,6 +26,7 @@ import { TourCard } from '../components/TourCard';
 import { VideoPlayer } from '../components/VideoPlayer';
 import { HeroSearchBar } from '../home/HeroSearchBar';
 import { copyFor, fill } from '../i18n';
+import { cardGridClass } from '../lib/cardGrid';
 import { path } from '../lib/routes';
 import { useDocumentMeta } from '../lib/useDocumentMeta';
 
@@ -179,7 +180,7 @@ export function HomePage({ lang }: HomePageProps) {
               </Link>
             }
           />
-          <ul className="mt-10 grid list-none grid-cols-3 gap-[26px] p-0 lap:grid-cols-2 mob:grid-cols-1">
+          <ul className={`mt-10 ${cardGridClass((data?.featuredTours ?? []).length)}`}>
             {(data?.featuredTours ?? []).map((tour, index) => (
               <li key={tour.id}>
                 <TourCard tour={tour} lang={lang} priority={index < 3} />

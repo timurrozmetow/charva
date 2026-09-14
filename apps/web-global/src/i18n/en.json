@@ -158,7 +158,7 @@
   "builder": {
     "breadcrumb": "Tour builder",
     "title": "Build your own tour of Turkmenistan",
-    "lead": "Nine steps: cities, length, hotel, meals, transport and activities. The price is recalculated on every click, and the estimate commits you to nothing.",
+    "lead": "Nine steps: cities, length, hotel, meals, transport and activities. Build the route, send it, and an operator prices it and sends the programme back.",
     "stats": {
       "steps": "Steps",
       "reply": "Manager replies in",
@@ -173,7 +173,7 @@
     "back": "Back",
     "next": "Next",
     "submit": "Send the enquiry",
-    "filled": "Answered {filled} of {total}",
+    "filled": "Answered: {filled} of {total}",
     "clearHint": "Click again to clear",
     "estimate": {
       "title": "Your tour",
@@ -203,8 +203,8 @@
         },
         {
           "n": "02",
-          "title": "See the price at once",
-          "text": "The estimate recalculates on every click, with nothing submitted."
+          "title": "Check the summary",
+          "text": "Every answer is gathered into one list — what you chose, and what is still open."
         },
         {
           "n": "03",
@@ -313,7 +313,7 @@
     "builder": {
       "eyebrow": "Builder",
       "title": "Build the tour around you",
-      "lead": "Cities, length, hotel class, meals and excursions. The price is recalculated on every click."
+      "lead": "Cities, length, hotel class, meals and excursions. A priced answer comes back within a working day."
     },
     "hotels": {
       "eyebrow": "Where to stay",

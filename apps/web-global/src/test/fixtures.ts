@@ -91,6 +91,9 @@ export function settings(overrides: Partial<GlobalSettingsResponse> = {}): Globa
     legal: { license: 'TM-1428', unconfirmed: true },
     langs: ['ru', 'en', 'tr'],
     defaultLang: 'ru',
+    // Everything present by default, so a test about something else does not accidentally
+    // become a test about a missing menu entry. The tests that care override it.
+    sections: { video: true, reviews: true, gallery: true, articles: true },
     ...overrides,
   };
 }

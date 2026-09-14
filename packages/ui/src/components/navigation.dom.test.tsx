@@ -39,6 +39,42 @@ const LANGS: LangOption[] = [
 ];
 
 describe('SiteNav', () => {
+  it('never lets the flex row squeeze the logo or wrap a label', () => {
+    /*
+     * Both halves of one fault, and neither is visible in a test that only asks what rendered.
+     *
+     * The island is a flex row: a logo, a `flex-1` menu, a language switcher and a call to
+     * action. The logo was the one child with nothing stopping it from shrinking, so between
+     * 1180 and 1024 pixels the browser took the width the menu wanted out of the mark — 24px
+     * at 1100, 0px at 1024. And the labels wrapped rather than pushing back, so from 1240 the
+     * bar silently grew to two lines.
+     *
+     * jsdom has no layout, so what is asserted is the two properties that make the layout
+     * impossible rather than the pixels they produce.
+     */
+    const { container } = render(
+      <SiteNav
+        items={ITEMS}
+        logo={<a href="/ru">Charva</a>}
+        renderLink={renderNavLink}
+        labels={LABELS}
+      />,
+    );
+
+    const logoLink = screen.getByRole('link', { name: 'Charva' });
+    expect(logoLink.parentElement?.className).toContain('shrink-0');
+
+    // `ITEMS` are declared with plain string labels, which is what these assertions read.
+    for (const label of ITEMS.map((item) => item.label as string)) {
+      const link = screen.getByRole('link', { name: label });
+      expect(link.className, label).toContain('whitespace-nowrap');
+    }
+
+    // And the menu hides on its own breakpoint rather than the shared one: the island runs out
+    // of room two hundred pixels before the page does.
+    expect(container.querySelector('ul.navbar\\:hidden')).not.toBeNull();
+  });
+
   it('is a named landmark with a marked current page', () => {
     render(
       <SiteNav
