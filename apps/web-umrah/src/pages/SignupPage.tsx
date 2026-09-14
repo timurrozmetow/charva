@@ -39,7 +39,19 @@ export function SignupPage({ lang }: SignupPageProps) {
 
   useDocumentMeta({ route: 'yazylmak', pathAfterLang: '/yazylmak' }, lang);
 
-  const current = trip.data?.trip ?? null;
+  /*
+   * The departure this page signs somebody up for — which is not always the nearest one.
+   *
+   * The hero on the homepage shows the group that leaves next, closed list and all, because
+   * that is the fact a visitor is looking for there. This page is the form, and the form has to
+   * name the departure the API will actually attach the row to (`openTrip` in the leads
+   * service): the first announced one whose list is open. While those disagreed, the fortnight
+   * after a list closed offered a form that looked usable and answered 409.
+   */
+  const nearest = trip.data?.trip ?? null;
+  const following = trip.data?.next ?? null;
+  const current =
+    nearest === null || nearest.signupOpen ? nearest : following?.signupOpen ? following : nearest;
   const contacts = settings.data?.contacts;
   const isOpen = current?.signupOpen ?? false;
 

@@ -570,9 +570,13 @@ const UMRAH: Record<string, string> = {
   Otag: 'Номер',
   Nahar: 'Питание',
   Ýolbaşçy: 'Руководитель группы',
-  '18.09.2026, Aşgabat aeroporty': '18.09.2026, аэропорт Ашхабада',
-  '28.09.2026': '28.09.2026',
-  '10 gün — Mekgede 5, Medinede 4 gün': '10 дней — 5 в Мекке, 4 в Медине',
+  // The departure, the return and the duration are rendered from `umrah_trips` and are no
+  // longer content rows, so the three strings that carried a date are gone with them. What the
+  // trip cannot say is kept — which airport, and how the days divide.
+  'Ugramak nokady': 'Место вылета',
+  'Aşgabat aeroporty': 'Аэропорт Ашхабада',
+  'Mekge we Medine': 'Мекка и Медина',
+  'Mekgede 5, Medinede 4 gün': '5 дней в Мекке, 4 в Медине',
   '45 adam, ýolbaşçy bilen': '45 человек, вместе с руководителем',
   '4 ★ — Mekgede Haremden 400 m, Medinede 300 m': '4 ★ — в Мекке 400 м от Харама, в Медине 300 м',
   '2–3 adamlyk; 1 adamlyk otag mümkin': 'На 2–3 человека; возможен одноместный',

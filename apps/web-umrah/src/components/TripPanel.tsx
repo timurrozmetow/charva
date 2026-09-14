@@ -64,6 +64,9 @@ export function TripPanel({ trip, next, lang, className }: TripPanelProps) {
     );
   }
 
+  /** The departure after this one, when the owner has already announced it. */
+  const upcoming = next === null ? null : formatDate(next.departAt);
+
   /*
    * The group is in the air.
    *
@@ -71,8 +74,6 @@ export function TripPanel({ trip, next, lang, className }: TripPanelProps) {
    * points at the next departure when there is one.
    */
   if (trip.status === 'departed' || trip.status === 'completed') {
-    const upcoming = next === null ? null : formatDate(next.departAt);
-
     return (
       <div className={panel} data-state="departed">
         <Heading level={2} size="h3">
@@ -166,12 +167,24 @@ export function TripPanel({ trip, next, lang, className }: TripPanelProps) {
         </dl>
       </div>
 
-      {/* The two states that keep the clock but change what can be done. Said in words rather
-          than by a button that looks pressable and is not. */}
+      {/*
+        The two states that keep the clock but change what can be done. Said in words rather
+        than by a button that looks pressable and is not.
+
+        And when there is a departure behind this one, its date — because that is the whole of
+        what a visitor reading «the list is closed» wants to know next. Only `departed` said it
+        before, which left the fortnight between the list closing and the group leaving as a
+        dead end: a closed form, a running clock and no indication that another group exists.
+      */}
       {trip.status !== 'open' && (
         <p className="mt-6 rounded-panel-sm border border-tint-line bg-tint-soft px-4 py-3 text-bodySm text-accent-text">
           <strong className="font-semibold">{copy.trip.states[trip.status].title}.</strong>{' '}
           {copy.trip.states[trip.status].text}
+          {upcoming !== null && (
+            <span className="mt-2 block font-semibold">
+              {fill(copy.trip.states.nextIs, { date: upcoming })}
+            </span>
+          )}
         </p>
       )}
 

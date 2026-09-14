@@ -618,6 +618,40 @@ async function seedPlaces(db: Database): Promise<number> {
 // The seven lists that became one table
 // ========================================================================================
 
+/**
+ * The conditions table on «Paket», minus the three rows the departure already renders.
+ *
+ * The design's `specs` list opens with «Ugramak — 18.09.2026, Aşgabat aeroporty», «Dolanmak —
+ * 28.09.2026» and «Dowamlylygy — 10 gün …», and `PackagePage` prints those same three facts
+ * above it out of `umrah_trips`. Seeded verbatim, the page therefore says the departure date
+ * twice — once derived and once typed — and the typed one goes stale the moment a departure
+ * moves. That is precisely the defect the whole trip table exists to prevent (D-13), arriving
+ * through content rather than through code.
+ *
+ * The two things those rows carried that the trip does not — which airport, and how the ten
+ * days divide between Mecca and Medina — are kept, re-labelled, and taken from the design's own
+ * strings rather than retyped: the date is cut off the front of one and the total off the front
+ * of the other. Only the two labels are new, and an editor owns them from the admin like every
+ * other row here.
+ */
+function packageConditions(): { key: string; value: string }[] {
+  const specs = rows<{ k: string; v: string }>('Charva Umrah Packages', 'specs');
+  const valueOf = (key: string): string => specs.find((spec) => spec.k === key)?.v ?? '';
+
+  // «18.09.2026, Aşgabat aeroporty» -> «Aşgabat aeroporty».
+  const airport = valueOf('Ugramak').replace(/^[\d.]+,\s*/, '');
+  // «10 gün — Mekgede 5, Medinede 4 gün» -> «Mekgede 5, Medinede 4 gün».
+  const split = valueOf('Dowamlylygy').replace(/^.*?—\s*/, '');
+
+  const derived = new Set(['Ugramak', 'Dolanmak', 'Dowamlylygy']);
+
+  return [
+    ...(airport === '' ? [] : [{ key: 'Ugramak nokady', value: airport }]),
+    ...(split === '' ? [] : [{ key: 'Mekge we Medine', value: split }]),
+    ...specs.filter((spec) => !derived.has(spec.k)).map((spec) => ({ key: spec.k, value: spec.v })),
+  ];
+}
+
 async function seedContentBlocks(db: Database): Promise<number> {
   const values: (typeof t.contentBlocks.$inferInsert)[] = [];
 
@@ -672,15 +706,7 @@ async function seedContentBlocks(db: Database): Promise<number> {
     'tm',
   );
 
-  push(
-    'umrah',
-    'package_conditions',
-    rows<{ k: string; v: string }>('Charva Umrah Packages', 'specs').map((spec) => ({
-      key: spec.k,
-      value: spec.v,
-    })),
-    'tm',
-  );
+  push('umrah', 'package_conditions', packageConditions(), 'tm');
 
   push(
     'umrah',

@@ -54,6 +54,24 @@ describe('the departure panel', () => {
     expect(screen.getByText(/Ähli ýerler eýelendi/)).toBeInTheDocument();
   });
 
+  it('points at the next departure while the list is shut, not only after the flight', async () => {
+    /*
+     * The fortnight between a list closing and its group leaving.
+     *
+     * Only `departed` said «Indiki topar» before, which left this window as a dead end: a
+     * closed form, a running clock, and no sign that another group exists — in exactly the
+     * weeks somebody who has just missed one is reading the page.
+     */
+    await render({
+      trip: trip({ status: 'closed', signupOpen: false }),
+      next: trip({ id: 2, departAt: '2099-12-01T06:00:00.000Z' }),
+      lang: 'tm',
+    });
+
+    expect(await screen.findByText(/Ýazylyş ýapyldy/)).toBeInTheDocument();
+    expect(screen.getByText('Indiki topar: 01.12.2099')).toBeInTheDocument();
+  });
+
   it('removes the clock once the group is in the air, and promotes the next one', async () => {
     const { container } = await render({
       trip: trip({ status: 'departed' }),

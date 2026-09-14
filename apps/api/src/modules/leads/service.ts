@@ -233,11 +233,23 @@ export async function submitSignup(
   };
 }
 
-/** The departure a signup attaches to, or a 409 explaining which of the five states blocked it. */
+/**
+ * The departure a signup attaches to, or a 409 explaining which of the five states blocked it.
+ *
+ * The soonest future departure **whose list is open** — not simply the soonest. Those were the
+ * same thing while there was one announced trip at a time, and stopped being the same thing the
+ * day a second was announced: the fortnight between a list closing and its group leaving is
+ * exactly when the departure after it is what somebody is writing in about, and taking only the
+ * nearest row turned that fortnight into a 409 for everyone, with an open trip sitting behind it
+ * in the same table.
+ *
+ * The error, when nothing is open, still describes the *nearest* departure. «The list closed on
+ * the 4th» is what the person is asking about; «no departure is open» would be true and useless.
+ */
 async function openTrip(db: Database, now: Date): Promise<typeof t.umrahTrips.$inferSelect> {
   const sqlNow = now.toISOString().slice(0, 19).replace('T', ' ');
 
-  const [candidate] = await db
+  const candidates = await db
     .select()
     .from(t.umrahTrips)
     .where(
@@ -247,31 +259,33 @@ async function openTrip(db: Database, now: Date): Promise<typeof t.umrahTrips.$i
       ),
     )
     .orderBy(t.umrahTrips.departAt)
-    .limit(1);
+    .limit(4);
 
-  if (candidate === undefined) {
+  const nearest = candidates[0];
+  if (nearest === undefined) {
     throw new ApiProblem('conflict', 'There is no announced departure to sign up for');
   }
 
-  const state = deriveTripState(
-    {
-      departAt: new Date(`${candidate.departAt.replace(' ', 'T')}Z`),
-      returnAt: new Date(`${candidate.returnAt.replace(' ', 'T')}Z`),
-      signupClosesAt:
-        candidate.signupClosesAt === null
-          ? null
-          : new Date(`${candidate.signupClosesAt.replace(' ', 'T')}Z`),
-      seatsTotal: candidate.seatsTotal,
-      seatsTaken: candidate.seatsTaken,
-    },
-    now,
-  );
+  const stateOf = (trip: typeof t.umrahTrips.$inferSelect) =>
+    deriveTripState(
+      {
+        departAt: new Date(`${trip.departAt.replace(' ', 'T')}Z`),
+        returnAt: new Date(`${trip.returnAt.replace(' ', 'T')}Z`),
+        signupClosesAt:
+          trip.signupClosesAt === null
+            ? null
+            : new Date(`${trip.signupClosesAt.replace(' ', 'T')}Z`),
+        seatsTotal: trip.seatsTotal,
+        seatsTaken: trip.seatsTaken,
+      },
+      now,
+    );
 
-  if (!state.signupOpen) {
-    throw new ApiProblem('conflict', `The list is not open: the departure is ${state.status}`, [
-      { path: 'trip', message: state.status },
-    ]);
-  }
+  const bookable = candidates.find((trip) => stateOf(trip).signupOpen);
+  if (bookable !== undefined) return bookable;
 
-  return candidate;
+  const state = stateOf(nearest);
+  throw new ApiProblem('conflict', `The list is not open: the departure is ${state.status}`, [
+    { path: 'trip', message: state.status },
+  ]);
 }

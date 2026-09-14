@@ -141,6 +141,32 @@ describe('the catalogue', () => {
     }
   });
 
+  it('keeps the departure out of the conditions table, where the trip already renders it', async () => {
+    /*
+     * «Ugramak — 18.09.2026» was a content row *and* a row `PackagePage` prints from
+     * `umrah_trips`, so the page said the date twice and the typed copy went stale the moment a
+     * departure moved. The whole point of the trip table is that the date exists once (D-13);
+     * a content row is still a place it can come to exist twice.
+     *
+     * The sweep is for any date rather than for the two that used to be here, because naming
+     * them passes on the day somebody types a third.
+     */
+    const blocks = await db
+      .select()
+      .from(t.contentBlocks)
+      .where(eq(t.contentBlocks.blockCode, 'package_conditions'));
+
+    expect(blocks.length).toBeGreaterThan(4);
+    for (const block of blocks) {
+      const text = `${JSON.stringify(block.keyText)} ${JSON.stringify(block.valueText)}`;
+      expect(text, text).not.toMatch(/\d{2}\.\d{2}\.\d{4}/);
+    }
+
+    // And what the trip cannot say is still there: which airport it leaves from.
+    const airport = blocks.map((block) => JSON.stringify(block.valueText)).join(' ');
+    expect(airport).toContain('aeroporty');
+  });
+
   it('builds the amenity list from what the hotels actually have', async () => {
     // `hotels.amenities JSON` holding Russian strings, as the proposal has it, is neither
     // translatable nor filterable.

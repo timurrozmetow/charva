@@ -381,6 +381,51 @@ describe('signing up for the pilgrimage', () => {
       .where(and(eq(t.umrahTrips.isCurrent, true)));
   });
 
+  it('joins the departure after a closed one rather than refusing everybody', async () => {
+    /*
+     * The fortnight between a list closing and its group leaving.
+     *
+     * `openTrip` took the soonest announced departure and refused if its list had shut, which
+     * was the same thing as «the one you can join» only while there was one departure at a
+     * time. With two — which is the normal state as soon as an operator announces the next —
+     * that fortnight answered 409 to everybody, with an open trip sitting behind it in the
+     * same table. It is also the fortnight in which somebody who has just missed one group is
+     * most likely to be writing in.
+     */
+    const day = 86_400_000;
+    const at = (offsetMs: number): string =>
+      new Date(Date.now() + offsetMs).toISOString().slice(0, 19).replace('T', ' ');
+
+    const [nearest] = await context.app.db.select().from(t.umrahTrips).limit(1);
+    if (nearest === undefined) throw new Error('the seed has no departure to close');
+
+    await context.app.db
+      .update(t.umrahTrips)
+      .set({ signupClosesAt: at(-day) })
+      .where(eq(t.umrahTrips.id, nearest.id));
+
+    const [later] = await context.app.db.insert(t.umrahTrips).values({
+      departAt: at(120 * day),
+      returnAt: at(130 * day),
+      signupClosesAt: at(106 * day),
+      seatsTotal: 45,
+      durationDays: 10,
+      status: 'open',
+    });
+
+    const response = await postSignup(signupBody({ phone: '+99365222333' }));
+    expect(response.statusCode).toBe(201);
+
+    const [row] = await context.app.db.select().from(t.umrahSignups).limit(1);
+    expect(row?.tripId).toBe(later.insertId);
+
+    await context.app.db.delete(t.umrahTrips).where(eq(t.umrahTrips.id, later.insertId));
+    await context.app.db
+      .update(t.umrahTrips)
+      .set({ signupClosesAt: nearest.signupClosesAt })
+      .where(eq(t.umrahTrips.id, nearest.id));
+  });
+
   it('has the same five layers as the other form', async () => {
     expect((await postSignup(signupBody({ website: 'bot' }))).statusCode).toBe(204);
     expect(
