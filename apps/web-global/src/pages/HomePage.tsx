@@ -27,6 +27,7 @@ import { VideoPlayer } from '../components/VideoPlayer';
 import { HeroSearchBar } from '../home/HeroSearchBar';
 import { copyFor, fill } from '../i18n';
 import { cardGridClass } from '../lib/cardGrid';
+import { useLang } from '../lib/routeParams';
 import { path } from '../lib/routes';
 import { useDocumentMeta } from '../lib/useDocumentMeta';
 
@@ -154,7 +155,27 @@ export function HomePage({ lang }: HomePageProps) {
           <Container className="relative flex min-h-dvh flex-col justify-end pb-20 pt-40 tab:pb-14">
             <div data-surface="dark">
               <Eyebrow>{copy.home.heroEyebrow}</Eyebrow>
-              <Heading level={1} size="hero" className="mt-5 max-w-[900px]">
+              {/*
+                Below 1280 the headline stops before the slide rail, rather than running under it.
+
+                The rail is an overlay pinned to the right edge and centred vertically: a label,
+                a gap and the bar — about 150px wide — plus its offset from the edge. At 1280 and
+                up nothing touches it, because the container is 1160 wide and the headline stops
+                at 900. Narrower, the container shrinks but the headline's 900 does not, so it
+                runs the full width and the two meet: at 1024 the container is 904 and the rail
+                reaches 130px into it. On a 1024×768 screen — an iPad in landscape, a window
+                snapped to half a 1080p monitor — the headline is bottom-aligned and tall enough
+                to reach the rail's vertical middle, so «ЙАНГЫКАЛА» sat across the second line.
+
+                200 and not 150: the label is the longest slide title, which is content, and the
+                fifty pixels of air are what keep this from having to be recalculated the first
+                time somebody adds a slide called «Куняургенч».
+              */}
+              <Heading
+                level={1}
+                size="hero"
+                className="mt-5 max-w-[900px] lap:max-w-[calc(100%_-_200px)] mob:max-w-none"
+              >
                 {copy.home.heroTitle}
               </Heading>
               <p className="mt-6 max-w-[560px] text-lead font-light text-body">
@@ -503,4 +524,18 @@ export function HomePage({ lang }: HomePageProps) {
       </Section>
     </>
   );
+}
+
+/**
+ * What the router mounts, and the reason it lives here rather than beside the route.
+ *
+ * A named function and not an inline arrow: the hooks below sit in a function React lint
+ * rules would not recognise as a component if it were anonymous, and the same anonymity is
+ * what would let a hook end up behind a condition without anything noticing.
+ *
+ * It is in this file because the route is lazy, and the chunk boundary is this module: the
+ * router imports only the name, so nothing below is downloaded until the page is asked for.
+ */
+export function HomeRoute() {
+  return <HomePage lang={useLang()} />;
 }

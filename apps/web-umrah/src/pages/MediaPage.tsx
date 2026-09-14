@@ -25,6 +25,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { QueryState } from '../components/QueryState';
 import { copyFor, fill, plural } from '../i18n';
 import { formatDate } from '../lib/formatDate';
+import { useLang } from '../lib/routeParams';
 import { path } from '../lib/routes';
 import { useDocumentMeta } from '../lib/useDocumentMeta';
 
@@ -428,4 +429,18 @@ function GroupVideo({ video, lang, slug }: { video: UmrahGroupMedia; lang: Lang;
       </span>
     </button>
   );
+}
+
+/**
+ * What the router mounts, and the reason it lives here rather than beside the route.
+ *
+ * A named function and not an inline arrow: the hooks below sit in a function React lint
+ * rules would not recognise as a component if it were anonymous, and the same anonymity is
+ * what would let a hook end up behind a condition without anything noticing.
+ *
+ * It is in this file because the route is lazy, and the chunk boundary is this module: the
+ * router imports only the name, so nothing below is downloaded until the page is asked for.
+ */
+export function MediaRoute() {
+  return <MediaPage lang={useLang()} />;
 }

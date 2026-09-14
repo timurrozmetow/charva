@@ -20,6 +20,22 @@ export interface BuilderPanelProps {
 }
 
 /**
+ * Two columns from 1279 down, not three.
+ *
+ * This panel is the middle column of a three-column grid, so it is narrower than the page by
+ * the rail and the estimate beside it — and both of those shrink later than it does. At 1280
+ * the panel is around 630px and three cards fit as drawn. At 1024 the outer grid has already
+ * dropped to `200px 1fr 280px`, which leaves the panel 364: take off its own padding and two
+ * gaps and each card is 89 wide, of which 49 is text. «Экскурсии по городу» and «Внутренний
+ * перелёт» broke into three and four lines, and the panel — which has a `min-h` and six options
+ * on every step — grew past it.
+ *
+ * The breakpoint is the outer grid's, because that is what actually moves: the cards are fine
+ * at any width the panel has three columns' worth of room for.
+ */
+const OPTIONS_GRID = 'grid flex-1 auto-rows-min grid-cols-3 gap-3 lap:grid-cols-2 mob:grid-cols-1';
+
+/**
  * The panel: one step's question and its answers.
  *
  * The options are `role="radio"` or checkboxes depending on the step's kind, inside a named
@@ -79,7 +95,7 @@ export function BuilderPanel({
         <div
           role={multi ? 'group' : 'radiogroup'}
           aria-labelledby={`${groupId}-title`}
-          className="grid flex-1 auto-rows-min grid-cols-3 gap-3 tab:grid-cols-2 mob:grid-cols-1"
+          className={OPTIONS_GRID}
         >
           {step.options.map((option) => {
             const on = isChosen(option.code);

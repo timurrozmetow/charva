@@ -3,19 +3,13 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   Outlet,
-  useParams,
 } from '@tanstack/react-router';
 
 import { useSession } from './auth/SessionProvider';
 import { Shell } from './layout/Shell';
-import { LeadsPage, SignupsPage } from './pages/InboxPage';
 import { LoginPage } from './pages/LoginPage';
-import { MediaPage } from './pages/MediaPage';
-import { OverviewPage } from './pages/OverviewPage';
-import { ResourceFormPage } from './pages/ResourceFormPage';
-import { ResourceListPage } from './pages/ResourceListPage';
-import { SlotsPage } from './pages/SlotsPage';
 
 /**
  * Every screen, behind one gate.
@@ -41,19 +35,19 @@ function Gate() {
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: Gate,
-  notFoundComponent: () => <OverviewPage />,
+  notFoundComponent: lazyRouteComponent(() => import('./pages/OverviewPage'), 'OverviewPage'),
 });
 
 const overviewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: OverviewPage,
+  component: lazyRouteComponent(() => import('./pages/OverviewPage'), 'OverviewPage'),
 });
 
 const mediaRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/media',
-  component: MediaPage,
+  component: lazyRouteComponent(() => import('./pages/MediaPage'), 'MediaPage'),
 });
 
 /**
@@ -77,19 +71,19 @@ const slotsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/slots',
   validateSearch: readSite,
-  component: SlotsPage,
+  component: lazyRouteComponent(() => import('./pages/SlotsPage'), 'SlotsPage'),
 });
 
 const leadsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/inbox/leads',
-  component: LeadsPage,
+  component: lazyRouteComponent(() => import('./pages/InboxPage'), 'LeadsPage'),
 });
 
 const signupsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/inbox/signups',
-  component: SignupsPage,
+  component: lazyRouteComponent(() => import('./pages/InboxPage'), 'SignupsPage'),
 });
 
 /** The search a list keeps in the URL, so a filtered view is a link somebody can send. */
@@ -106,41 +100,20 @@ const resourceListRoute = createRoute({
     ...(Number(search['page']) > 1 ? { page: Number(search['page']) } : {}),
     ...readSite(search),
   }),
-  component: ResourceList,
+  component: lazyRouteComponent(() => import('./pages/ResourceListPage'), 'ResourceListRoute'),
 });
 
 const resourceNewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/data/$resource/new',
-  component: ResourceNew,
+  component: lazyRouteComponent(() => import('./pages/ResourceFormPage'), 'ResourceNewRoute'),
 });
 
 const resourceEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/data/$resource/$id',
-  component: ResourceEdit,
+  component: lazyRouteComponent(() => import('./pages/ResourceFormPage'), 'ResourceEditRoute'),
 });
-
-/*
- * Named functions, not inline arrows.
- *
- * `useParams` is a hook, and a hook inside `component: () => …` sits in a function React's
- * rules do not recognise as a component — decision D-63, learned in phase 5.
- */
-function ResourceList() {
-  const { resource } = useParams({ from: '/data/$resource' });
-  return <ResourceListPage resource={resource} />;
-}
-
-function ResourceNew() {
-  const { resource } = useParams({ from: '/data/$resource/new' });
-  return <ResourceFormPage resource={resource} id={null} />;
-}
-
-function ResourceEdit() {
-  const { resource, id } = useParams({ from: '/data/$resource/$id' });
-  return <ResourceFormPage resource={resource} id={Number(id)} />;
-}
 
 const routeTree = rootRoute.addChildren([
   overviewRoute,

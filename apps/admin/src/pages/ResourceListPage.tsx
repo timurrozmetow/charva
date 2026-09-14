@@ -1,6 +1,6 @@
 import { Badge, Button, buttonClass, EmptyState, Input, QueryState } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { Link, useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { mediaByIdsQuery, reorderRows, type Row, rowsQuery } from '../api/queries';
@@ -296,3 +296,16 @@ export function ResourceListPage({ resource: name }: { resource: string }) {
 }
 
 export type { Row };
+
+/**
+ * What the router mounts, and the reason it lives here rather than beside the route.
+ *
+ * A named function and not an inline arrow: `useParams` is a hook, and a hook inside
+ * `component: () => …` sits in a function React's rules do not recognise as a component
+ * (D-63). It is in this file because the route is lazy, and the chunk boundary is this
+ * module — the router imports only the name.
+ */
+export function ResourceListRoute() {
+  const { resource } = useParams({ from: '/data/$resource' });
+  return <ResourceListPage resource={resource} />;
+}

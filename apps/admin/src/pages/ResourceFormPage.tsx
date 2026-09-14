@@ -1,7 +1,7 @@
 import { type AdminField, ApiRequestError } from '@charva/contracts';
 import { Button, EmptyState, FormError, QueryState } from '@charva/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 
 import { createRow, deleteRow, type Row, rowQuery, updateRow } from '../api/queries';
@@ -415,4 +415,23 @@ function Section({
       {body}
     </section>
   );
+}
+
+/**
+ * The two routes the form serves, and the reason they live here rather than beside the route.
+ *
+ * Named functions and not inline arrows: `useParams` is a hook, and a hook inside
+ * `component: () => …` sits in a function React's rules do not recognise as a component
+ * (D-63). They are in this file because the routes are lazy, and the chunk boundary is this
+ * module — the router imports only the names, so the CRUD scaffolding is not downloaded by
+ * somebody who only opens the inbox.
+ */
+export function ResourceNewRoute() {
+  const { resource } = useParams({ from: '/data/$resource/new' });
+  return <ResourceFormPage resource={resource} id={null} />;
+}
+
+export function ResourceEditRoute() {
+  const { resource, id } = useParams({ from: '/data/$resource/$id' });
+  return <ResourceFormPage resource={resource} id={Number(id)} />;
 }

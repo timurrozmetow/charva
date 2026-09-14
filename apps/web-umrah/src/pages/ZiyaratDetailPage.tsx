@@ -18,6 +18,7 @@ import { QueryState } from '../components/QueryState';
 import { ZiyaratCard } from '../components/ZiyaratCard';
 import { copyFor } from '../i18n';
 import { isNotFound } from '../lib/isNotFound';
+import { useLang, useSlug } from '../lib/routeParams';
 import { path } from '../lib/routes';
 import { useDocumentMeta } from '../lib/useDocumentMeta';
 
@@ -145,4 +146,18 @@ export function ZiyaratDetailPage({ lang, slug }: ZiyaratDetailPageProps) {
       )}
     </>
   );
+}
+
+/**
+ * What the router mounts, and the reason it lives here rather than beside the route.
+ *
+ * A named function and not an inline arrow: the hooks below sit in a function React lint
+ * rules would not recognise as a component if it were anonymous, and the same anonymity is
+ * what would let a hook end up behind a condition without anything noticing.
+ *
+ * It is in this file because the route is lazy, and the chunk boundary is this module: the
+ * router imports only the name, so nothing below is downloaded until the page is asked for.
+ */
+export function ZiyaratDetailRoute() {
+  return <ZiyaratDetailPage lang={useLang()} slug={useSlug()} />;
 }

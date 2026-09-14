@@ -1,12 +1,11 @@
-import { type Lang } from '@charva/contracts';
 import { type QueryClient } from '@tanstack/react-query';
 import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   Outlet,
   redirect,
-  useParams,
 } from '@tanstack/react-router';
 
 import {
@@ -27,21 +26,33 @@ import {
 } from './api/queries';
 import { Layout } from './layout/Layout';
 import { bestLang, isGlobalLang } from './lib/lang';
-import { ArticleDetailPage } from './pages/ArticleDetailPage';
-import { ArticlesPage } from './pages/ArticlesPage';
-import { BuilderPage } from './pages/BuilderPage';
-import { ContactPage } from './pages/ContactPage';
-import { CountryPage } from './pages/CountryPage';
-import { CreditsPage } from './pages/CreditsPage';
-import { GalleryPage } from './pages/GalleryPage';
-import { HomePage } from './pages/HomePage';
-import { HotelDetailPage } from './pages/HotelDetailPage';
-import { HotelsPage } from './pages/HotelsPage';
+import { useLang } from './lib/routeParams';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { ReviewsPage } from './pages/ReviewsPage';
-import { TourDetailPage } from './pages/TourDetailPage';
-import { ToursPage } from './pages/ToursPage';
-import { VideoPage } from './pages/VideoPage';
+
+/*
+ * Every page is its own download, and this file names only the names.
+ *
+ * It used to import all fifteen pages directly, so one bundle held the whole site: a visitor
+ * who opened a tour was sent the builder, the gallery's mosaic packer, the video player and the
+ * form library, and then the tour. That is 170 KB of script before anything appears, on a mobile
+ * connection in Ashgabat — the audience this project's 200 KB budget was written for.
+ *
+ * `lazyRouteComponent` splits at the import and, because the router runs `defaultPreload:
+ * 'intent'`, fetches the chunk while the pointer is still on the link. The click itself is
+ * almost never the moment the download starts, and for the visitor who arrives by keyboard or
+ * by paste it is one extra request against a page that is otherwise a third smaller.
+ *
+ * The loaders stay here and stay eager: they are query keys, they are small, and they are what
+ * lets the data and the code be fetched at the same time rather than one after the other. The
+ * page's chunk and the page's data are therefore requested together, which is the difference
+ * between splitting a route and merely delaying it.
+ *
+ * The homepage is split too, and the round trip it adds is the reason to say why. Its chunk is
+ * three kilobytes and the request for it starts in the same tick as the request for `GET
+ * /global/home` — which is the thing the first paint is actually waiting on, over a mobile
+ * connection, by an order of magnitude. Keeping it eager would have brought its lead form and
+ * its builder back into the entry to save a wait nobody would measure.
+ */
 
 /**
  * Every URL carries its language, and the browser's preference decides only where `/` goes.
@@ -113,23 +124,6 @@ const langRoute = createRoute({
   notFoundComponent: NotFoundInLang,
 });
 
-function useLang(): Lang {
-  const { lang }: { lang?: string } = useParams({ strict: false });
-  return lang !== undefined && isGlobalLang(lang) ? lang : 'ru';
-}
-
-/**
- * The `$slug` of whichever detail route is mounted.
- *
- * Read loosely for the same reason `useLang` is: three routes share one shape, and typing each
- * component against its own route id would be three casts to say one thing. An empty slug is
- * unreachable — the router only mounts these components when the segment exists.
- */
-function useSlug(): string {
-  const { slug }: { slug?: string } = useParams({ strict: false });
-  return slug ?? '';
-}
-
 function LangLayout() {
   return <Layout lang={useLang()} />;
 }
@@ -157,12 +151,8 @@ const homeRoute = createRoute({
     // would make section three pop in as skeletons after everything else has settled.
     void context.queryClient.prefetchQuery(builderConfigQuery(params.lang));
   },
-  component: HomeRoute,
+  component: lazyRouteComponent(() => import('./pages/HomePage'), 'HomeRoute'),
 });
-
-function HomeRoute() {
-  return <HomePage lang={useLang()} />;
-}
 
 const toursRoute = createRoute({
   getParentRoute: () => langRoute,
@@ -185,12 +175,8 @@ const toursRoute = createRoute({
       }),
     );
   },
-  component: ToursRoute,
+  component: lazyRouteComponent(() => import('./pages/ToursPage'), 'ToursRoute'),
 });
-
-function ToursRoute() {
-  return <ToursPage lang={useLang()} />;
-}
 
 /**
  * The builder's whole state is in the query string, so the route accepts anything and the
@@ -206,12 +192,8 @@ const builderRoute = createRoute({
       void context.queryClient.prefetchQuery(builderConfigQuery(params.lang));
     }
   },
-  component: BuilderRoute,
+  component: lazyRouteComponent(() => import('./pages/BuilderPage'), 'BuilderRoute'),
 });
-
-function BuilderRoute() {
-  return <BuilderPage lang={useLang()} />;
-}
 
 /**
  * The three list pages share one search shape — `filter` and `page` — so they share one
@@ -239,7 +221,7 @@ const hotelsRoute = createRoute({
       }),
     );
   },
-  component: HotelsRoute,
+  component: lazyRouteComponent(() => import('./pages/HotelsPage'), 'HotelsRoute'),
 });
 
 const contactRoute = createRoute({
@@ -253,17 +235,13 @@ const contactRoute = createRoute({
       void context.queryClient.prefetchQuery(faqQuery(params.lang));
     }
   },
-  component: ContactRoute,
+  component: lazyRouteComponent(() => import('./pages/ContactPage'), 'ContactRoute'),
 });
-
-function ContactRoute() {
-  return <ContactPage lang={useLang()} />;
-}
 
 const creditsRoute = createRoute({
   getParentRoute: () => langRoute,
   path: 'credits',
-  component: CreditsRoute,
+  component: lazyRouteComponent(() => import('./pages/CreditsPage'), 'CreditsRoute'),
 });
 
 const countryRoute = createRoute({
@@ -273,7 +251,7 @@ const countryRoute = createRoute({
     if (isGlobalLang(params.lang))
       void context.queryClient.prefetchQuery(countryQuery(params.lang));
   },
-  component: CountryRoute,
+  component: lazyRouteComponent(() => import('./pages/CountryPage'), 'CountryRoute'),
 });
 
 const reviewsRoute = createRoute({
@@ -292,7 +270,7 @@ const reviewsRoute = createRoute({
       }),
     );
   },
-  component: ReviewsRoute,
+  component: lazyRouteComponent(() => import('./pages/ReviewsPage'), 'ReviewsRoute'),
 });
 
 const articlesRoute = createRoute({
@@ -306,7 +284,7 @@ const articlesRoute = createRoute({
       articlesQuery(params.lang, { perPage: (deps.page ?? 1) * 9 }),
     );
   },
-  component: ArticlesRoute,
+  component: lazyRouteComponent(() => import('./pages/ArticlesPage'), 'ArticlesRoute'),
 });
 
 const galleryRoute = createRoute({
@@ -323,7 +301,7 @@ const galleryRoute = createRoute({
       }),
     );
   },
-  component: GalleryRoute,
+  component: lazyRouteComponent(() => import('./pages/GalleryPage'), 'GalleryRoute'),
 });
 
 const videoRoute = createRoute({
@@ -340,7 +318,7 @@ const videoRoute = createRoute({
       }),
     );
   },
-  component: VideoRoute,
+  component: lazyRouteComponent(() => import('./pages/VideoPage'), 'VideoRoute'),
 });
 
 /*
@@ -350,35 +328,9 @@ const videoRoute = createRoute({
  * rules cannot recognise as a component — which is not pedantry: the same anonymity is what
  * would let a hook end up behind a condition without anything noticing.
  */
-function HotelsRoute() {
-  return <HotelsPage lang={useLang()} />;
-}
-
-function CountryRoute() {
-  return <CountryPage lang={useLang()} />;
-}
 
 // Named rather than an inline arrow, like every other route here: `useLang` is a hook, and a
 // hook inside `component: () => …` sits in a function React's rules do not see as a component.
-function CreditsRoute() {
-  return <CreditsPage lang={useLang()} />;
-}
-
-function ReviewsRoute() {
-  return <ReviewsPage lang={useLang()} />;
-}
-
-function ArticlesRoute() {
-  return <ArticlesPage lang={useLang()} />;
-}
-
-function GalleryRoute() {
-  return <GalleryPage lang={useLang()} />;
-}
-
-function VideoRoute() {
-  return <VideoPage lang={useLang()} />;
-}
 
 /*
  * The three detail routes.
@@ -397,12 +349,8 @@ const tourDetailRoute = createRoute({
       void context.queryClient.prefetchQuery(tourQuery(params.lang, params.slug));
     }
   },
-  component: TourDetailRoute,
+  component: lazyRouteComponent(() => import('./pages/TourDetailPage'), 'TourDetailRoute'),
 });
-
-function TourDetailRoute() {
-  return <TourDetailPage lang={useLang()} slug={useSlug()} />;
-}
 
 const hotelDetailRoute = createRoute({
   getParentRoute: () => langRoute,
@@ -412,12 +360,8 @@ const hotelDetailRoute = createRoute({
       void context.queryClient.prefetchQuery(hotelQuery(params.lang, params.slug));
     }
   },
-  component: HotelDetailRoute,
+  component: lazyRouteComponent(() => import('./pages/HotelDetailPage'), 'HotelDetailRoute'),
 });
-
-function HotelDetailRoute() {
-  return <HotelDetailPage lang={useLang()} slug={useSlug()} />;
-}
 
 const articleDetailRoute = createRoute({
   getParentRoute: () => langRoute,
@@ -427,12 +371,8 @@ const articleDetailRoute = createRoute({
       void context.queryClient.prefetchQuery(articleQuery(params.lang, params.slug));
     }
   },
-  component: ArticleDetailRoute,
+  component: lazyRouteComponent(() => import('./pages/ArticleDetailPage'), 'ArticleDetailRoute'),
 });
-
-function ArticleDetailRoute() {
-  return <ArticleDetailPage lang={useLang()} slug={useSlug()} />;
-}
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
