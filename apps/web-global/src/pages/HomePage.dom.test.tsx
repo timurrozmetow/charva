@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { builderConfig } from '../test/builderFixture';
-import { formToken, home } from '../test/fixtures';
+import { formToken, home, hotel, tour } from '../test/fixtures';
 import { renderPage, stubApi } from '../test/renderPage';
 
 import { HomePage } from './HomePage';
@@ -53,6 +53,50 @@ describe('the homepage', () => {
     expect(await screen.findByRole('button', { name: /Дарваза/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Йангыкала/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Кратер Дарваза/ })).not.toBeInTheDocument();
+  });
+
+  it('shows half of each preview on a phone, and all of it above 768', async () => {
+    /*
+     * Measured at 375×667 the page ran to about nineteen screens before the footer, because
+     * every grid on it becomes one column below 768: six tours, four hotels and eight mosaic
+     * tiles stop being two tidy rows and become eighteen full-width blocks, each of them a
+     * preview of a page whose «смотреть все» button is directly above it.
+     *
+     * jsdom has no layout, so what is asserted is the class that makes the layout impossible —
+     * the same approach as the navigation island's `shrink-0`. `mob:hidden` is a max-width
+     * variant, so the card is in the document at every width the tests render at and gone only
+     * on a phone; `display: none` takes it out of the accessibility tree with it.
+     */
+    await render(
+      home({
+        featuredTours: Array.from({ length: 6 }, (_, index) =>
+          tour({
+            id: index + 1,
+            slug: `tour-${String(index + 1)}`,
+            title: `Тур ${String(index + 1)}`,
+          }),
+        ),
+        hotels: Array.from({ length: 4 }, (_, index) =>
+          hotel({
+            id: index + 1,
+            slug: `hotel-${String(index + 1)}`,
+            name: `Отель ${String(index + 1)}`,
+          }),
+        ),
+      }),
+    );
+
+    const tourCards = (await screen.findByRole('link', { name: /Все маршруты/ })).closest(
+      'section',
+    );
+    const items = [...(tourCards?.querySelectorAll('ul > li') ?? [])];
+    expect(items).toHaveLength(6);
+    expect(items.filter((item) => item.className.includes('mob:hidden'))).toHaveLength(3);
+
+    // And the three that stay are the first three, not whichever three the browser reached.
+    for (const [index, item] of items.entries()) {
+      expect(item.className.includes('mob:hidden'), `card ${String(index + 1)}`).toBe(index >= 3);
+    }
   });
 
   it('mounts the same builder as `/builder`, writing into this page’s URL', async () => {

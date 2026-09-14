@@ -8,6 +8,15 @@ import { type MosaicTile, packMosaic } from './packMosaic';
 export interface MosaicItem extends MosaicTile {
   id: string;
   content: ReactNode;
+  /**
+   * Extra classes for this tile's cell — in practice, whether it appears at a given width.
+   *
+   * The homepage shows four of its eight photographs on a phone, where the grid is a single
+   * column and eight of them are four screens of scrolling above a «вся галерея» button. It
+   * belongs on the cell rather than inside `content`, because it is the grid item that has to
+   * leave the layout; hiding what is inside it would leave an empty 220-pixel row behind.
+   */
+  className?: string;
 }
 
 export interface MosaicGridProps {
@@ -54,7 +63,7 @@ export function MosaicGrid({ items, columns = mosaic.columns, className }: Mosai
               gridColumn: `span ${String(Math.min(tile?.spanCols ?? 1, columns))}`,
               gridRow: `span ${String(tile?.spanRows ?? 1)}`,
             }}
-            className="overflow-hidden rounded-media"
+            className={cn('overflow-hidden rounded-media', item.className)}
           >
             {item.content}
           </div>

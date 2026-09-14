@@ -26,7 +26,7 @@ import { TourCard } from '../components/TourCard';
 import { VideoPlayer } from '../components/VideoPlayer';
 import { HeroSearchBar } from '../home/HeroSearchBar';
 import { copyFor, fill } from '../i18n';
-import { cardGridClass } from '../lib/cardGrid';
+import { beyondPhonePreview, cardGridClass } from '../lib/cardGrid';
 import { useLang } from '../lib/routeParams';
 import { path } from '../lib/routes';
 import { useDocumentMeta } from '../lib/useDocumentMeta';
@@ -203,7 +203,9 @@ export function HomePage({ lang }: HomePageProps) {
           />
           <ul className={`mt-10 ${cardGridClass((data?.featuredTours ?? []).length)}`}>
             {(data?.featuredTours ?? []).map((tour, index) => (
-              <li key={tour.id}>
+              // Three on a phone, six on anything wider: two rows of three become six
+              // full-width cards below 768, and «Все туры» is directly above them.
+              <li key={tour.id} className={beyondPhonePreview(index, 3)}>
                 <TourCard tour={tour} lang={lang} priority={index < 3} />
               </li>
             ))}
@@ -255,8 +257,10 @@ export function HomePage({ lang }: HomePageProps) {
             }
           />
           <ul className="mt-10 grid list-none grid-cols-4 gap-[22px] p-0 lap:grid-cols-2 mob:grid-cols-1">
-            {(data?.hotels ?? []).map((hotel) => (
-              <li key={hotel.id}>
+            {(data?.hotels ?? []).map((hotel, index) => (
+              // Two on a phone: the row of four is already two rows at `lap:`, and one column
+              // of four is most of a screen each.
+              <li key={hotel.id} className={beyondPhonePreview(index, 2)}>
                 <HotelCard hotel={hotel} lang={lang} />
               </li>
             ))}
@@ -335,10 +339,14 @@ export function HomePage({ lang }: HomePageProps) {
               its gallery page leaves holes the moment anything is filtered.
             */}
             <MosaicGrid
-              items={(data?.gallery ?? []).map((item) => ({
+              items={(data?.gallery ?? []).map((item, index) => ({
                 id: String(item.id),
                 spanCols: item.spanCols,
                 spanRows: item.spanRows,
+                // Four on a phone, where the mosaic is a single column and each tile is a
+                // banner: eight of them is four screens of photographs on the way to the
+                // enquiry form, and «вся галерея» is the button directly above.
+                className: beyondPhonePreview(index, 4),
                 content: (
                   <Link
                     to={path.gallery(lang)}
