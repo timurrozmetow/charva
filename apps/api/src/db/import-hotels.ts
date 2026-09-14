@@ -4,6 +4,7 @@ import { loadEnv } from '../env';
 import { storeUpload } from '../modules/admin/media/service';
 
 import { withDb } from './client';
+import { syncHotelDetails } from './hotel-details';
 import * as t from './schema';
 import { slugify } from './seed/parse';
 
@@ -28,8 +29,12 @@ import { slugify } from './seed/parse';
  * decided by the first bytes rather than the extension, EXIF is stripped, the image is converted
  * and the checksum makes a repeat a no-op. Running this twice does not duplicate a file.
  *
- *   pnpm --filter @charva/api tsx src/db/import-hotels.ts
- *   node dist/import-hotels.js          # on the server, where the bundle is
+ * Amenities and room lists are neither imported nor invented here — `hotel-details.ts` holds
+ * them, reads the amenities out of each hotel's own description and says so line by line.
+ *
+ *   pnpm --filter @charva/api db:hotels
+ *   pnpm --filter @charva/api db:hotels --details-only   # amenities and rooms, nothing fetched
+ *   node dist/import-hotels.js                           # on the server, where the bundle is
  */
 
 type Db = Parameters<Parameters<typeof withDb>[0]>[0];
@@ -147,7 +152,32 @@ async function removeExisting(db: Db): Promise<string[]> {
   return rows.map((row) => row.slug);
 }
 
+/**
+ * Amenities and rooms only, against hotels that are already here.
+ *
+ * The hotels themselves cost ninety photographs over two connections; there is no reason to
+ * pay that again to change two join tables, and re-importing would also discard any editing
+ * the owner has done in the admin panel since.
+ */
+async function detailsOnly(): Promise<void> {
+  await withDb(async (db) => {
+    const counts = await syncHotelDetails(db);
+    process.stdout.write(
+      `${String(counts.amenities)} amenities, ${String(counts.links)} links, ` +
+        `${String(counts.rooms)} rooms\n`,
+    );
+    if (counts.unmatched.length > 0) {
+      process.stdout.write(`left alone: ${counts.unmatched.join(', ')}\n`);
+    }
+  });
+}
+
 async function main(): Promise<void> {
+  if (process.argv.includes('--details-only')) {
+    await detailsOnly();
+    return;
+  }
+
   const env = loadEnv();
 
   await withDb(async (db) => {
@@ -286,6 +316,12 @@ async function main(): Promise<void> {
     }
 
     process.stdout.write(`\nimported ${String(photographs)} photographs\n`);
+
+    const counts = await syncHotelDetails(db);
+    process.stdout.write(
+      `${String(counts.amenities)} amenities, ${String(counts.links)} links, ` +
+        `${String(counts.rooms)} rooms\n`,
+    );
   });
 }
 
