@@ -40,6 +40,7 @@ const STATIC_PAGES: Record<
     { path: '/builder', frequency: 'monthly', priority: '0.8' },
     { path: '/hotels', frequency: 'weekly', priority: '0.8' },
     { path: '/turkmenistan', frequency: 'monthly', priority: '0.7' },
+    { path: '/articles', frequency: 'weekly', priority: '0.7' },
     { path: '/gallery', frequency: 'weekly', priority: '0.6' },
     { path: '/video', frequency: 'weekly', priority: '0.6' },
     { path: '/reviews', frequency: 'weekly', priority: '0.6' },
@@ -123,9 +124,7 @@ async function sectionModified(
     record('/gallery', gallery[0]?.at);
     record('/video', videos[0]?.at);
     record('/reviews', reviews[0]?.at);
-    // The journal has no list page on this site; its rows still move the homepage, so the date
-    // counts towards the site's newest without claiming a path of its own.
-    record(null, articles[0]?.at);
+    record('/articles', articles[0]?.at);
   }
 
   if (site === 'umrah') {
@@ -186,6 +185,14 @@ const SECTION_SOURCES: Record<string, (db: Database) => Promise<boolean>> = {
         .select({ n: t.videos.id })
         .from(t.videos)
         .where(and(eq(t.videos.isPublished, true), isNotNull(t.videos.mediaId)))
+        .limit(1),
+    ),
+  '/articles': async (db) =>
+    hasRows(
+      db
+        .select({ n: t.articles.id })
+        .from(t.articles)
+        .where(eq(t.articles.isPublished, true))
         .limit(1),
     ),
   '/reviews': async (db) =>

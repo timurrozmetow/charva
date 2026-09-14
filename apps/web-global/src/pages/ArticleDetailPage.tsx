@@ -124,9 +124,10 @@ export function ArticleDetailPage({ lang, slug }: ArticleDetailPageProps) {
 
                 <Prose text={article.body} className="mt-10" />
 
+                {/* The journal has a page now; this pointed at the homepage anchor because it
+                    did not. «Все статьи» that lands on the homepage is a link that lies. */}
                 <Link
-                  to={path.home(lang)}
-                  hash="journal"
+                  to={path.articles(lang)}
                   className={buttonClass({ variant: 'outline', className: 'mt-12' })}
                 >
                   {copy.article.backToList}

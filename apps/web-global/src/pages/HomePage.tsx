@@ -17,6 +17,7 @@ import { Link } from '@tanstack/react-router';
 
 import { homeQuery } from '../api/queries';
 import { TourBuilder } from '../builder/TourBuilder';
+import { ArticleCard } from '../components/ArticleCard';
 import { HotelCard } from '../components/HotelCard';
 import { LeadForm } from '../components/LeadForm';
 import { QueryState } from '../components/QueryState';
@@ -245,41 +246,21 @@ export function HomePage({ lang }: HomePageProps) {
       {(data?.articles.length ?? 0) > 0 && (
         <Section space="md" id="journal">
           <Container>
-            <SectionHead eyebrow={copy.home.journal.eyebrow} title={copy.home.journal.title} />
+            <SectionHead
+              eyebrow={copy.home.journal.eyebrow}
+              title={copy.home.journal.title}
+              action={
+                <Link to={path.articles(lang)} className={buttonClass({ variant: 'outline' })}>
+                  {copy.article.backToList}
+                </Link>
+              }
+            />
 
             <div className="mt-10 grid grid-cols-[1.35fr_1fr] gap-[26px] tab:grid-cols-1">
+              {/* The same card `/articles` is built from — it was written out twice the day the
+                  journal got a page, and the second copy is the one that drifts. */}
               {(data?.articles ?? []).slice(0, 1).map((lead) => (
-                <Link
-                  key={lead.id}
-                  to={path.article(lang, lead.slug)}
-                  className="group flex flex-col overflow-hidden rounded-card border border-line bg-surface no-underline"
-                >
-                  <ImageSlot
-                    slotKey={`article-cover-${lead.slug}`}
-                    brief={lead.title}
-                    media={
-                      lead.cover === null ? null : { src: lead.cover.url, alt: lead.cover.alt }
-                    }
-                    sizes={imageSizes.halfPanel}
-                    ratio="16/9"
-                    className="h-[320px] w-full"
-                  />
-                  <div className="flex flex-col gap-3 p-8">
-                    <p className="flex flex-wrap items-center gap-3 text-label font-bold uppercase text-accent-text">
-                      {lead.tag !== '' && <span>{lead.tag}</span>}
-                      {lead.tag !== '' && lead.readMinutes !== null && (
-                        <span aria-hidden="true">·</span>
-                      )}
-                      {lead.readMinutes !== null && (
-                        <span>{fill(copy.common.readMinutes, { count: lead.readMinutes })}</span>
-                      )}
-                    </p>
-                    <h3 className="text-h3 font-medium text-ink">{lead.title}</h3>
-                    {lead.summary !== '' && (
-                      <p className="text-body font-light text-body">{lead.summary}</p>
-                    )}
-                  </div>
-                </Link>
+                <ArticleCard key={lead.id} article={lead} lang={lang} size="lead" />
               ))}
 
               <div className="grid grid-rows-2 gap-[26px]">

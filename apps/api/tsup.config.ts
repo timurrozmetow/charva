@@ -31,6 +31,9 @@ export default defineConfig({
     // The operator's real hotels, from their older site's API. Ships for the same reason: the
     // eighty-four photographs travel between two servers rather than through anybody's laptop.
     'import-hotels': 'src/db/import-hotels.ts',
+    // The journal reaches production the same way. `db:seed` refuses a database that already
+    // has content, and the live one always has content; this entry is how the articles get in.
+    'journal-apply': 'src/db/journal-apply.ts',
   },
   format: ['esm'],
   target: 'node20',

@@ -19,6 +19,7 @@ export const path = {
   video: (lang: Lang) => `/${lang}/video`,
   reviews: (lang: Lang) => `/${lang}/reviews`,
   contact: (lang: Lang) => `/${lang}/contact`,
+  articles: (lang: Lang) => `/${lang}/articles`,
   article: (lang: Lang, slug: string) => `/${lang}/articles/${slug}`,
   credits: (lang: Lang) => `/${lang}/credits`,
 } as const;

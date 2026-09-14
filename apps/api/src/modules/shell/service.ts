@@ -420,6 +420,17 @@ async function defaultImageFor(
       if (image !== null) return image;
     }
 
+    if (route === 'articles') {
+      const [row] = await db
+        .select({ mediaId: t.articles.coverMediaId })
+        .from(t.articles)
+        .where(and(eq(t.articles.isPublished, true), eq(t.articles.isFeatured, true)))
+        .orderBy(t.articles.sortOrder)
+        .limit(1);
+      const image = await first(row?.mediaId);
+      if (image !== null) return image;
+    }
+
     if (route === 'gallery') {
       const [row] = await db
         .select({ mediaId: t.galleryItems.mediaId })

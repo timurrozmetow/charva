@@ -11,6 +11,7 @@ import {
 
 import {
   articleQuery,
+  articlesQuery,
   builderConfigQuery,
   countryQuery,
   faqQuery,
@@ -27,6 +28,7 @@ import {
 import { Layout } from './layout/Layout';
 import { bestLang, isGlobalLang } from './lib/lang';
 import { ArticleDetailPage } from './pages/ArticleDetailPage';
+import { ArticlesPage } from './pages/ArticlesPage';
 import { BuilderPage } from './pages/BuilderPage';
 import { ContactPage } from './pages/ContactPage';
 import { CountryPage } from './pages/CountryPage';
@@ -293,6 +295,20 @@ const reviewsRoute = createRoute({
   component: ReviewsRoute,
 });
 
+const articlesRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: 'articles',
+  validateSearch: listSearch,
+  loaderDeps: ({ search }) => search,
+  loader: ({ context, params, deps }) => {
+    if (!isGlobalLang(params.lang)) return;
+    void context.queryClient.prefetchQuery(
+      articlesQuery(params.lang, { perPage: (deps.page ?? 1) * 9 }),
+    );
+  },
+  component: ArticlesRoute,
+});
+
 const galleryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: 'gallery',
@@ -350,6 +366,10 @@ function CreditsRoute() {
 
 function ReviewsRoute() {
   return <ReviewsPage lang={useLang()} />;
+}
+
+function ArticlesRoute() {
+  return <ArticlesPage lang={useLang()} />;
 }
 
 function GalleryRoute() {
@@ -427,6 +447,7 @@ const routeTree = rootRoute.addChildren([
     contactRoute,
     countryRoute,
     reviewsRoute,
+    articlesRoute,
     galleryRoute,
     videoRoute,
     creditsRoute,

@@ -43,6 +43,7 @@ export function GlobalFooter({ lang, settings }: GlobalFooterProps) {
       title: copy.footer.columns.country,
       links: [
         { key: 'country', label: copy.footer.links.country, href: path.country(lang) },
+        { key: 'journal', label: copy.footer.links.journal, href: path.articles(lang) },
         { key: 'gallery', label: copy.footer.links.gallery, href: path.gallery(lang) },
         { key: 'video', label: copy.footer.links.video, href: path.video(lang) },
         { key: 'reviews', label: copy.footer.links.reviews, href: path.reviews(lang) },

@@ -45,6 +45,8 @@ const GLOBAL_PATTERNS: Pattern[] = [
   { test: /^\/hotels\/([^/]+)$/, route: 'hotels' },
   { test: /^\/hotels\/?$/, route: 'hotels' },
   { test: /^\/articles\/([^/]+)$/, route: 'article' },
+  // After the detail pattern, so a slug is not read as the list.
+  { test: /^\/articles\/?$/, route: 'articles' },
   { test: /^\/turkmenistan\/?$/, route: 'country' },
   { test: /^\/reviews\/?$/, route: 'reviews' },
   { test: /^\/gallery\/?$/, route: 'gallery' },

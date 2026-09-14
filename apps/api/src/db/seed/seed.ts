@@ -5,6 +5,7 @@ import { type Database } from '../client';
 import * as t from '../schema';
 
 import { loadContent, rows, SCREEN_PAGES, type SlottedRow } from './content';
+import { seedJournal } from './journal';
 import { seedOwnerTours } from './owner-content';
 import {
   codeFromLabel,
@@ -140,6 +141,8 @@ export async function seedAll(db: Database): Promise<SeedCounts> {
   record('amenities', await seedAmenities(db));
   record('hotel_rooms', await seedHotelRooms(db));
   record('articles', await seedArticles(db));
+  // Real writing, after the two headline-only rows the design left — see `journal.ts`.
+  record('journal', await seedJournal(db));
   record('gallery_items', await seedGallery(db));
   record('videos', await seedVideos(db));
   record('reviews', await seedReviews(db));

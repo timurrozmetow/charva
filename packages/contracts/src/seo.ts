@@ -32,6 +32,7 @@ export const SITE_ROUTES = {
     'gallery',
     'video',
     'contact',
+    'articles',
     'article',
     'credits',
     'notFound',
@@ -194,6 +195,23 @@ const ROUTE_META = {
       tr: {
         title: 'Türkmenistan videoları — Charva Travel',
         description: 'Türkmenistan gezilerinden videolar: Darvaza krateri, Merv, Ahal-Teke atları.',
+      },
+    },
+    articles: {
+      ru: {
+        title: 'Журнал о Туркменистане — Charva Travel',
+        description:
+          'Как получить визу, когда ехать, что смотреть в Ашхабаде, Мерве и Дарвазе. Пишем то, о чём нас спрашивают перед поездкой.',
+      },
+      en: {
+        title: 'A journal about Turkmenistan — Charva Travel',
+        description:
+          'How the visa works, when to come, what to see in Ashgabat, Merv and Darvaza. The questions people ask us before they travel.',
+      },
+      tr: {
+        title: 'Türkmenistan üzerine dergi — Charva Travel',
+        description:
+          'Vize nasıl alınır, ne zaman gelinir, Aşkabat, Merv ve Darvaza’da ne görülür. Yolculuk öncesi bize sorulanlar.',
       },
     },
     home: {
@@ -465,11 +483,10 @@ const BREADCRUMB_HOME: Record<Lang, string> = {
 /**
  * The middle step, for the detail pages that have one.
  *
- * The journal is deliberately absent. Its articles are reachable from the homepage and from
- * nowhere else — there is no `/articles` list page on this site — so a trail through one would
- * name a URL that answers 404, and a breadcrumb pointing at a missing page is worse than a
- * shorter breadcrumb: Google fetches every step. An article therefore gets «Главная → заголовок»,
- * which is exactly the shape of the site.
+ * The journal was absent here for a while, and correctly so: its articles were reachable from
+ * the homepage and nowhere else, there was no `/articles` page, and a trail naming a URL that
+ * answers 404 is worse than a short trail — Google fetches every step. The page exists now, so
+ * the step is back.
  */
 const BREADCRUMB_SECTION: Record<string, { name: Record<Lang, string>; path: string }> = {
   'global/tours': {
@@ -479,6 +496,10 @@ const BREADCRUMB_SECTION: Record<string, { name: Record<Lang, string>; path: str
   'global/hotels': {
     name: { ru: 'Отели', en: 'Hotels', tr: 'Oteller', tm: 'Oteller' },
     path: '/hotels',
+  },
+  'global/article': {
+    name: { ru: 'Журнал', en: 'Journal', tr: 'Dergi', tm: 'Žurnal' },
+    path: '/articles',
   },
   'umrah/ziyarat': {
     name: {

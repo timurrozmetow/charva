@@ -167,6 +167,26 @@ describe('the catalogue', () => {
     expect(airport).toContain('aeroporty');
   });
 
+  it('gives every article a body, in both languages', async () => {
+    /*
+     * The design left two articles that were a headline and one sentence, with an empty body —
+     * two URLs in the sitemap with nothing on them, which is the thin content Google counts
+     * against a site rather than ignores. A title without text is not an article.
+     */
+    const articles = await db.select().from(t.articles);
+    expect(articles.length).toBeGreaterThanOrEqual(10);
+
+    for (const article of articles) {
+      const body = article.body ?? {};
+      expect((body.ru ?? '').length, article.slug).toBeGreaterThan(600);
+      expect((body.en ?? '').length, article.slug).toBeGreaterThan(600);
+      // Paragraphs, not one block: `Prose` splits on the blank line (D-66).
+      expect((body.ru ?? '').includes('\n\n'), article.slug).toBe(true);
+      // The slug goes into every shared link and must survive being pasted anywhere (D-40).
+      expect(article.slug, article.slug).toMatch(/^[a-z0-9-]+$/);
+    }
+  });
+
   it('builds the amenity list from what the hotels actually have', async () => {
     // `hotels.amenities JSON` holding Russian strings, as the proposal has it, is neither
     // translatable nor filterable.

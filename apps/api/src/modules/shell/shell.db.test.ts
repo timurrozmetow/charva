@@ -446,22 +446,38 @@ describe('the trail under a search result', () => {
     expect(head(tags).jsonLd.find((entry) => entry['@type'] === 'BreadcrumbList')).toBeUndefined();
   });
 
-  it('skips the middle step rather than name a page that does not exist', async () => {
+  it('never names a step that is not a page', async () => {
     /*
-     * There is no `/articles` list page on this site — the two articles are linked from the
-     * homepage and nowhere else. A trail through «Журнал → /articles» would read correctly and
-     * point at a 404, and Google fetches every step of a breadcrumb it is given.
+     * Google fetches every step of a breadcrumb it is given, so a trail through a URL that
+     * answers 404 is worse than a short trail. The journal is why this test exists: its middle
+     * step had to be left out while there was no `/articles` page, and had to come back the day
+     * there was one — a pair of edits in two packages that nothing would otherwise connect.
+     *
+     * So the assertion is about every step of every trail rather than about the journal: each
+     * one has to resolve to a real route on this site.
      */
-    const slug = context.discoveredSlugs.get('/api/v1/global/articles/:slug');
-    expect(slug).toBeDefined();
+    const details: [string, string | undefined][] = [
+      ['tours', context.discoveredSlugs.get('/api/v1/global/tours/:slug')],
+      ['hotels', context.discoveredSlugs.get('/api/v1/global/hotels/:slug')],
+      ['articles', context.discoveredSlugs.get('/api/v1/global/articles/:slug')],
+    ];
 
-    const { tags } = await render('global', `/ru/articles/${slug!}`);
-    const trail = head(tags).jsonLd.find((entry) => entry['@type'] === 'BreadcrumbList');
-    const steps = (trail?.['itemListElement'] ?? []) as { name: string; item: string }[];
+    for (const [section, slug] of details) {
+      expect(slug, section).toBeDefined();
 
-    expect(steps).toHaveLength(2);
-    expect(steps[0]?.item).toBe(`${ORIGIN}/ru`);
-    expect(steps[1]?.item).toBe(`${ORIGIN}/ru/articles/${slug!}`);
+      const { tags } = await render('global', `/ru/${section}/${slug!}`);
+      const trail = head(tags).jsonLd.find((entry) => entry['@type'] === 'BreadcrumbList');
+      const steps = (trail?.['itemListElement'] ?? []) as { name: string; item: string }[];
+
+      expect(steps.length, section).toBeGreaterThanOrEqual(2);
+      expect(steps[0]?.item, section).toBe(`${ORIGIN}/ru`);
+      expect(steps.at(-1)?.item, section).toBe(`${ORIGIN}/ru/${section}/${slug!}`);
+
+      for (const step of steps) {
+        const resolved = resolveRoute('global', step.item.replace(ORIGIN, ''));
+        expect(resolved.matched, `${section}: ${step.item}`).toBe(true);
+      }
+    }
   });
 });
 
