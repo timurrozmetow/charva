@@ -1,6 +1,8 @@
 import { bcp47, SITE_LANGS } from '@charva/contracts';
+import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import * as t from '../../db/schema';
 import { buildTestApp, type TestApp } from '../../test/app';
 
 import { escapeHtml, escapeJsonLd, type HeadTag, injectHead, renderHead } from './html';
@@ -201,6 +203,28 @@ describe('the Umrah head', () => {
      * read by a browser.
      */
     expect(JSON.stringify(event)).not.toMatch(/price|offers|TMT|manat/i);
+  });
+
+  it('still publishes it when no departure is pinned, because pinning is the exception', async () => {
+    /*
+     * This block selected `is_current = true` by itself while everything else on the site
+     * derived the current departure from the dates (D-13). The two agreed only because the seed
+     * happens to set the flag — and in the live database it had been left on a group that was
+     * about to fly, which is precisely the state D-13 says a flag ends up in. Clearing it took
+     * the event off the page and nothing looked different, because nobody sees structured data.
+     */
+    await context.app.db.update(t.umrahTrips).set({ isCurrent: false });
+
+    const { tags } = await render('umrah', '/tm');
+    const event = head(tags).jsonLd.find((entry) => entry['@type'] === 'Event');
+
+    expect(event).toBeDefined();
+    expect(event?.['startDate']).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+
+    await context.app.db
+      .update(t.umrahTrips)
+      .set({ isCurrent: true })
+      .where(eq(t.umrahTrips.id, 1));
   });
 
   it('leaks no price anywhere in the head of any Umrah page', async () => {

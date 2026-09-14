@@ -21,6 +21,11 @@
 #
 # Usage:  ./scripts/deploy.sh [--skip-verify]
 # Reads:  DEPLOY_HOST, DEPLOY_USER, DEPLOY_PORT, DEPLOY_KEY   (or ssh config)
+#
+# DEPLOY_USER is `charva` and should stay that way. systemd starts PM2 at boot as that user
+# (`pm2-charva.service`), so `charva` owns the API process; deploying as anyone else starts a
+# second PM2 daemon whose every instance dies on EADDRINUSE while the old release keeps serving.
+# Step 5b below exists because that happened and reported success twice.
 
 set -euo pipefail
 
@@ -212,6 +217,47 @@ for attempt in 1 2 3 4 5 6 7 8 9 10; do
   fi
   sleep 1
 done
+
+# --------------------------------------------------------------------------------------
+# 5b. Prove that the process answering is *this* release
+# --------------------------------------------------------------------------------------
+# The health check above asks whether something on port 3002 is alive and can reach MySQL. It
+# does not ask whether that something is what this script just shipped, and on 2026-09-14 those
+# came apart: a deploy run as `root` started a second PM2 daemon, every instance it launched
+# died with EADDRINUSE, and the process actually holding the port was a three-day-old release
+# belonging to `charva` — whose PM2 is the one systemd starts at boot. `/ready` answered 200
+# from the old process, the script printed «deployed», and two deploys in a row changed nothing
+# at all. Nothing looked wrong from outside, because the old release serves the site perfectly
+# well; it just is not the one anybody built.
+#
+# So the check is the narrow, unfoolable one: whose working directory does the listener have.
+# It catches a failed reload, a wrong deploy user and an orphaned process with one question.
+# An empty answer counts as a failure too — it means the socket belongs to another user, which
+# is the same disease.
+say "confirm the running process is this release"
+RUNNING=$("${SSH[@]}" "pid=\$(ss -ltnpH 2>/dev/null | grep ':3002 ' | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2); \
+  [ -n \"\$pid\" ] && readlink -f /proc/\$pid/cwd 2>/dev/null || true")
+
+if [[ "$RUNNING" != "$TARGET/apps/api" ]]; then
+  cat >&2 <<EOF
+
+  The release was switched, but port 3002 is held by something else.
+
+    expected  $TARGET/apps/api
+    running   ${RUNNING:-<not visible to $USER — another user owns the socket>}
+
+  The site is still up and still serving the old release. Nothing was rolled back, because
+  there is nothing to roll back to: the switch happened and the old process simply ignored it.
+
+  Usually this is the deploy user. PM2 is started at boot by systemd as \`pm2-charva.service\`,
+  so \`charva\` owns the process; deploying as anyone else starts a second daemon that can never
+  bind the port. Deploy as charva — it is the default — and if a stray daemon is already
+  running, \`pm2 kill\` it as that user first.
+
+EOF
+  exit 1
+fi
+echo "running $RUNNING"
 
 # --------------------------------------------------------------------------------------
 # 6. Keep five releases

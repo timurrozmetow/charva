@@ -81,6 +81,28 @@ export async function currentTrip(
   lang: Lang,
   now: Date = new Date(),
 ): Promise<{ trip: UmrahTrip | null; next: UmrahTrip | null }> {
+  const { chosen, following } = await currentTripRows(db, now);
+  if (chosen === undefined) return { trip: null, next: null };
+
+  return {
+    trip: tripPublic(chosen, lang, now),
+    next: following === undefined ? null : tripPublic(following, lang, now),
+  };
+}
+
+/**
+ * The same two rows, unserialised — the one place the rule lives.
+ *
+ * Exported because the SPA shell needs it too: the `Event` in the Umrah homepage's structured
+ * data used to select `is_current = true` on its own, which is not the rule but the exception to
+ * it. That held while the seed left the flag set, and stopped the moment it was cleared — the
+ * event simply disappeared from the page, invisibly, because nothing renders structured data.
+ * Two readings of «the current departure» is one more than there should be.
+ */
+export async function currentTripRows(
+  db: Database,
+  now: Date,
+): Promise<{ chosen: TripRow | undefined; following: TripRow | undefined }> {
   const sqlNow = now.toISOString().slice(0, 19).replace('T', ' ');
 
   const [override] = await db
@@ -97,14 +119,9 @@ export async function currentTrip(
     .limit(2);
 
   const chosen = override ?? upcoming[0];
-  if (chosen === undefined) return { trip: null, next: null };
+  if (chosen === undefined) return { chosen: undefined, following: undefined };
 
-  const following = upcoming.find((row) => row.id !== chosen.id);
-
-  return {
-    trip: tripPublic(chosen, lang, now),
-    next: following === undefined ? null : tripPublic(following, lang, now),
-  };
+  return { chosen, following: upcoming.find((row) => row.id !== chosen.id) };
 }
 
 // ----------------------------------------------------------------------------------------

@@ -6,6 +6,7 @@ import * as t from '../../db/schema';
 import { mediaUrl, text } from '../../lib/serialize';
 import { deriveTripState } from '../../lib/trip-status';
 import { getSettings, reviewSummary } from '../global/service';
+import { currentTripRows } from '../umrah/service';
 
 import { buildHead, type ShellContext } from './head';
 import { type HeadTag } from './html';
@@ -321,12 +322,13 @@ async function addRouteJsonLd(
    * note in `jsonld.ts` explains why that is not an oversight.
    */
   if (route === 'home' && site === 'umrah') {
-    const [row] = await db
-      .select()
-      .from(t.umrahTrips)
-      .where(eq(t.umrahTrips.isCurrent, true))
-      .limit(1);
+    const now = request.now ?? new Date();
 
+    // The same rule the page itself follows, from the same function. This used to select
+    // `is_current = true` by itself — the exception rather than the rule (D-13) — so clearing
+    // an override that had been pinned to a departed group took the event off the page
+    // silently: nothing renders structured data, so nothing looked different.
+    const { chosen: row } = await currentTripRows(db, now);
     if (row === undefined) return;
 
     const state = deriveTripState(
@@ -338,7 +340,7 @@ async function addRouteJsonLd(
         seatsTotal: row.seatsTotal,
         seatsTaken: row.seatsTaken,
       },
-      request.now ?? new Date(),
+      now,
     );
 
     jsonLd.push(
