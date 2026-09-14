@@ -1,6 +1,6 @@
 import { bcp47, SITE_LANGS } from '@charva/contracts';
-import { desc, eq } from 'drizzle-orm';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { and, desc, eq } from 'drizzle-orm';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import * as t from '../../db/schema';
 import { buildTestApp, type TestApp } from '../../test/app';
@@ -45,8 +45,10 @@ function head(tags: HeadTag[]) {
         ?.attributes?.['content'],
     links: (rel: string) =>
       tags.filter((tag) => tag.tag === 'link' && tag.attributes?.['rel'] === rel),
+    // `type` checked, not just the tag: the head also carries counter snippets, which are
+    // JavaScript and would throw here the moment a test configures one.
     jsonLd: tags
-      .filter((tag) => tag.tag === 'script')
+      .filter((tag) => tag.tag === 'script' && tag.attributes?.['type'] === 'application/ld+json')
       .map((tag) => JSON.parse(tag.text ?? '{}') as Record<string, unknown>),
   };
 }
@@ -460,6 +462,62 @@ describe('the trail under a search result', () => {
     expect(steps).toHaveLength(2);
     expect(steps[0]?.item).toBe(`${ORIGIN}/ru`);
     expect(steps[1]?.item).toBe(`${ORIGIN}/ru/articles/${slug!}`);
+  });
+});
+
+describe('the counters', () => {
+  const scripts = (tags: HeadTag[]) =>
+    tags
+      .filter((tag) => tag.tag === 'script' && tag.attributes?.['type'] !== 'application/ld+json')
+      .map((tag) => `${tag.attributes?.['src'] ?? ''} ${tag.text ?? ''}`)
+      .join('\n');
+
+  afterEach(async () => {
+    await context.app.db
+      .update(t.settings)
+      .set({ value: { metrika: '', ga: '' } })
+      .where(eq(t.settings.settingKey, 'analytics'));
+  });
+
+  it('emits nothing at all while no counter is configured', async () => {
+    /*
+     * The seeded row is empty, and an empty row must produce an empty head.
+     *
+     * A snippet sitting on the page with a placeholder id is worse than no snippet: it costs a
+     * request, it reports nowhere, and it looks installed — which is how a site ends up never
+     * being measured because everybody assumed it already was.
+     */
+    const { tags } = await render('global', '/ru');
+    expect(scripts(tags)).toBe('');
+  });
+
+  it('loads what it is given, and tells the application too', async () => {
+    await context.app.db
+      .update(t.settings)
+      .set({ value: { metrika: '98765432', ga: 'G-ABC1234567' } })
+      .where(and(eq(t.settings.settingKey, 'analytics'), eq(t.settings.site, 'global')));
+
+    const { tags } = await render('global', '/ru');
+    const text = scripts(tags);
+
+    expect(text).toContain('mc.yandex.ru/metrika/tag.js');
+    expect(text).toContain('98765432');
+    expect(text).toContain('googletagmanager.com/gtag/js?id=G-ABC1234567');
+    // The applications report every route change after the first, and read the ids from here
+    // rather than from a build-time constant they would have to be kept in step with.
+    expect(text).toContain('window.__charvaAnalytics=');
+  });
+
+  it('ignores an id that is not shaped like one', async () => {
+    // A settings row is free text somebody types. `<script>` in a counter number would be the
+    // one place on these sites where an admin field reaches a browser unescaped.
+    await context.app.db
+      .update(t.settings)
+      .set({ value: { metrika: '</script><script>alert(1)</script>', ga: 'not-an-id' } })
+      .where(and(eq(t.settings.settingKey, 'analytics'), eq(t.settings.site, 'global')));
+
+    const { tags } = await render('global', '/ru');
+    expect(scripts(tags)).toBe('');
   });
 });
 

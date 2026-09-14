@@ -109,7 +109,9 @@
       "many": "{count} stars",
       "other": "{count} stars"
     },
-    "upToSize": "up to"
+    "upToSize": "up to",
+    "sectionEmpty": "Nothing here yet",
+    "sectionEmptyHint": "We are still filling this section. Write to us and we will help."
   },
   "categories": {
     "classic": "Classic",

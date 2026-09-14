@@ -51,8 +51,10 @@ export function renderTag(tag: HeadTag): string {
 
   if (tag.tag === 'meta' || tag.tag === 'link') return `<${tag.tag}${attributes}>`;
 
-  // `script` carries JSON-LD, already escaped for this context by `escapeJsonLd`; `title`
-  // carries text, which still needs the ordinary treatment.
+  // `script` carries JSON-LD, already escaped for this context by `escapeJsonLd`, or a counter
+  // snippet built from ids that were pattern-checked before they got here — either way it is
+  // JavaScript and HTML-escaping it would break it. `title` carries text, which still needs the
+  // ordinary treatment.
   const text = tag.tag === 'title' ? escapeHtml(tag.text ?? '') : (tag.text ?? '');
   return `<${tag.tag}${attributes}>${text}</${tag.tag}>`;
 }

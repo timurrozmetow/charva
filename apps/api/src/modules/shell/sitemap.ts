@@ -106,10 +106,15 @@ async function sectionModified(
         .select({ at: max(t.videos.updatedAt) })
         .from(t.videos)
         .where(published(t.videos.isPublished)),
+      // A review is shown by `status`, not by the `is_published` its table also carries through
+      // the shared publishable columns — moderation has three states and a boolean has two. Two
+      // flags on one row is one too many, and this is the half nothing else reads: the first
+      // version of this file asked the boolean, so hiding every review left `/reviews` in the
+      // sitemap and the page empty.
       db
         .select({ at: max(t.reviews.updatedAt) })
         .from(t.reviews)
-        .where(published(t.reviews.isPublished)),
+        .where(eq(t.reviews.status, 'published')),
     ]);
 
     record('/tours', tours[0]?.at);
@@ -188,7 +193,7 @@ const SECTION_SOURCES: Record<string, (db: Database) => Promise<boolean>> = {
       db
         .select({ n: t.reviews.id })
         .from(t.reviews)
-        .where(eq(t.reviews.isPublished, true))
+        .where(eq(t.reviews.status, 'published'))
         .limit(1),
     ),
   '/suratlar': async (db) =>

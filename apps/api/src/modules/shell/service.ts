@@ -122,6 +122,7 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
     // Resolved even when a row was found, because a row without a cover still shares better
     // with its section's photograph than with nothing.
     defaultImage: await defaultImageFor(request, route, lang),
+    analytics: await analyticsFor(db, settingsSite),
   };
 
   await addRouteJsonLd(request, route, lang, origin, jsonLd);
@@ -133,6 +134,39 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
     // are the same route id, and the comparison made every chooser URL answer 404 — see the
     // note on `matched` in routes-map.ts.
     found: resolved.matched && !missing,
+  };
+}
+
+/**
+ * Which counters this site has, from `settings`.
+ *
+ * A row rather than an environment variable, so the owner can add a counter from the admin
+ * without a deploy — and so that the wrong id is a value somebody can see and correct rather
+ * than a build artefact nobody can inspect. Both fields are optional and an empty string counts
+ * as absent: half-filled is the state a settings row spends most of its life in.
+ *
+ * Metrika's id is a number and GA4's is a string beginning `G-`; anything that does not look
+ * like the thing it claims to be is dropped rather than emitted, because a malformed id in a
+ * snippet is a script error on every page of the site.
+ */
+async function analyticsFor(
+  db: Database,
+  site: 'global' | 'umrah',
+): Promise<{ metrika: number | null; ga: string | null }> {
+  const [row] = await db
+    .select({ value: t.settings.value })
+    .from(t.settings)
+    .where(and(eq(t.settings.site, site), eq(t.settings.settingKey, 'analytics')))
+    .limit(1);
+
+  const value = (row?.value ?? {}) as Record<string, unknown>;
+
+  const metrikaRaw = typeof value['metrika'] === 'string' ? value['metrika'].trim() : '';
+  const gaRaw = typeof value['ga'] === 'string' ? value['ga'].trim() : '';
+
+  return {
+    metrika: /^\d{6,10}$/.test(metrikaRaw) ? Number(metrikaRaw) : null,
+    ga: /^G-[A-Z0-9]{6,12}$/i.test(gaRaw) ? gaRaw : null,
   };
 }
 

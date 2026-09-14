@@ -48,6 +48,76 @@ export interface ShellContext {
   defaultImage?: ShareImage | null | undefined;
   /** Structured data for this page, already shaped. */
   jsonLd?: unknown[] | undefined;
+  /** Counter ids from `settings`. Absent or empty means no script is emitted at all. */
+  analytics?: { metrika: number | null; ga: string | null } | undefined;
+}
+
+/**
+ * The counters, loaded from the head so the first page is recorded before the bundle runs.
+ *
+ * Both snippets are the vendors' own, with two deliberate departures. The ids are interpolated
+ * from `settings` rather than typed in, so nothing here can end up reporting into the account of
+ * whoever last copied a snippet off a blog; and the pair is also written to
+ * `window.__charvaAnalytics`, which is how the applications know whether to report a route
+ * change without importing a key they would then have to keep in step.
+ *
+ * Nothing is emitted when nothing is configured. A page with a counter stub and no id is worse
+ * than a page with no counter: it costs a request, it reports nowhere, and it looks installed.
+ */
+function analyticsTags(analytics: ShellContext['analytics']): HeadTag[] {
+  const metrika = analytics?.metrika ?? null;
+  const ga = analytics?.ga ?? null;
+  if (metrika === null && ga === null) return [];
+
+  const tags: HeadTag[] = [
+    {
+      tag: 'script',
+      text: `window.__charvaAnalytics=${JSON.stringify({
+        ...(metrika === null ? {} : { metrika }),
+        ...(ga === null ? {} : { ga }),
+      })};`,
+    },
+  ];
+
+  if (metrika !== null) {
+    tags.push({
+      tag: 'script',
+      text:
+        `(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};` +
+        `m[i].l=1*new Date();for(var j=0;j<e.scripts.length;j++){if(e.scripts[j].src===r)return;}` +
+        `k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,` +
+        `a.parentNode.insertBefore(k,a)})` +
+        `(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');` +
+        // `defer: true` because the applications report views themselves: without it the first
+        // route change is counted twice, once by the counter and once by `trackPageview`.
+        `ym(${String(metrika)},'init',{defer:true,clickmap:true,trackLinks:true,` +
+        `accurateTrackBounce:true,webvisor:true});` +
+        `ym(${String(metrika)},'hit',location.href);`,
+    });
+  }
+
+  if (ga !== null) {
+    tags.push(
+      {
+        tag: 'script',
+        attributes: {
+          async: 'async',
+          src: `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga)}`,
+        },
+      },
+      {
+        tag: 'script',
+        text:
+          `window.dataLayer=window.dataLayer||[];` +
+          `function gtag(){dataLayer.push(arguments);}gtag('js',new Date());` +
+          // The applications send every later view, so the automatic one is turned off here for
+          // the same reason Metrika's is deferred.
+          `gtag('config',${JSON.stringify(ga)},{send_page_view:true});`,
+      },
+    );
+  }
+
+  return tags;
 }
 
 export function buildHead(context: ShellContext): HeadTag[] {
@@ -121,6 +191,8 @@ export function buildHead(context: ShellContext): HeadTag[] {
       text: escapeJsonLd(entry),
     });
   }
+
+  tags.push(...analyticsTags(context.analytics));
 
   return tags;
 }

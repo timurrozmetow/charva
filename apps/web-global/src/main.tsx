@@ -1,5 +1,5 @@
 import { ApiRequestError } from '@charva/contracts';
-import { hideBootSplash } from '@charva/ui';
+import { hideBootSplash, trackPageview } from '@charva/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
@@ -47,6 +47,17 @@ createRoot(container).render(
     </QueryClientProvider>
   </StrictMode>,
 );
+
+/*
+ * Every later page view.
+ *
+ * The counters in the head record the page the bundle loaded on and neither of them notices a
+ * client-side route change, so without this a visit to six pages is reported as one. The first
+ * resolve is the page already counted, which `trackPageview` drops by address.
+ */
+router.subscribe('onResolved', () => {
+  trackPageview(window.location.href);
+});
 
 // The cover comes off once React has painted, not once it has been told to — see `bootSplash`.
 hideBootSplash();

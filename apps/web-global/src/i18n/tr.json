@@ -109,7 +109,9 @@
       "many": "{count} yıldız",
       "other": "{count} yıldız"
     },
-    "upToSize": "en fazla"
+    "upToSize": "en fazla",
+    "sectionEmpty": "Burada henüz bir şey yok",
+    "sectionEmptyHint": "Bu bölümü hâlâ dolduruyoruz. Bize yazın, yardımcı olalım."
   },
   "categories": {
     "classic": "Klasik",

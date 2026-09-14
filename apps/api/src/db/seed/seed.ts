@@ -1139,6 +1139,21 @@ async function seedSettings(db: Database): Promise<number> {
       settingKey: 'socials',
       value: { instagram: '#', telegram: '#', whatsapp: '#', youtube: '#' },
     },
+    /*
+     * The counters, empty and waiting.
+     *
+     * Seeded blank on purpose rather than left out: an empty row is a field an editor can find
+     * in the admin and fill in, while an absent one is a feature nobody knows exists. Nothing is
+     * emitted until an id is there, and an id that does not look like an id is ignored rather
+     * than written into a snippet — a malformed counter number is a script error on every page.
+     *
+     * Two counters, per site, because reachability is not the same everywhere. The Umrah
+     * audience is inside Turkmenistan, where whether any particular third party answers is not
+     * something to assume — the same reasoning that kept Cloudflare out in D-19 — so the owner
+     * can run Metrika there and both on Global without either decision being in the code.
+     */
+    { site: 'global', settingKey: 'analytics', value: { metrika: '', ga: '' } },
+    { site: 'umrah', settingKey: 'analytics', value: { metrika: '', ga: '' } },
   ];
 
   await db.insert(t.settings).values(values);

@@ -17,6 +17,7 @@ import {
   Input,
   RadioChipGroup,
   Textarea,
+  trackGoal,
 } from '@charva/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -185,6 +186,17 @@ export function LeadForm({
         }
         throw error;
       }
+    },
+    /*
+     * The only number on this site worth optimising for.
+     *
+     * Visits are a vanity metric for a tour operator: what matters is how many of them ended
+     * with somebody writing in, and from which page. `kind` rides along so «бронирование» and
+     * «общий вопрос» can be told apart (D-68), and so can an enquiry sent from a tour page and
+     * one sent from the builder.
+     */
+    onSuccess: () => {
+      trackGoal('lead_sent', { kind, from: contextTitle ?? 'contact' });
     },
   });
 

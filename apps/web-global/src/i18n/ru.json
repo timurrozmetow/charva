@@ -109,7 +109,9 @@
       "many": "{count} звёзд",
       "other": "{count} звёзд"
     },
-    "upToSize": "до"
+    "upToSize": "до",
+    "sectionEmpty": "Здесь пока пусто",
+    "sectionEmptyHint": "Мы наполняем этот раздел. Напишите нам — расскажем и подберём вариант."
   },
   "categories": {
     "classic": "Классика",

@@ -6,7 +6,7 @@ import {
   type UmrahSignupRequest,
   umrahSignupRequest,
 } from '@charva/contracts';
-import { Button, Checkbox, Chip, Field, FormError, Input, Textarea } from '@charva/ui';
+import { Button, Checkbox, Chip, Field, FormError, Input, Textarea, trackGoal } from '@charva/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
@@ -129,6 +129,11 @@ export function SignupForm({ lang, open, className }: SignupFormProps) {
         }
         throw error;
       }
+    },
+    // The one number this site exists to produce. `peopleCount` rides along because a family of
+    // five and one pilgrim are not the same event to whoever reads the report.
+    onSuccess: (_result, values) => {
+      trackGoal('signup_sent', { people: Number(values.peopleCount) });
     },
   });
 

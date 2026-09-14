@@ -105,7 +105,20 @@ export function FilteredGrid({
             skeletonCount={skeletonCount}
             {...(skeletonClassName === undefined ? {} : { skeletonClassName })}
           >
-            {shown === 0 ? (
+            {/*
+              Nothing matched, and nothing to match — two different things.
+
+              «Попробуйте снять фильтр» is right when a filter hid the rows and is a lie when the
+              section is empty: there is no filter on, and the button offering to clear it does
+              nothing when pressed, which reads as a broken page rather than an empty one. The
+              two are told apart by `total`, which counts the section rather than the view.
+            */}
+            {total === 0 ? (
+              <EmptyState
+                title={copy.common.sectionEmpty}
+                description={copy.common.sectionEmptyHint}
+              />
+            ) : shown === 0 ? (
               <EmptyState
                 title={copy.common.nothingFound}
                 description={copy.common.nothingFoundHint}
