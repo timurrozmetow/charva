@@ -538,6 +538,14 @@ export interface ContrastPair {
   /** Font size in px at the smallest place this pair appears. */
   size: number;
   bold?: boolean;
+  /**
+   * A border, a ring, an icon — not text.
+   *
+   * WCAG 1.4.11 asks 3:1 of these whatever their size, where text is judged by how large it is.
+   * The focus ring is the reason the flag exists: it was drawn in the accent, which is 2.09:1 on
+   * cream, and no font size would have made that acceptable.
+   */
+  nonText?: boolean;
   where: string;
 }
 
@@ -574,12 +582,27 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   { fg: globalPalette.brown300, bg: globalPalette.bg, size: 15, where: 'empty estimate values' },
   { fg: sand.dark, bg: globalPalette.bg, size: 11, bold: true, where: 'links and eyebrows' },
   { fg: sand.deep, bg: globalPalette.bg, size: 14, where: 'active nav item' },
+  { fg: sand.deep, bg: globalPalette.bg, size: 14, nonText: true, where: 'focus ring on cream' },
+  {
+    fg: sand.deep,
+    bg: globalPalette.surface,
+    size: 14,
+    nonText: true,
+    where: 'focus ring on a card',
+  },
 
   // --- Global on dark ---
   { fg: globalPalette.cream, bg: globalPalette.brown900, size: 15, where: 'text on dark sections' },
   { fg: globalPalette.cream, bg: globalPalette.brown800, size: 15, where: 'the video page' },
   { fg: globalPalette.cream, bg: globalPalette.brown950, size: 14, where: 'footer text' },
   { fg: sand.DEFAULT, bg: globalPalette.brown900, size: 11, bold: true, where: 'eyebrows on dark' },
+  {
+    fg: sand.DEFAULT,
+    bg: globalPalette.brown900,
+    size: 14,
+    nonText: true,
+    where: 'focus ring on a dark section',
+  },
   { fg: sand.DEFAULT, bg: globalPalette.brown800, size: 15, where: 'links on the video page' },
   { fg: sand.DEFAULT, bg: globalPalette.brown950, size: 11, bold: true, where: 'footer titles' },
   { fg: sand.contrast, bg: sand.DEFAULT, size: 13, bold: true, where: 'text on the sand button' },

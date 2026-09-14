@@ -1,9 +1,10 @@
 import { type Lang } from '@charva/contracts';
-import { TopProgress } from '@charva/ui';
+import { TopProgress, SkipLink } from '@charva/ui';
 import { useIsFetching, useQuery } from '@tanstack/react-query';
 import { Outlet, useLocation, useRouterState } from '@tanstack/react-router';
 
 import { settingsQuery } from '../api/queries';
+import { copyFor } from '../i18n';
 import { path } from '../lib/routes';
 
 import { GlobalFooter } from './GlobalFooter';
@@ -21,6 +22,7 @@ export interface LayoutProps {
  * of hearing them on every page.
  */
 export function Layout({ lang }: LayoutProps) {
+  const copy = copyFor(lang);
   // Shared by the footer and, later, by the contact page. One request per language for both.
   const { data: settings } = useQuery(settingsQuery(lang));
   const { pathname } = useLocation();
@@ -48,6 +50,7 @@ export function Layout({ lang }: LayoutProps) {
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-bg">
+      <SkipLink targetId="content">{copy.nav.skipToContent}</SkipLink>
       <TopProgress active={navigating || fetching} />
       <GlobalNav lang={lang} overlay={overlay} />
 

@@ -17,6 +17,7 @@ const LABELS = {
   nav: 'Основная навигация',
   openMenu: 'Открыть меню',
   closeMenu: 'Закрыть меню',
+  menu: 'Меню',
 };
 
 function renderNavLink(
@@ -73,6 +74,32 @@ describe('SiteNav', () => {
     // And the menu hides on its own breakpoint rather than the shared one: the island runs out
     // of room two hundred pixels before the page does.
     expect(container.querySelector('ul.navbar\\:hidden')).not.toBeNull();
+  });
+
+  it('is a banner landmark, and its sheet says it is a dialog', async () => {
+    /*
+     * Two findings of one audit, and both are about a page having nothing to jump between.
+     *
+     * The island was a plain div, so a screen-reader user listing landmarks saw `main` and the
+     * footer and nothing above them. And the sheet has trapped focus since it was written —
+     * which is a modal whether or not it says so, and an unannounced container somebody cannot
+     * tab out of reads as a bug rather than as a decision.
+     */
+    const user = userEvent.setup();
+    render(
+      <SiteNav
+        items={ITEMS}
+        logo={<a href="/ru">Charva</a>}
+        renderLink={renderNavLink}
+        labels={LABELS}
+      />,
+    );
+
+    expect(screen.getByRole('banner')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Открыть меню' }));
+    const sheet = screen.getByRole('dialog', { name: 'Меню' });
+    expect(sheet).toHaveAttribute('aria-modal', 'true');
   });
 
   it('is a named landmark with a marked current page', () => {

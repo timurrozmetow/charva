@@ -63,6 +63,15 @@ interface ThemeRoles {
   accentText: string;
   /** Active nav item and active tint-chip text. */
   accentActive: string;
+  /**
+   * The keyboard focus ring.
+   *
+   * Its own role rather than the accent, because WCAG 1.4.11 wants 3:1 against what is behind
+   * it and the accent gives 2.09:1 on cream — a ring a sighted keyboard user has to hunt for is
+   * the failure the rule is written about. On a dark surface the same sand is 7.44:1, so the
+   * value follows the surface exactly like every other role here (D-29).
+   */
+  focus: string;
   /** Text on an accent fill. */
   onAccent: string;
   /** The darkest brand surface — footer. */
@@ -137,6 +146,8 @@ const darkSurface: Vars = {
   // The muted sand is a link colour on light and unreadable on dark; the bright one is both.
   '--c-accent-text': 'var(--c-accent)',
   '--c-accent-active': 'var(--c-accent-hover)',
+  // The deep sand disappears on dark; the bright one is 7.44:1 there.
+  '--c-focus': 'var(--c-accent)',
   '--c-danger': 'var(--c-danger-on-dark)',
   // Borders flip to light. Shadows do not — `--c-ink-rgb` is untouched on purpose.
   '--c-border-rgb': 'var(--c-cream-rgb)',
@@ -157,6 +168,7 @@ const globalTheme: ThemeRoles = {
   accentHover: sand.light,
   accentText: sand.dark,
   accentActive: sand.deep,
+  focus: sand.deep,
   onAccent: sand.contrast,
   dark: globalPalette.brown950,
   darkAlt: globalPalette.brown900,
@@ -189,6 +201,7 @@ const umrahTheme: ThemeRoles = {
   accentHover: sand.light,
   accentText: umrahPalette.link,
   accentActive: sand.deep,
+  focus: sand.deep,
   onAccent: sand.contrast,
   dark: umrahPalette.green950,
   darkAlt: umrahPalette.green800,
@@ -227,6 +240,8 @@ const choiceTheme: ThemeRoles = {
   accentHover: sand.light,
   accentText: sand.DEFAULT,
   accentActive: sand.light,
+  // Choice is dark everywhere, so the bright sand is the readable one.
+  focus: sand.DEFAULT,
   onAccent: choicePalette.btnText,
   dark: choicePalette.bg,
   darkAlt: choicePalette.bg,

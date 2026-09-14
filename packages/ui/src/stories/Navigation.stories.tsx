@@ -57,6 +57,7 @@ export const Header: Story = {
             nav: 'Основная навигация',
             openMenu: 'Открыть меню',
             closeMenu: 'Закрыть меню',
+            menu: 'Меню',
           }}
           langSwitcher={
             <LangSwitcher

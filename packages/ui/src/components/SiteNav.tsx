@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { cn } from '../cn';
-import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useFocusTrap, useScrollLock } from '../hooks/useFocusTrap';
 
 import { Container } from './Container';
 import { Divider } from './Divider';
@@ -25,6 +25,8 @@ export interface SiteNavLabels {
   nav: string;
   openMenu: string;
   closeMenu: string;
+  /** Names the sheet itself, which is a dialog once it traps focus — «Меню». */
+  menu: string;
 }
 
 export interface SiteNavProps {
@@ -95,6 +97,16 @@ export function SiteNav({
   const [open, setOpen] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
 
+  /*
+   * The page behind an open menu does not scroll.
+   *
+   * The sheet already traps focus, which is half of behaving like a dialog; the other half was
+   * missing, so on a phone a finger dragged the page underneath while the menu sat on top of
+   * it. `Modal` has locked the scroll since it was written — this is the same hook, and the
+   * sheet simply never asked for it.
+   */
+  useScrollLock(open);
+
   useFocusTrap(sheetRef, {
     active: open,
     onEscape: () => {
@@ -123,7 +135,9 @@ export function SiteNav({
     });
 
   return (
-    <div
+    // A `header` rather than a `div`: this is the site banner, and a page with no banner
+    // landmark leaves a screen-reader user nothing to jump between but `main` and the footer.
+    <header
       className={cn(
         'z-[100] pt-[18px]',
         overlay ? 'absolute inset-x-0 top-0' : 'relative',
@@ -214,6 +228,16 @@ export function SiteNav({
         {open && (
           <div
             ref={sheetRef}
+            /*
+             * Announced as what it behaves like.
+             *
+             * Focus cannot leave it and the page cannot scroll, which is a modal whether or not
+             * it says so — and a screen-reader user who finds themselves unable to get out of an
+             * unannounced container has no way to know it is deliberate.
+             */
+            role="dialog"
+            aria-modal="true"
+            aria-label={labels.menu}
             className={cn(
               'mt-3 hidden rounded-panel border border-line bg-island p-4 shadow-drop',
               // Out of the bar above it — the sheet is full width, so the top edge is what
@@ -230,6 +254,6 @@ export function SiteNav({
           </div>
         )}
       </Container>
-    </div>
+    </header>
   );
 }

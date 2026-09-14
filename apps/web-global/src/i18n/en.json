@@ -21,7 +21,9 @@
       "gallery": "Gallery",
       "video": "Video",
       "reviews": "Reviews"
-    }
+    },
+    "menu": "Menu",
+    "skipToContent": "Skip to content"
   },
   "footer": {
     "label": "Site footer",

@@ -81,6 +81,7 @@ export function GlobalNav({ lang, overlay = false }: GlobalNavProps) {
         nav: copy.nav.label,
         openMenu: copy.nav.openMenu,
         closeMenu: copy.nav.closeMenu,
+        menu: copy.nav.menu,
       }}
       logo={
         <Link to={path.home(lang)} aria-label={copy.nav.home} className="inline-flex items-center">

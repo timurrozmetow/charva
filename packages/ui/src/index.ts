@@ -40,6 +40,7 @@ export * from './components/Section';
 export * from './components/SectionHead';
 export * from './components/SiteFooter';
 export * from './components/SiteNav';
+export * from './components/SkipLink';
 export * from './components/Skeleton';
 export * from './components/StarRating';
 export * from './components/StatStrip';

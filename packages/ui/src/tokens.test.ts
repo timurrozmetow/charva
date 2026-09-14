@@ -21,7 +21,8 @@ import {
  */
 describe('every text colour clears WCAG AA on the surfaces it is used on', () => {
   for (const pair of CONTRAST_PAIRS) {
-    const need = requiredRatio(pair.size, pair.bold ?? false);
+    // A ring or a border is judged by 1.4.11 rather than by 1.4.3: 3:1, whatever its size.
+    const need = pair.nonText === true ? 3 : requiredRatio(pair.size, pair.bold ?? false);
     it(`${pair.fg} on ${pair.bg} at ${String(pair.size)}px — ${pair.where}`, () => {
       const actual = contrastRatio(pair.fg, pair.bg);
       expect(

@@ -51,7 +51,7 @@ export function Breadcrumbs({ lang, trail }: BreadcrumbsProps) {
                 ) : (
                   <Link
                     to={crumb.href}
-                    className="transition-colors duration-colour hover:text-accent-text"
+                    className="-my-2 inline-flex min-h-tap items-center transition-colors duration-colour hover:text-accent-text"
                   >
                     {crumb.label}
                   </Link>

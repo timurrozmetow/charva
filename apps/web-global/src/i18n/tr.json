@@ -21,7 +21,9 @@
       "gallery": "Galeri",
       "video": "Video",
       "reviews": "Yorumlar"
-    }
+    },
+    "menu": "Menü",
+    "skipToContent": "İçeriğe geç"
   },
   "footer": {
     "label": "Site altbilgisi",

@@ -302,7 +302,13 @@ function Indicators({
               onSelect(position);
             }}
             className={cn(
-              'group flex items-center gap-3 transition-colors duration-caret',
+              /*
+                The bar is three pixels high and the label beside it eleven — together a target
+                of 140×11, which is a quarter of what a finger needs. The padding makes the
+                button 24 high and the negative margin gives the space back to the layout, so
+                the rail looks exactly as drawn and can be hit.
+              */
+              'group -my-2.5 flex items-center gap-3 py-2.5 transition-colors duration-caret',
               rail && 'justify-end',
             )}
           >
@@ -343,7 +349,9 @@ function Indicators({
         onClick={onToggleStopped}
         aria-label={stopped ? labels.play : labels.pause}
         className={cn(
-          'grid h-8 w-8 place-items-center rounded-full border border-line text-dark-on',
+          // 44, not 32: WCAG 2.5.8 sets the floor at 24 and 2.5.5 asks 44, and this is a
+          // control somebody reaches for on a phone while a slider is moving under their thumb.
+          'grid size-11 place-items-center rounded-full border border-line text-dark-on',
           'transition-colors duration-colour hover:bg-line-soft',
           rail ? 'mt-2 self-end' : 'ml-2',
         )}
