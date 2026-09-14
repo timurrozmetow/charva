@@ -1,14 +1,22 @@
-import { type Lang, type Site } from '@charva/contracts';
+import {
+  breadcrumbHome,
+  breadcrumbSection,
+  type ImageWidth,
+  IMAGE_WIDTHS,
+  imageUrl,
+  type Lang,
+  type Site,
+} from '@charva/contracts';
 import { and, eq } from 'drizzle-orm';
 
 import { type Database } from '../../db/client';
 import * as t from '../../db/schema';
-import { mediaUrl, text } from '../../lib/serialize';
+import { text } from '../../lib/serialize';
 import { deriveTripState } from '../../lib/trip-status';
 import { getSettings, reviewSummary } from '../global/service';
 import { currentTripRows } from '../umrah/service';
 
-import { buildHead, type ShellContext } from './head';
+import { buildHead, type ShareImage, type ShellContext } from './head';
 import { type HeadTag } from './html';
 import * as ld from './jsonld';
 import { resolveRoute, unmatchedRoute } from './routes-map';
@@ -60,11 +68,38 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
       email: settings.contacts.email,
       address: settings.contacts.address,
       socials: Object.values(settings.socials).filter((value) => value !== ''),
-      logoUrl: null,
+      // The one image on these sites that is not a photograph and not content: it ships with the
+      // SPA at a fixed path, so it survives every rebuild, which a hashed asset would not.
+      // Google wants a logo on the organisation to put a mark on a knowledge panel.
+      logoUrl: `${origin}/apple-touch-icon.png`,
     }),
   ];
 
   const content = await loadContent(request, resolved.route, resolved.slug, lang, url, jsonLd);
+
+  /*
+   * The trail, for the second line of a search result.
+   *
+   * `ld.breadcrumbs` has existed since phase 8, with a test, and was called from nowhere — the
+   * same shape of gap as D-88. Only detail pages get one, because a breadcrumb list of a single
+   * item is what Google ignores anyway, and the pages that need it are the deep ones.
+   */
+  if (content !== null && resolved.slug !== null) {
+    // Two steps when there is no section page to point at — an article, whose list page this
+    // site does not have. A trail naming a URL that answers 404 is worse than a shorter one:
+    // every step gets fetched.
+    const section = breadcrumbSection(site, resolved.route, lang);
+
+    jsonLd.push(
+      ld.breadcrumbs([
+        { name: breadcrumbHome(lang), url: `${origin}/${lang}` },
+        ...(section === null
+          ? []
+          : [{ name: section.name, url: `${origin}/${lang}${section.path}` }]),
+        { name: content.name, url },
+      ]),
+    );
+  }
 
   /*
    * A detail path whose slug names no row is a 404, and its head has to say so.
@@ -84,6 +119,9 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
     pathAfterLang: resolved.pathAfterLang,
     jsonLd,
     ...(content === null ? {} : { content }),
+    // Resolved even when a row was found, because a row without a cover still shares better
+    // with its section's photograph than with nothing.
+    defaultImage: await defaultImageFor(request, route, lang),
   };
 
   await addRouteJsonLd(request, route, lang, origin, jsonLd);
@@ -101,7 +139,7 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
 interface ShellContent {
   name: string;
   summary: string | null;
-  imageUrl: string | null;
+  image: ShareImage | null;
 }
 
 /**
@@ -130,13 +168,14 @@ async function loadContent(
       text(row.title, lang),
       text(row.summary, lang),
       row.coverMediaId,
+      lang,
     );
     jsonLd.push(
       ld.touristTrip({
         name: content.name,
         description: content.summary ?? '',
         url,
-        imageUrl: content.imageUrl,
+        imageUrl: content.image?.url ?? null,
         days: row.days,
         priceMinor: row.priceFromMinor,
         currency: row.priceCurrency,
@@ -154,13 +193,14 @@ async function loadContent(
       text(row.name, lang),
       text(row.summary, lang),
       row.coverMediaId,
+      lang,
     );
     jsonLd.push(
       ld.hotel({
         name: content.name,
         description: content.summary ?? '',
         url,
-        imageUrl: content.imageUrl,
+        imageUrl: content.image?.url ?? null,
         city: text(row.city, lang),
         stars: row.stars,
       }),
@@ -177,13 +217,14 @@ async function loadContent(
       text(row.title, lang),
       text(row.summary, lang),
       row.coverMediaId,
+      lang,
     );
     jsonLd.push(
       ld.article({
         headline: content.name,
         description: content.summary ?? '',
         url,
-        imageUrl: content.imageUrl,
+        imageUrl: content.image?.url ?? null,
         publishedAt: row.publishedAt?.toISOString() ?? null,
         site: request.site,
       }),
@@ -204,13 +245,14 @@ async function loadContent(
       text(row.name, lang),
       text(row.description, lang),
       row.coverMediaId,
+      lang,
     );
     jsonLd.push(
       ld.touristAttraction({
         name: content.name,
         description: content.summary ?? '',
         url,
-        imageUrl: content.imageUrl,
+        imageUrl: content.image?.url ?? null,
         city: row.city,
       }),
     );
@@ -225,27 +267,174 @@ async function asContent(
   name: string,
   summary: string,
   mediaId: number | null,
+  lang: Lang,
 ): Promise<ShellContent> {
   return {
     name,
     summary: summary === '' ? null : summary,
-    imageUrl: await imageFor(request, mediaId),
+    image: await imageFor(request, mediaId, lang),
   };
 }
 
+/**
+ * The widest derivative that is not an upscale, and not larger than a preview needs.
+ *
+ * The original is what `og:image` used to point at, and the originals here are eight hundred
+ * kilobytes and up. Facebook, Telegram and WhatsApp all fetch that file on a machine that is
+ * not the reader's, on a timer, and WhatsApp gives up on anything much past a quarter of a
+ * megabyte — so the link that gets forwarded most in this market is exactly the one that
+ * showed no picture. 1280 is past the point where a card looks any better.
+ */
+function shareWidth(intrinsic: number | null): ImageWidth {
+  const usable = IMAGE_WIDTHS.filter(
+    (width) => width <= 1280 && (intrinsic === null || width <= intrinsic),
+  );
+  return usable.at(-1) ?? IMAGE_WIDTHS[0];
+}
+
 /** Absolute, because an `og:image` is read by a server on the other side of the world. */
-async function imageFor(request: ShellRequest, mediaId: number | null): Promise<string | null> {
+async function imageFor(
+  request: ShellRequest,
+  mediaId: number | null,
+  lang: Lang,
+): Promise<ShareImage | null> {
   if (mediaId === null) return null;
 
   const [row] = await request.db
-    .select({ key: t.media.storageKey })
+    .select({
+      key: t.media.storageKey,
+      width: t.media.width,
+      height: t.media.height,
+      alt: t.media.alt,
+    })
     .from(t.media)
     .where(eq(t.media.id, mediaId))
     .limit(1);
 
   if (row === undefined) return null;
   const base = request.mediaBaseUrl === '' ? request.origin : request.mediaBaseUrl;
-  return mediaUrl(row.key, base);
+
+  const width = shareWidth(row.width);
+  // Only when both are known: a card told a width and left to guess the height reflows once the
+  // bytes land, which is the jump `og:image:width` exists to prevent.
+  const height =
+    row.width === null || row.height === null ? null : Math.round((width * row.height) / row.width);
+
+  return {
+    url: imageUrl(row.key, width, base),
+    width,
+    height,
+    alt: text(row.alt, lang),
+  };
+}
+
+/**
+ * What a page with no row of its own shows when it is shared.
+ *
+ * Every page here is built on photographs, and until now only the four detail routes put one in
+ * their `og:image` — so a link to the homepage, to `/tours`, to the pilgrimage, to any of the
+ * twenty pages somebody would actually send a friend, arrived in Telegram as a line of grey
+ * text. That is the channel this site is distributed through (D-4), so it was the wrong twenty
+ * pages to leave bare.
+ *
+ * The picture is the page's own first photograph rather than a logo or a stored «sharing
+ * image». One fewer thing to keep in step, and the card shows what the page is about; the fact
+ * that it is the same picture the visitor then lands on is the point rather than a coincidence.
+ * A section with nothing of its own falls back to the site's first hero slide.
+ */
+async function defaultImageFor(
+  request: ShellRequest,
+  route: string,
+  lang: Lang,
+): Promise<ShareImage | null> {
+  const { db, site } = request;
+
+  const first = async (mediaId: number | null | undefined): Promise<ShareImage | null> =>
+    mediaId === undefined ? null : imageFor(request, mediaId, lang);
+
+  if (site === 'global') {
+    if (route === 'tours') {
+      const [row] = await db
+        .select({ mediaId: t.tours.coverMediaId })
+        .from(t.tours)
+        .where(and(eq(t.tours.isPublished, true), eq(t.tours.isFeatured, true)))
+        .orderBy(t.tours.sortOrder)
+        .limit(1);
+      const image = await first(row?.mediaId);
+      if (image !== null) return image;
+    }
+
+    if (route === 'hotels') {
+      const [row] = await db
+        .select({ mediaId: t.hotels.coverMediaId })
+        .from(t.hotels)
+        .where(eq(t.hotels.isPublished, true))
+        .orderBy(t.hotels.sortOrder)
+        .limit(1);
+      const image = await first(row?.mediaId);
+      if (image !== null) return image;
+    }
+
+    if (route === 'country') {
+      const [row] = await db
+        .select({ mediaId: t.placesToSee.coverMediaId })
+        .from(t.placesToSee)
+        .where(eq(t.placesToSee.isPublished, true))
+        .orderBy(t.placesToSee.sortOrder)
+        .limit(1);
+      const image = await first(row?.mediaId);
+      if (image !== null) return image;
+    }
+
+    if (route === 'gallery') {
+      const [row] = await db
+        .select({ mediaId: t.galleryItems.mediaId })
+        .from(t.galleryItems)
+        .where(eq(t.galleryItems.isPublished, true))
+        .orderBy(t.galleryItems.sortOrder)
+        .limit(1);
+      const image = await first(row?.mediaId);
+      if (image !== null) return image;
+    }
+
+    if (route === 'video') {
+      const [row] = await db
+        .select({ mediaId: t.videos.posterMediaId })
+        .from(t.videos)
+        .where(eq(t.videos.isPublished, true))
+        .orderBy(t.videos.sortOrder)
+        .limit(1);
+      const image = await first(row?.mediaId);
+      if (image !== null) return image;
+    }
+  }
+
+  if (site === 'umrah' && (route === 'ziyarat' || route === 'maksatnama')) {
+    const [row] = await db
+      .select({ mediaId: t.ziyaratPlaces.coverMediaId })
+      .from(t.ziyaratPlaces)
+      .where(eq(t.ziyaratPlaces.isPublished, true))
+      .orderBy(t.ziyaratPlaces.sortOrder)
+      .limit(1);
+    const image = await first(row?.mediaId);
+    if (image !== null) return image;
+  }
+
+  // The site's own first slide, and for the chooser the Global one — the chooser has no slider
+  // of its own (there is no `choice` in `hero_slides`), and its left half is Global.
+  const [slide] = await db
+    .select({ mediaId: t.heroSlides.mediaId })
+    .from(t.heroSlides)
+    .where(
+      and(
+        eq(t.heroSlides.site, site === 'umrah' ? 'umrah' : 'global'),
+        eq(t.heroSlides.isPublished, true),
+      ),
+    )
+    .orderBy(t.heroSlides.sortOrder)
+    .limit(1);
+
+  return first(slide?.mediaId);
 }
 
 /**
@@ -305,7 +494,7 @@ async function addRouteJsonLd(
           name: text(row.title, lang),
           description: text(row.description, lang),
           url: `${origin}/${lang}/video`,
-          thumbnailUrl: await imageFor(request, row.posterMediaId),
+          thumbnailUrl: (await imageFor(request, row.posterMediaId, lang))?.url ?? null,
           durationSeconds: row.durationSec,
           uploadDate: row.createdAt.toISOString(),
         }),

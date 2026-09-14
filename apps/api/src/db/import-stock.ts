@@ -635,6 +635,35 @@ async function main(): Promise<void> {
   const env = loadEnv();
   const wantsReset = process.argv.includes('--reset');
 
+  /*
+   * Hand out what is already stored, and download nothing.
+   *
+   * The assignment step only ever writes into columns that are still empty, so running it on
+   * its own is safe and is the only thing needed when a *placement* changes — a new slot, a new
+   * tile — rather than the photographs. A hundred and sixteen files from Wikimedia is twenty
+   * minutes and a lot of somebody's bandwidth to change one column.
+   */
+  if (process.argv.includes('--assign-only')) {
+    await withDb(async (db) => {
+      const stored = await db
+        .select({ id: t.media.id, width: t.media.width, height: t.media.height })
+        .from(t.media)
+        .where(eq(t.media.source, 'stock'));
+
+      await assign(
+        db,
+        stored.map((row) => ({
+          id: row.id,
+          // Subject is unknown from the row alone — the brief matching below falls through to
+          // the round-robin, which is what an already-placed library deserves anyway.
+          subject: '',
+          landscape: (row.width ?? 0) >= (row.height ?? 0),
+        })),
+      );
+    });
+    return;
+  }
+
   await withDb(async (db) => {
     const [owner] = await db
       .select({ id: t.adminUsers.id })
@@ -878,6 +907,58 @@ async function assign(db: Db, stored: Stored[]): Promise<void> {
     }
     process.stdout.write(`filled ${String(rows.length)} ${cover.name} covers\n`);
   }
+
+  await linkGallery(db);
+}
+
+/**
+ * The gallery tiles, which this script has been walking straight past.
+ *
+ * `gallery_items.media_id` is `NOT NULL`, so the seed parks a literal `0` in it and leaves the
+ * row unpublished «until a photograph arrives» — and then nothing ever brought one. The slots
+ * the tiles were seeded from, `gallery/gl-1` through `gl-14`, were filled on the first run like
+ * every other slot; the tiles beside them were not, because they are not slots and no step here
+ * knew about them.
+ *
+ * The result was a page in the main navigation and in the sitemap that rendered an empty grid,
+ * with fourteen photographs sitting one table away. It went unnoticed for the same reason the
+ * whole thing is easy to miss: nobody clicks «Галерея» on a site they built, and the empty
+ * state looks like a filter that matched nothing rather than like a fault.
+ *
+ * The link is by position — `gl-N` to the tile with `sort_order = N` — which is exactly how the
+ * seed built the two lists, out of one array in the design export, in one pass.
+ */
+async function linkGallery(db: Db): Promise<void> {
+  const slots = await db
+    .select({ key: t.contentSlots.slotKey, mediaId: t.contentSlots.mediaId })
+    .from(t.contentSlots)
+    .where(eq(t.contentSlots.page, 'gallery'));
+
+  const byPosition = new Map<number, number>();
+  for (const slot of slots) {
+    const at = Number(/^gl-(\d+)$/.exec(slot.key)?.[1] ?? NaN);
+    if (Number.isInteger(at) && slot.mediaId !== null) byPosition.set(at, slot.mediaId);
+  }
+
+  const tiles = await db
+    .select({ id: t.galleryItems.id, sortOrder: t.galleryItems.sortOrder })
+    .from(t.galleryItems)
+    .where(eq(t.galleryItems.mediaId, 0));
+
+  let linked = 0;
+  for (const tile of tiles) {
+    const mediaId = byPosition.get(tile.sortOrder);
+    if (mediaId === undefined) continue;
+    // Published in the same statement that gives it a photograph: the flag was only ever off
+    // because there was nothing to show, and leaving it off here would reproduce the bug.
+    await db
+      .update(t.galleryItems)
+      .set({ mediaId, isPublished: true })
+      .where(eq(t.galleryItems.id, tile.id));
+    linked += 1;
+  }
+
+  process.stdout.write(`filled ${String(linked)} gallery tiles\n`);
 }
 
 await main();

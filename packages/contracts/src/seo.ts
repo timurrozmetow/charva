@@ -100,34 +100,34 @@ const ROUTE_META = {
       ru: {
         title: 'Сборщик туров по Туркменистану — Charva Travel',
         description:
-          'Соберите маршрут сами: города, дни, класс отеля, питание, транспорт и экскурсии. Стоимость видна сразу.',
+          'Соберите маршрут сами: города, дни, класс отеля, питание, транспорт и экскурсии. Отправьте заявку — оператор рассчитает и ответит.',
       },
       en: {
         title: 'Turkmenistan tour builder — Charva Travel',
         description:
-          'Build the route yourself: cities, days, hotel class, meals, transport and excursions. The price is visible as you go.',
+          'Build the route yourself: cities, days, hotel class, meals, transport and excursions. Send it over and an operator quotes it.',
       },
       tr: {
         title: 'Türkmenistan tur oluşturucu — Charva Travel',
         description:
-          'Rotayı kendiniz kurun: şehirler, günler, otel sınıfı, yemek, ulaşım ve geziler. Fiyat anında görünür.',
+          'Rotayı kendiniz kurun: şehirler, günler, otel sınıfı, yemek, ulaşım ve geziler. Gönderin, operatör fiyatlandırsın.',
       },
     },
     hotels: {
       ru: {
         title: 'Отели Туркменистана — Charva Travel',
         description:
-          'Отели, бутик-отели и юрточный лагерь по Туркменистану: Ашхабад, Мары, Дашогуз, Аваза, Каракумы.',
+          'Отели 3–5 ★ по Туркменистану под ваш маршрут: Ашхабад, Мары, Дашогуз, Лебап и Аваза на Каспии.',
       },
       en: {
         title: 'Hotels in Turkmenistan — Charva Travel',
         description:
-          'Hotels, boutique hotels and a yurt camp across Turkmenistan: Ashgabat, Mary, Dashoguz, Awaza, the Karakum.',
+          'Hotels from three to five stars across Turkmenistan, matched to the route: Ashgabat, Mary, Dashoguz, Lebap and Awaza on the Caspian.',
       },
       tr: {
         title: 'Türkmenistan otelleri — Charva Travel',
         description:
-          'Türkmenistan genelinde oteller, butik oteller ve çadır kampı: Aşkabat, Mary, Daşoguz, Avaza, Karakum.',
+          'Türkmenistan genelinde 3–5 yıldızlı oteller, rotaya göre seçilir: Aşkabat, Mary, Daşoguz, Lebap ve Hazar kıyısındaki Avaza.',
       },
     },
     country: {
@@ -200,17 +200,17 @@ const ROUTE_META = {
       ru: {
         title: 'Charva Travel — туры по Туркменистану',
         description:
-          'Туроператор по Туркменистану: готовые маршруты, отели, виза по приглашению и гид. Соберите свой тур — расчёт появится сразу.',
+          'Туроператор по Туркменистану: готовые маршруты, отели, виза по приглашению и гид. Соберите свой тур и отправьте заявку.',
       },
       en: {
         title: 'Charva Travel — tours of Turkmenistan',
         description:
-          'A tour operator in Turkmenistan: ready-made routes, hotels, visa support and guides. Build your own tour and see the price at once.',
+          'A tour operator in Turkmenistan: ready-made routes, hotels, visa support and guides. Build your own tour and send it to us.',
       },
       tr: {
         title: 'Charva Travel — Türkmenistan turları',
         description:
-          'Türkmenistan tur operatörü: hazır rotalar, oteller, davetiyeli vize ve rehber. Kendi turunuzu kurun, fiyatı hemen görün.',
+          'Türkmenistan tur operatörü: hazır rotalar, oteller, davetiyeli vize ve rehber. Kendi turunuzu kurun ve bize gönderin.',
       },
     },
     contact: {
@@ -444,6 +444,66 @@ export function contentMeta(
     // characters is where Google stops and where a Telegram card stops looking deliberate.
     description: summary.length > 160 ? `${summary.slice(0, 157).trimEnd()}…` : summary,
   };
+}
+
+/**
+ * The words in a breadcrumb trail.
+ *
+ * Short on purpose, and therefore not the route titles: «Готовые туры по Туркменистану — Charva
+ * Travel» is a good `<title>` and a useless breadcrumb, and Google truncates the line it draws
+ * under a result. They live here rather than in the three copy files for the same reason every
+ * other head string does (D-84) — the crawler reads the server's copy and the visitor reads the
+ * app's, and two copies of one word are two copies that can disagree.
+ */
+const BREADCRUMB_HOME: Record<Lang, string> = {
+  ru: 'Главная',
+  en: 'Home',
+  tr: 'Ana sayfa',
+  tm: 'Baş sahypa',
+};
+
+/**
+ * The middle step, for the detail pages that have one.
+ *
+ * The journal is deliberately absent. Its articles are reachable from the homepage and from
+ * nowhere else — there is no `/articles` list page on this site — so a trail through one would
+ * name a URL that answers 404, and a breadcrumb pointing at a missing page is worse than a
+ * shorter breadcrumb: Google fetches every step. An article therefore gets «Главная → заголовок»,
+ * which is exactly the shape of the site.
+ */
+const BREADCRUMB_SECTION: Record<string, { name: Record<Lang, string>; path: string }> = {
+  'global/tours': {
+    name: { ru: 'Туры', en: 'Tours', tr: 'Turlar', tm: 'Turlar' },
+    path: '/tours',
+  },
+  'global/hotels': {
+    name: { ru: 'Отели', en: 'Hotels', tr: 'Oteller', tm: 'Oteller' },
+    path: '/hotels',
+  },
+  'umrah/ziyarat': {
+    name: {
+      ru: 'Места зиярата',
+      en: 'Ziyarat places',
+      tr: 'Ziyaret yerleri',
+      tm: 'Ziýarat ýerleri',
+    },
+    path: '/ziyarat',
+  },
+};
+
+export function breadcrumbHome(lang: Lang): string {
+  return BREADCRUMB_HOME[lang];
+}
+
+/** The middle step of a detail page's trail, or null for a route that has no section above it. */
+export function breadcrumbSection(
+  site: Site,
+  route: string,
+  lang: Lang,
+): { name: string; path: string } | null {
+  const section = BREADCRUMB_SECTION[`${site}/${route}`];
+  if (section === undefined) return null;
+  return { name: section.name[lang], path: section.path };
 }
 
 /**

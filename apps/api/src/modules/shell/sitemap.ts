@@ -1,5 +1,6 @@
 import { hreflangSet, type Lang, type Site, SITE_LANGS } from '@charva/contracts';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNotNull, max } from 'drizzle-orm';
+import { type MySqlColumn } from 'drizzle-orm/mysql-core';
 
 import { type Database } from '../../db/client';
 import * as t from '../../db/schema';
@@ -58,10 +59,168 @@ const STATIC_PAGES: Record<
   ],
 };
 
+/**
+ * When the rows behind a section last changed.
+ *
+ * A static page had no `<lastmod>` at all, on the reasonable-sounding grounds that its markup is
+ * fixed. But `/hotels` is not fixed — it is sixteen rows, and it changed the day those rows
+ * arrived. Google uses `lastmod` to decide what to re-crawl and ignores the field entirely on
+ * sites where it cannot be trusted, so the choice is between a date that follows the content
+ * and no date at all; there is no version of this where an invented date is the better option.
+ */
+async function sectionModified(
+  db: Database,
+  site: Site,
+): Promise<{ paths: Record<string, Date>; newest: Date | null }> {
+  const paths: Record<string, Date> = {};
+  const seen: Date[] = [];
+  const record = (path: string | null, at: Date | null | undefined): void => {
+    if (at === null || at === undefined) return;
+    if (path !== null) paths[path] = at;
+    seen.push(at);
+  };
+
+  if (site === 'global') {
+    const [tours, hotels, articles, places, gallery, videos, reviews] = await Promise.all([
+      db
+        .select({ at: max(t.tours.updatedAt) })
+        .from(t.tours)
+        .where(published(t.tours.isPublished)),
+      db
+        .select({ at: max(t.hotels.updatedAt) })
+        .from(t.hotels)
+        .where(published(t.hotels.isPublished)),
+      db
+        .select({ at: max(t.articles.updatedAt) })
+        .from(t.articles)
+        .where(published(t.articles.isPublished)),
+      db
+        .select({ at: max(t.placesToSee.updatedAt) })
+        .from(t.placesToSee)
+        .where(published(t.placesToSee.isPublished)),
+      db
+        .select({ at: max(t.galleryItems.updatedAt) })
+        .from(t.galleryItems)
+        .where(published(t.galleryItems.isPublished)),
+      db
+        .select({ at: max(t.videos.updatedAt) })
+        .from(t.videos)
+        .where(published(t.videos.isPublished)),
+      db
+        .select({ at: max(t.reviews.updatedAt) })
+        .from(t.reviews)
+        .where(published(t.reviews.isPublished)),
+    ]);
+
+    record('/tours', tours[0]?.at);
+    record('/hotels', hotels[0]?.at);
+    record('/turkmenistan', places[0]?.at);
+    record('/gallery', gallery[0]?.at);
+    record('/video', videos[0]?.at);
+    record('/reviews', reviews[0]?.at);
+    // The journal has no list page on this site; its rows still move the homepage, so the date
+    // counts towards the site's newest without claiming a path of its own.
+    record(null, articles[0]?.at);
+  }
+
+  if (site === 'umrah') {
+    const [places, groups, trips] = await Promise.all([
+      db
+        .select({ at: max(t.ziyaratPlaces.updatedAt) })
+        .from(t.ziyaratPlaces)
+        .where(published(t.ziyaratPlaces.isPublished)),
+      db
+        .select({ at: max(t.umrahGroups.updatedAt) })
+        .from(t.umrahGroups)
+        .where(published(t.umrahGroups.isPublished)),
+      // No publication flag on a departure, and none wanted: announcing the next one is the
+      // single most consequential edit on this site, and it must move the homepage's date.
+      db.select({ at: max(t.umrahTrips.updatedAt) }).from(t.umrahTrips),
+    ]);
+
+    record('/ziyarat', places[0]?.at);
+    record('/suratlar', groups[0]?.at);
+    record(null, trips[0]?.at);
+  }
+
+  const newest = seen.reduce<Date | null>(
+    (latest, at) => (latest === null || at > latest ? at : latest),
+    null,
+  );
+
+  return { paths, newest };
+}
+
+/** Spelled out once: every one of these tables carries the same flag under the same name. */
+function published(column: MySqlColumn) {
+  return eq(column, true);
+}
+
+/**
+ * Section pages that exist in the router but have nothing to show yet.
+ *
+ * `/video` is the standing example: six rows, none of them with a file — the films have not
+ * been shot — so the page renders an empty grid. A crawler handed that URL finds no content
+ * where a sitemap promised some, which is what Google calls a soft 404 and what it counts
+ * against the whole site, not just the page. The page stays in the navigation, because a
+ * visitor who clicks it should learn that the section exists; it is simply not advertised
+ * until there is something behind it. It reappears the day a video is uploaded, by itself.
+ */
+const SECTION_SOURCES: Record<string, (db: Database) => Promise<boolean>> = {
+  '/gallery': async (db) =>
+    hasRows(
+      db
+        .select({ n: t.galleryItems.id })
+        .from(t.galleryItems)
+        .where(eq(t.galleryItems.isPublished, true))
+        .limit(1),
+    ),
+  '/video': async (db) =>
+    hasRows(
+      db
+        .select({ n: t.videos.id })
+        .from(t.videos)
+        .where(and(eq(t.videos.isPublished, true), isNotNull(t.videos.mediaId)))
+        .limit(1),
+    ),
+  '/reviews': async (db) =>
+    hasRows(
+      db
+        .select({ n: t.reviews.id })
+        .from(t.reviews)
+        .where(eq(t.reviews.isPublished, true))
+        .limit(1),
+    ),
+  '/suratlar': async (db) =>
+    hasRows(
+      db
+        .select({ n: t.umrahGroups.id })
+        .from(t.umrahGroups)
+        .where(eq(t.umrahGroups.isPublished, true))
+        .limit(1),
+    ),
+};
+
+async function hasRows(query: Promise<unknown[]>): Promise<boolean> {
+  return (await query).length > 0;
+}
+
 export async function collectEntries(db: Database, site: Site): Promise<SitemapEntry[]> {
-  const entries: SitemapEntry[] = STATIC_PAGES[site].map((page) => ({
+  const modified = await sectionModified(db, site);
+
+  const pages = [];
+  for (const page of STATIC_PAGES[site]) {
+    const source = SECTION_SOURCES[page.path];
+    if (source !== undefined && !(await source(db))) continue;
+    pages.push(page);
+  }
+
+  const entries: SitemapEntry[] = pages.map((page) => ({
     pathAfterLang: page.path,
-    lastModified: null,
+    // The section's own rows when it has any, the site's newest for a page like `/contact`
+    // whose content genuinely is the markup — it still changes when the site is redeployed,
+    // and the newest row is the closest honest answer available here.
+    lastModified: modified.paths[page.path] ?? modified.newest,
     changeFrequency: page.frequency,
     priority: page.priority,
   }));
@@ -166,23 +325,20 @@ export function renderSitemap(site: Site, origin: string, entries: SitemapEntry[
  * login, but because indexing a login form serves nobody and an indexed `/api/v1/...` response
  * is a JSON document in somebody's search results.
  *
- * The two public sites allow everything and point at their own sitemap. `/uploads` is allowed
- * deliberately: those are the photographs, and image search is worth having for a tour operator.
+ * The two public sites allow everything, photographs included, and point at their own sitemap.
+ *
+ * `/img/` used to be disallowed, with the reasoning that «a search result pointing at a resized
+ * WebP instead of the page that shows it helps nobody». The reasoning was wrong about how image
+ * search works: a result in Google Images links to the page the picture is on, which is the
+ * page we want found. And since every `<img>` on both sites is served from `/img/…?w=`, the
+ * rule did not stop that result appearing — it stopped every photograph on a site made entirely
+ * of photographs from being indexed at all. Seven widths per file is a few hundred extra URLs,
+ * which is not a crawl budget worth protecting at this size.
  */
 export function renderRobots(site: Site | 'admin' | 'api', origin: string): string {
   if (site === 'admin' || site === 'api') {
     return ['User-agent: *', 'Disallow: /', ''].join('\n');
   }
 
-  return [
-    'User-agent: *',
-    'Allow: /',
-    '',
-    // Nothing here is secret; it is simply not a page, and a search result pointing at a
-    // resized WebP instead of the page that shows it helps nobody.
-    'Disallow: /img/',
-    '',
-    `Sitemap: ${origin}/sitemap.xml`,
-    '',
-  ].join('\n');
+  return ['User-agent: *', 'Allow: /', '', `Sitemap: ${origin}/sitemap.xml`, ''].join('\n');
 }

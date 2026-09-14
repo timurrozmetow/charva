@@ -19,6 +19,20 @@ import { escapeJsonLd, type HeadTag } from './html';
  * failures look identical in a diff and are not the same bug.
  */
 
+/**
+ * The photograph a link to this page shows when it is pasted somewhere.
+ *
+ * Dimensions ride along because the consumers use them. Telegram and Facebook lay the card out
+ * before the file has finished arriving, and a card whose size is unknown is drawn small and
+ * then reflowed; `og:image:alt` is what a screen reader announces in place of the picture.
+ */
+export interface ShareImage {
+  url: string;
+  width: number | null;
+  height: number | null;
+  alt: string;
+}
+
 export interface ShellContext {
   site: Site;
   lang: Lang;
@@ -28,10 +42,10 @@ export interface ShellContext {
   pathAfterLang: string;
   /** A tour, hotel, article or place, when the path named one and it exists. */
   content?:
-    | { name: string; summary?: string | null | undefined; imageUrl?: string | null | undefined }
+    | { name: string; summary?: string | null | undefined; image?: ShareImage | null | undefined }
     | undefined;
-  /** The site's default sharing image, from `settings`. */
-  defaultImageUrl?: string | null | undefined;
+  /** What this page shows when it has no row of its own — the section's own first photograph. */
+  defaultImage?: ShareImage | null | undefined;
   /** Structured data for this page, already shaped. */
   jsonLd?: unknown[] | undefined;
 }
@@ -40,7 +54,7 @@ export function buildHead(context: ShellContext): HeadTag[] {
   const section = routeMeta(context.site, context.route, context.lang);
   const meta = resolveMeta(context, section);
   const canonical = absolute(context, context.lang);
-  const image = context.content?.imageUrl ?? context.defaultImageUrl ?? null;
+  const image = context.content?.image ?? context.defaultImage ?? null;
 
   const tags: HeadTag[] = [
     { tag: 'title', text: meta.title },
@@ -74,7 +88,7 @@ export function buildHead(context: ShellContext): HeadTag[] {
 
   if (image !== null) {
     tags.push(
-      { tag: 'meta', attributes: { property: 'og:image', content: image } },
+      { tag: 'meta', attributes: { property: 'og:image', content: image.url } },
       /*
        * The card is only large if there is a picture to fill it.
        *
@@ -82,9 +96,20 @@ export function buildHead(context: ShellContext): HeadTag[] {
        * the small card, which at least shows the title. So the card size follows the image.
        */
       { tag: 'meta', attributes: { name: 'twitter:card', content: 'summary_large_image' } },
+      { tag: 'meta', attributes: { name: 'twitter:image', content: image.url } },
       // The LCP element on almost every page here is this same photograph.
-      { tag: 'link', attributes: { rel: 'preload', as: 'image', href: image } },
+      { tag: 'link', attributes: { rel: 'preload', as: 'image', href: image.url } },
     );
+
+    if (image.width !== null && image.height !== null) {
+      tags.push(
+        { tag: 'meta', attributes: { property: 'og:image:width', content: String(image.width) } },
+        { tag: 'meta', attributes: { property: 'og:image:height', content: String(image.height) } },
+      );
+    }
+    if (image.alt !== '') {
+      tags.push({ tag: 'meta', attributes: { property: 'og:image:alt', content: image.alt } });
+    }
   } else {
     tags.push({ tag: 'meta', attributes: { name: 'twitter:card', content: 'summary' } });
   }

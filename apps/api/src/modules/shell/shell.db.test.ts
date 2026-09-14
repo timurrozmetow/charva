@@ -1,5 +1,5 @@
 import { bcp47, SITE_LANGS } from '@charva/contracts';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import * as t from '../../db/schema';
@@ -330,6 +330,139 @@ describe('injecting into the built page', () => {
   });
 });
 
+describe('the picture a shared link shows', () => {
+  /*
+   * The seed ships no photographs at all — D-45, and rightly, since there were none to ship.
+   * So the fixture is one media row hung on the two places this feature reads from: the first
+   * hero slide, which is what a page with nothing of its own falls back to, and a tour cover,
+   * which is a page that has something of its own.
+   */
+  let mediaId = 0;
+
+  beforeAll(async () => {
+    const [inserted] = await context.app.db.insert(t.media).values({
+      storageKey: '2026/09/shell-test-fixture.webp',
+      mime: 'image/webp',
+      width: 2400,
+      height: 1600,
+      sizeBytes: 900_000,
+      checksum: 'shelltestfixture'.padEnd(64, '0'),
+      alt: { ru: 'Пустыня на рассвете', en: 'The desert at dawn' },
+    });
+    mediaId = inserted.insertId;
+
+    await context.app.db.update(t.heroSlides).set({ mediaId });
+    await context.app.db.update(t.tours).set({ coverMediaId: mediaId });
+  });
+
+  afterAll(async () => {
+    await context.app.db.update(t.tours).set({ coverMediaId: null });
+    await context.app.db.update(t.heroSlides).set({ mediaId: null });
+    await context.app.db.delete(t.media).where(eq(t.media.id, mediaId));
+  });
+
+  it('gives one to every page, not only the four built from a row', async () => {
+    /*
+     * These links travel in Telegram — that is the whole reason the shell exists (D-4) — and
+     * until now only a tour, a hotel, an article and a place put a photograph in their card.
+     * Every other page, the two homepages and every section among them, unfurled as a line of
+     * grey text. A page with nothing of its own shows its section's first photograph, and
+     * failing that the site's first hero slide.
+     */
+    for (const path of ['/ru', '/ru/tours', '/ru/hotels', '/ru/gallery', '/ru/contact']) {
+      const { tags } = await render('global', path);
+      const image = head(tags).og('og:image');
+
+      expect(image, path).toBeDefined();
+      expect(image, path).toMatch(/^https?:\/\//);
+      expect(head(tags).meta('twitter:card'), path).toBe('summary_large_image');
+    }
+
+    const { tags } = await render('umrah', '/tm');
+    expect(head(tags).og('og:image')).toBeDefined();
+  });
+
+  it('sends a derivative rather than the original, and says how big it is', async () => {
+    /*
+     * The originals here run past eight hundred kilobytes. Facebook, Telegram and WhatsApp all
+     * fetch that file themselves, on a timer, and WhatsApp gives up somewhere around a quarter
+     * of a megabyte — so the forwarded link showed no picture at all, silently, in the app this
+     * audience forwards links in.
+     */
+    const { tags } = await render('global', '/ru/tours/klassicheskiy-turkmenistan');
+    const image = head(tags).og('og:image') ?? '';
+
+    expect(image).toContain('/img/');
+    expect(image).toMatch(/[?&]w=\d+$/);
+    expect(Number(/w=(\d+)/.exec(image)?.[1])).toBeLessThanOrEqual(1280);
+
+    // Both, or neither: a card told a width and left to guess the height reflows once the
+    // bytes land, which is the jump the tags are there to prevent. 2400×1600 asked for at
+    // 1280 is 853 high — computed from the row, not assumed to be 16:9.
+    expect(head(tags).og('og:image:width')).toBe('1280');
+    expect(head(tags).og('og:image:height')).toBe('853');
+    // And what a screen reader says instead of the picture, in the language of the page.
+    expect(head(tags).og('og:image:alt')).toBe('Пустыня на рассвете');
+  });
+
+  it('says so plainly when there is no photograph anywhere', async () => {
+    // `summary_large_image` with nothing to fill it renders as a bare link in some clients —
+    // worse than the small card, which at least shows the title.
+    await context.app.db.update(t.heroSlides).set({ mediaId: null });
+    await context.app.db.update(t.tours).set({ coverMediaId: null });
+
+    const { tags } = await render('global', '/ru/contact');
+    expect(head(tags).og('og:image')).toBeUndefined();
+    expect(head(tags).meta('twitter:card')).toBe('summary');
+
+    await context.app.db.update(t.heroSlides).set({ mediaId });
+    await context.app.db.update(t.tours).set({ coverMediaId: mediaId });
+  });
+});
+
+describe('the trail under a search result', () => {
+  it('is published on a detail page, in the language of that page', async () => {
+    const slug = context.discoveredSlugs.get('/api/v1/global/hotels/:slug');
+    expect(slug).toBeDefined();
+
+    const { tags } = await render('global', `/en/hotels/${slug!}`);
+    const trail = head(tags).jsonLd.find((entry) => entry['@type'] === 'BreadcrumbList');
+
+    expect(trail).toBeDefined();
+
+    const steps = (trail?.['itemListElement'] ?? []) as { name: string; item: string }[];
+    expect(steps).toHaveLength(3);
+    expect(steps[0]).toMatchObject({ name: 'Home', item: `${ORIGIN}/en` });
+    expect(steps[1]).toMatchObject({ name: 'Hotels', item: `${ORIGIN}/en/hotels` });
+    expect(steps[2]?.item).toBe(`${ORIGIN}/en/hotels/${slug!}`);
+  });
+
+  it('is absent from a page that is not below anything', async () => {
+    // A trail of one item is what Google discards anyway, and a section page claiming a trail
+    // to itself is a claim about a hierarchy that does not exist.
+    const { tags } = await render('global', '/ru/tours');
+    expect(head(tags).jsonLd.find((entry) => entry['@type'] === 'BreadcrumbList')).toBeUndefined();
+  });
+
+  it('skips the middle step rather than name a page that does not exist', async () => {
+    /*
+     * There is no `/articles` list page on this site — the two articles are linked from the
+     * homepage and nowhere else. A trail through «Журнал → /articles» would read correctly and
+     * point at a 404, and Google fetches every step of a breadcrumb it is given.
+     */
+    const slug = context.discoveredSlugs.get('/api/v1/global/articles/:slug');
+    expect(slug).toBeDefined();
+
+    const { tags } = await render('global', `/ru/articles/${slug!}`);
+    const trail = head(tags).jsonLd.find((entry) => entry['@type'] === 'BreadcrumbList');
+    const steps = (trail?.['itemListElement'] ?? []) as { name: string; item: string }[];
+
+    expect(steps).toHaveLength(2);
+    expect(steps[0]?.item).toBe(`${ORIGIN}/ru`);
+    expect(steps[1]?.item).toBe(`${ORIGIN}/ru/articles/${slug!}`);
+  });
+});
+
 describe('the sitemap', () => {
   it('lists every published page in every language the site speaks', async () => {
     const entries = await collectEntries(context.app.db, 'global');
@@ -379,6 +512,25 @@ describe('the sitemap', () => {
     expect(xml).toContain('klassicheskiy-turkmenistan');
   });
 
+  it('leaves out a section that has nothing behind it', async () => {
+    /*
+     * `/video` is six rows with no film attached — the shoots have not happened — so the page
+     * renders an empty grid. A URL a sitemap promises and a crawler finds empty is a soft 404,
+     * and Google holds those against the site rather than against the page. The section stays
+     * in the navigation; it is simply not advertised until it has something.
+     */
+    const paths = (await collectEntries(context.app.db, 'global')).map((e) => e.pathAfterLang);
+    expect(paths).not.toContain('/video');
+    expect(paths).toContain('/tours');
+
+    // And it comes back on its own the day something is published there, with no code change.
+    await context.app.db.update(t.videos).set({ isPublished: true, mediaId: 1 });
+    const after = (await collectEntries(context.app.db, 'global')).map((e) => e.pathAfterLang);
+    expect(after).toContain('/video');
+
+    await context.app.db.update(t.videos).set({ isPublished: false, mediaId: null });
+  });
+
   it('is well-formed enough to parse as XML', async () => {
     const xml = renderSitemap('global', ORIGIN, await collectEntries(context.app.db, 'global'));
 
@@ -399,13 +551,48 @@ describe('robots.txt', () => {
     }
   });
 
-  it('opens the public sites and points at their own sitemap', () => {
+  it('opens the public sites, photographs included, and points at their own sitemap', () => {
     const robots = renderRobots('global', ORIGIN);
     expect(robots).toContain('Allow: /');
     expect(robots).toContain(`Sitemap: ${ORIGIN}/sitemap.xml`);
-    // The photographs stay crawlable — image search is worth having for a tour operator —
-    // but the resizer is not a page.
-    expect(robots).toContain('Disallow: /img/');
-    expect(robots).not.toContain('Disallow: /uploads');
+
+    /*
+     * Nothing is disallowed, and `/img/` is the one that changed.
+     *
+     * It used to be blocked so that a search result would not point at a resized WebP instead
+     * of the page showing it — but that is not what an image result does, it links to the page,
+     * and every `<img>` on both sites is served from `/img/…?w=`. The rule blocked the entire
+     * photographic contents of a site that is made of photographs.
+     */
+    expect(robots).not.toContain('Disallow:');
+  });
+});
+
+describe('the sitemap tells a crawler when a section last changed', () => {
+  it('dates a list page from the rows behind it', async () => {
+    const entries = await collectEntries(context.app.db, 'global');
+    const hotels = entries.find((entry) => entry.pathAfterLang === '/hotels');
+
+    // `/hotels` is sixteen rows, not fixed markup: it changed the day they arrived, and a
+    // crawler with no date has no reason to come back and look.
+    expect(hotels?.lastModified).toBeInstanceOf(Date);
+
+    const [row] = await context.app.db
+      .select({ at: t.hotels.updatedAt })
+      .from(t.hotels)
+      .orderBy(desc(t.hotels.updatedAt))
+      .limit(1);
+
+    expect(hotels?.lastModified?.toISOString().slice(0, 10)).toBe(
+      row?.at.toISOString().slice(0, 10),
+    );
+  });
+
+  it('dates every page it lists, not only the detail ones', async () => {
+    const xml = renderSitemap('global', ORIGIN, await collectEntries(context.app.db, 'global'));
+
+    expect(xml.match(/<lastmod>/g)?.length).toBe(xml.match(/<url>/g)?.length);
+    // A date, not a timestamp: the spec accepts both and a day is the honest precision here.
+    expect(xml).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
   });
 });
