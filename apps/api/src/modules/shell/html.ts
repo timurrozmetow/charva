@@ -133,3 +133,24 @@ export function injectHead(template: string, head: string): string {
 
   return `${stripped.slice(0, marker)}${head}\n  ${stripped.slice(marker)}`;
 }
+
+/** Vite writes it exactly like this, and the applications assert the id exists at startup. */
+const ROOT = '<div id="root"></div>';
+
+/**
+ * Puts the no-script fallback inside `#root`.
+ *
+ * Inside, and not beside: `createRoot().render()` clears its container on the first mount, so
+ * React takes this away by itself — the same mechanism that lets a spinner live there. A
+ * sibling element would need all three `main.tsx` files to remember to remove it, and the one
+ * that forgot would ship a duplicate heading to every visitor.
+ *
+ * A template whose root div is written some other way is left alone rather than guessed at. The
+ * fallback is an improvement for crawlers, and a shell that throws would take the site down for
+ * everybody to protect it — so this fails by doing nothing, and `shell.db.test.ts` is what
+ * notices.
+ */
+export function injectBody(template: string, body: string): string {
+  if (body === '' || !template.includes(ROOT)) return template;
+  return template.replace(ROOT, `<div id="root">${body}</div>`);
+}

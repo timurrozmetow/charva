@@ -217,15 +217,30 @@ async function hasRows(query: Promise<unknown[]>): Promise<boolean> {
   return (await query).length > 0;
 }
 
-export async function collectEntries(db: Database, site: Site): Promise<SitemapEntry[]> {
-  const modified = await sectionModified(db, site);
-
-  const pages = [];
+/**
+ * The paths this site is prepared to offer, in the order it offers them.
+ *
+ * One list, two readers. The sitemap tells a crawler which addresses exist; the no-script
+ * fallback in `fallback.ts` turns the same list into the links that a crawler which does not
+ * render JavaScript would otherwise never find. Keeping them separate would mean the day
+ * `/video` fills up, one of the two would start advertising it and the other would not — and
+ * the emptiness rule (D-144) would be half-applied, which is worse than not applied at all.
+ */
+export async function listedPaths(db: Database, site: Site): Promise<string[]> {
+  const pages: string[] = [];
   for (const page of STATIC_PAGES[site]) {
     const source = SECTION_SOURCES[page.path];
     if (source !== undefined && !(await source(db))) continue;
-    pages.push(page);
+    pages.push(page.path);
   }
+  return pages;
+}
+
+export async function collectEntries(db: Database, site: Site): Promise<SitemapEntry[]> {
+  const modified = await sectionModified(db, site);
+
+  const listed = new Set(await listedPaths(db, site));
+  const pages = STATIC_PAGES[site].filter((page) => listed.has(page.path));
 
   const entries: SitemapEntry[] = pages.map((page) => ({
     pathAfterLang: page.path,

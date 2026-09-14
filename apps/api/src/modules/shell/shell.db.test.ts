@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as t from '../../db/schema';
 import { buildTestApp, type TestApp } from '../../test/app';
 
-import { escapeHtml, escapeJsonLd, type HeadTag, injectHead, renderHead } from './html';
+import { escapeHtml, escapeJsonLd, type HeadTag, injectBody, injectHead, renderHead } from './html';
 import { resolveRoute } from './routes-map';
 import { renderShellHead } from './service';
 import { collectEntries, renderRobots, renderSitemap } from './sitemap';
@@ -698,5 +698,98 @@ describe('the sitemap tells a crawler when a section last changed', () => {
     expect(xml.match(/<lastmod>/g)?.length).toBe(xml.match(/<url>/g)?.length);
     // A date, not a timestamp: the spec accepts both and a day is the honest precision here.
     expect(xml).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
+  });
+});
+
+describe('the body a crawler that renders nothing receives', () => {
+  it('names the page and links to the rest of the site', async () => {
+    const { body } = await render('global', '/ru/tours');
+
+    // The heading is the page's own title, which is where the head takes it from too: one
+    // string, two places it appears, no second copy to drift (D-84).
+    expect(body).toContain('<h1>Готовые туры по Туркменистану</h1>');
+
+    // And the links are real hrefs, which is the whole reason this exists: before it, a
+    // crawler that skipped the render step saw twenty pages and not one link between them.
+    expect(body).toContain('href="/ru/hotels"');
+    expect(body).toContain('href="/ru/turkmenistan"');
+    expect(body).toContain('href="/ru/contact"');
+  });
+
+  it('strips the brand from the anchor text but not from the heading', async () => {
+    const { body } = await render('global', '/ru');
+
+    // «Отели Туркменистана — Charva Travel» is right for a tab and wrong for a link: twenty
+    // anchors ending in the same three words carry less than twenty that do not.
+    expect(body).toMatch(/<a href="\/ru\/hotels">[^<]*<\/a>/);
+    expect(body).not.toMatch(/<a href="\/ru\/hotels">[^<]*Charva Travel<\/a>/);
+  });
+
+  it('leaves the page it is on out of its own list', async () => {
+    const { body } = await render('global', '/ru/hotels');
+
+    // The `<h1>` above is already that page's name; a self-link carries nothing to follow.
+    expect(body).toContain('<h1>Отели Туркменистана</h1>');
+    expect(body).not.toContain('href="/ru/hotels"');
+    expect(body).toContain('href="/ru/tours"');
+  });
+
+  it('leaves out a section with nothing in it, exactly as the sitemap does', async () => {
+    /*
+     * One list, two readers (D-144). A page advertised here and withheld from the sitemap — or
+     * the reverse — would be the emptiness rule applied half the time, which is worse than not
+     * applying it: the two would disagree about what the site offers.
+     */
+    const { body } = await render('global', '/ru');
+    const listed = (await collectEntries(context.app.db, 'global'))
+      .map((entry) => entry.pathAfterLang)
+      .filter((path) => !path.includes('/', 1) && path !== '');
+
+    for (const path of ['/tours', '/hotels', '/gallery', '/video', '/reviews', '/articles']) {
+      const offered = body.includes(`href="/ru${path}"`);
+      expect(offered, path).toBe(listed.includes(path));
+    }
+  });
+
+  it('carries the tour’s own name on a detail page', async () => {
+    const [tour] = await context.app.db
+      .select({ slug: t.tours.slug })
+      .from(t.tours)
+      .where(eq(t.tours.isPublished, true))
+      .limit(1);
+
+    const { body } = await render('global', `/ru/tours/${tour?.slug ?? ''}`);
+
+    // Not the section's title: a detail page whose fallback said «Готовые туры» would describe
+    // the wrong page to every reader that cannot run the application.
+    expect(body).not.toContain('<h1>Готовые туры по Туркменистану</h1>');
+    expect(body).toMatch(/<h1>.+<\/h1>/);
+  });
+
+  it('sends the chooser across to the two brands, since that is all it is', async () => {
+    const { body } = await render('choice', '/ru');
+
+    // Its own page list is one entry — itself. The links that matter are cross-origin, and
+    // they are how a crawler learns the two brands are one operator (D-131).
+    expect(body).toContain('href="https://global.charva-travel.com"');
+    expect(body).toContain('href="https://umra.charva-travel.com"');
+  });
+
+  it('escapes what an editor typed, because a tour title is not trusted markup', async () => {
+    const { body } = await render('global', '/ru');
+    expect(body).not.toMatch(/<script/i);
+    expect(body.match(/<h1>/g)?.length).toBe(1);
+  });
+
+  it('goes inside #root, so React takes it away without being asked', () => {
+    const html = injectBody('<body><div id="root"></div></body>', '<h1>Туры</h1>');
+    expect(html).toBe('<body><div id="root"><h1>Туры</h1></div></body>');
+  });
+
+  it('leaves a template it does not recognise alone rather than guessing', () => {
+    // Failing by doing nothing: this is an improvement for crawlers, and a shell that threw
+    // here would take the site down for everybody in order to protect it.
+    const odd = '<body><div id="app"></div></body>';
+    expect(injectBody(odd, '<h1>Туры</h1>')).toBe(odd);
   });
 });

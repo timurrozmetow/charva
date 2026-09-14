@@ -5,6 +5,9 @@ import {
   IMAGE_WIDTHS,
   imageUrl,
   type Lang,
+  routeMeta,
+  SITE_BRAND,
+  SITE_ORIGINS,
   type Site,
 } from '@charva/contracts';
 import { and, eq } from 'drizzle-orm';
@@ -16,10 +19,12 @@ import { deriveTripState } from '../../lib/trip-status';
 import { getSettings, reviewSummary } from '../global/service';
 import { currentTripRows } from '../umrah/service';
 
-import { buildHead, type ShareImage, type ShellContext } from './head';
+import { anchorText, type FallbackLink, renderFallback } from './fallback';
+import { buildHead, resolveMeta, type ShareImage, type ShellContext } from './head';
 import { type HeadTag } from './html';
 import * as ld from './jsonld';
 import { resolveRoute, unmatchedRoute } from './routes-map';
+import { listedPaths } from './sitemap';
 
 /**
  * The head of one page, assembled from the database.
@@ -49,6 +54,8 @@ export interface ShellResult {
   lang: Lang;
   /** False when the path matched nothing — the response should carry a 404 status. */
   found: boolean;
+  /** Markup for `#root`, for a reader that runs no JavaScript — see `fallback.ts`. */
+  body: string;
 }
 
 export async function renderShellHead(request: ShellRequest): Promise<ShellResult> {
@@ -127,6 +134,8 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
 
   await addRouteJsonLd(request, route, lang, origin, jsonLd);
 
+  const meta = resolveMeta(context, routeMeta(site, route, lang));
+
   return {
     tags: buildHead(context),
     lang,
@@ -134,7 +143,58 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
     // are the same route id, and the comparison made every chooser URL answer 404 — see the
     // note on `matched` in routes-map.ts.
     found: resolved.matched && !missing,
+    body: renderFallback({
+      site,
+      lang,
+      title: meta.title,
+      description: meta.description,
+      links: await fallbackLinks(db, site, lang, resolved.pathAfterLang),
+      contacts: { phone: settings.contacts.phone, email: settings.contacts.email },
+    }),
   };
+}
+
+/**
+ * The links a crawler that renders nothing would otherwise never find.
+ *
+ * Taken from the sitemap's page list, so the empty-section rule is applied once rather than
+ * twice (D-144), and labelled with each page's own `<title>` minus the brand, so no text is
+ * written for this purpose and none of it can drift.
+ *
+ * The chooser is the exception and has to be: its list is one entry, itself, because its whole
+ * content is two links to the other two hosts. Those are the most valuable links on the domain
+ * — they are how a crawler learns the two brands are one operator — and they are cross-origin,
+ * so they come from `SITE_ORIGINS` (D-131) rather than from a path list.
+ */
+async function fallbackLinks(
+  db: Database,
+  site: Site,
+  lang: Lang,
+  currentPath: string,
+): Promise<FallbackLink[]> {
+  if (site === 'choice') {
+    return (['global', 'umrah'] as const).map((target) => ({
+      href: SITE_ORIGINS[target],
+      label: SITE_BRAND[target],
+      current: false,
+    }));
+  }
+
+  const paths = await listedPaths(db, site);
+
+  return paths.map((path) => {
+    // `resolveRoute` reads the language out of the path, so it gets one: the table it matches
+    // against is the same one the SPA routers were built from, and a second mapping from path
+    // to route id would be the drift this whole file is arranged to avoid.
+    const resolved = resolveRoute(site, `/${lang}${path}`);
+    const meta = routeMeta(site, resolved.route, lang);
+
+    return {
+      href: `/${lang}${path}`,
+      label: anchorText(meta.title, site),
+      current: path === currentPath,
+    };
+  });
 }
 
 /**

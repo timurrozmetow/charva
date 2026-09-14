@@ -241,7 +241,7 @@ export function buildHead(context: ShellContext): HeadTag[] {
  * A row with no summary of its own still needs a description, and the section's is a true
  * statement about it — a tour with no summary is still one of the tours of Turkmenistan.
  */
-function resolveMeta(context: ShellContext, section: RouteMeta): RouteMeta {
+export function resolveMeta(context: ShellContext, section: RouteMeta): RouteMeta {
   if (context.content === undefined) return section;
 
   const fromContent = contentMeta(context.site, context.content);
