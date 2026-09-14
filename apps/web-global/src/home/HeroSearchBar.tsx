@@ -61,7 +61,15 @@ export function HeroSearchBar({ lang, className }: HeroSearchBarProps) {
       }}
       className={className}
     >
-      <div className="flex items-stretch gap-px overflow-hidden rounded-[20px] bg-cream-frame backdrop-blur-[14px] mob:flex-col">
+      {/*
+        A column from `tab:` down, not from `mob:`.
+
+        Three selects and a button share one row. At 768 pixels that left each select 117 wide
+        and «Не важно» arrived as «Не важ» — a control that looks broken rather than optional.
+        Stacking two breakpoints earlier costs height on a tablet and buys three fields that
+        can be read.
+      */}
+      <div className="flex items-stretch gap-px overflow-hidden rounded-[20px] bg-cream-frame backdrop-blur-[14px] tab:flex-col">
         {FIELDS.map((field) => (
           <label key={field.step} className="flex flex-1 flex-col gap-1 bg-surface px-6 py-[18px]">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
@@ -86,7 +94,7 @@ export function HeroSearchBar({ lang, className }: HeroSearchBarProps) {
           </label>
         ))}
 
-        <Button type="submit" arrow className="rounded-none px-9 mob:rounded-b-[20px]">
+        <Button type="submit" arrow className="rounded-none px-9 tab:rounded-b-[20px]">
           {copy.home.search.submit}
         </Button>
       </div>

@@ -120,3 +120,65 @@ describe('no component is handed a colour it cannot use', () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * A sticky panel inside a grid that will not let it move.
+ *
+ * `position: sticky` travels inside its containing block, which for a grid child is its cell.
+ * `align-items: start` sizes every cell to its own content, so a sticky panel in such a cell is
+ * exactly as tall as the space it has and never moves a pixel. Nothing is wrong in a way a
+ * review can see: the class is there, spelled correctly, doing nothing.
+ *
+ * It shipped three times before anybody noticed — the tour page, the hotel page and the tour
+ * builder — and the symptom is always reported as something else. On the tour page it arrived as
+ * «the first call to action is three thousand pixels down»: the price panel is at the top, it
+ * simply scrolls away and nothing follows the reader down fourteen days of itinerary.
+ *
+ * The check reads indentation to tell a descendant from a sibling, which is what a formatted
+ * repository makes possible without parsing. When it fires there is a real answer: let the
+ * column stretch, or wrap the sticky element in a cell that does.
+ */
+describe('no sticky panel sits in a grid cell that cannot move', () => {
+  const files = SCANNED.flatMap((dir) => sourceFiles(dir));
+
+  it('finds the files it is meant to be reading', () => {
+    expect(files.length).toBeGreaterThan(20);
+  });
+
+  it('never pairs `items-start` on a grid with a `sticky` inside it', () => {
+    const offenders: string[] = [];
+
+    for (const file of files) {
+      const lines = stripComments(readFileSync(file, 'utf8')).split(/\r?\n/);
+
+      lines.forEach((line, at) => {
+        const attribute = /className=(?:"([^"]*)"|\{`([^`]*)`\})/.exec(line);
+        const classes = attribute?.[1] ?? attribute?.[2] ?? '';
+        if (!/\bgrid\b/.test(classes) || !/\bitems-start\b/.test(classes)) return;
+
+        /*
+         * Descendants only, judged by indentation.
+         *
+         * The first version of this searched the whole file and reported three grids whose
+         * sticky element is a *sibling* — the enquiry band at the foot of both detail pages and
+         * the save bar under the admin form. Those are fine: a start-aligned grid is only a
+         * problem for something sticky inside it. Prettier formats this repository, so
+         * indentation is a dependable stand-in for the tree that cannot be seen from here.
+         */
+        const indent = line.search(/\S/);
+        for (let next = at + 1; next < lines.length; next += 1) {
+          const text = lines[next] ?? '';
+          if (text.trim() === '') continue;
+          if (text.search(/\S/) <= indent) break;
+          if (/\bsticky\b/.test(text)) {
+            const where = file.split(/[\\/]/).slice(-2).join('/');
+            offenders.push(`${where}:${String(at + 1)} — ${classes.slice(0, 70)}`);
+            break;
+          }
+        }
+      });
+    }
+
+    expect(offenders, offenders.join('\n')).toEqual([]);
+  });
+});

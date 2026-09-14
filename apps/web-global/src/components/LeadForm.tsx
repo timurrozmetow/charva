@@ -247,7 +247,17 @@ export function LeadForm({
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-4 mob:grid-cols-1">
+      {/*
+        Two fields per row when two fit, one when they do not — decided by the column this form
+        is standing in, not by the width of the window.
+
+        It was `grid-cols-2` with `mob:grid-cols-1`, which asks the wrong question. This form is
+        mounted five times, and in the builder it sits in the middle column between a 200-pixel
+        rail and a 280-pixel summary: on a small laptop that column is around 360 pixels, so the
+        two columns became 142 pixels each and «Как к вам обращаться» was cut to three words.
+        The viewport was 1024 the whole time, so no breakpoint was ever going to catch it.
+      */}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-4">
         <Field
           label={copy.form.name}
           required

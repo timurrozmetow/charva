@@ -66,8 +66,20 @@ export function TourBuilder({ lang, basePath, renderForm }: TourBuilderProps) {
     return typeof chosen === 'string' ? chosen === code : chosen.includes(code);
   };
 
+  /*
+   * No `items-start` on the grid below, and that one word is what made the summary scroll away.
+   *
+   * The panel is `position: sticky`, which can only travel inside its containing block — here,
+   * its grid cell. `items-start` sizes every cell to its own content, so the cell was exactly as
+   * tall as the panel and there was nowhere to stick to. The column stretches now, the panel
+   * stays in view beside nine steps of questions, and the property that was written on it all
+   * along finally does something.
+   *
+   * A comment, not a JSX comment: `{/* … *\/}` as the first thing inside `return (` is a parse
+   * error, because there is no element yet for it to belong to.
+   */
   return (
-    <div className="grid grid-cols-builder items-start gap-[30px] lap:grid-cols-[200px_1fr_280px] tab:grid-cols-1">
+    <div className="grid grid-cols-builder gap-[30px] lap:grid-cols-[200px_1fr_280px] tab:grid-cols-1">
       <BuilderRail
         lang={lang}
         steps={steps}

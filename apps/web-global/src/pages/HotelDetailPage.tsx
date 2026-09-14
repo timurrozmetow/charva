@@ -142,7 +142,13 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
 
                 <HotelEquipment hotel={hotel} lang={lang} />
 
-                <div className="mt-12 grid grid-cols-[1fr_360px] items-start gap-16 lap:gap-10 tab:grid-cols-1">
+                {/*
+                  No `items-start`: the aside below is `sticky`, and a sticky element can only
+                  travel inside its own grid cell. `items-start` sized that cell to the panel
+                  itself, so it had nowhere to go — the price and «Оставить заявку» scrolled away
+                  with the cover and the next call to action was three thousand pixels down.
+                */}
+                <div className="mt-12 grid grid-cols-[1fr_360px] gap-16 lap:gap-10 tab:grid-cols-1">
                   <div>
                     {hotel.body !== '' && (
                       <>
