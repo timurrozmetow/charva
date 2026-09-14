@@ -62,13 +62,17 @@ const paths = {
   area: 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4',
   /** A clock face. Check-in and check-out. */
   clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3.5 2',
+  /** A wall calendar. How many days a tour runs. */
+  calendar: 'M4 8.5h16M7.5 3.5v3M16.5 3.5v3M5 5.5h14v15H5v-15z',
+  /** A map pin. How many cities it passes through, and where a hotel is. */
+  pin: 'M12 21.5s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11zM12 13a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
 } as const;
 
 export type IconName = keyof typeof paths | 'starHalf' | 'globe';
 
 type Stroked = Extract<
   IconName,
-  'check' | 'cross' | 'caretDown' | 'bed' | 'guest' | 'wifi' | 'area' | 'clock'
+  'check' | 'cross' | 'caretDown' | 'bed' | 'guest' | 'wifi' | 'area' | 'clock' | 'calendar' | 'pin'
 >;
 const STROKED = new Set<string>([
   'check',
@@ -79,6 +83,8 @@ const STROKED = new Set<string>([
   'wifi',
   'area',
   'clock',
+  'calendar',
+  'pin',
 ] satisfies Stroked[]);
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'children'> {

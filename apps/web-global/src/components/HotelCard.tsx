@@ -11,27 +11,46 @@ export interface HotelCardProps {
   priority?: boolean;
 }
 
+/** How many amenity chips fit on one card before the row starts wrapping into a wall. */
+const CHIPS = 3;
+
 /**
  * One hotel.
  *
  * Different from the tour card in the ways the design makes them different: the pill shows the
- * *city* rather than a tag, the amenities are a row of chips, and the footer reads «ночь от».
+ * *city* rather than a tag, and the amenities are a row of chips.
  *
  * `stars` and `category` are separate fields, and this is the card where that matters. The
  * prototype gives the yurt camp a display string of «Юрта» and a filter key of «Кемп», and the
  * boutique «Бутик» for both — two facts about one row that cannot both be true. Here a camp has
  * no stars at all, so there is nothing to contradict.
+ *
+ * The layout was rebuilt when the price came off. A card is a small argument for clicking it,
+ * and this one used to end its argument with «от 96 $»; when the owner removed hotel prices the
+ * card simply stopped — three grey chips and then the edge, with nothing saying there was more
+ * behind it. What replaced the price is not another number but the two things that actually
+ * distinguish one hotel here from another now: what kind of place it is, and what it has. The
+ * class sits beside the stars where the price used to be read, the amenity row says how many
+ * more there are rather than silently cutting at three, and the card ends on a rule and a
+ * «Подробнее →» so that it ends on purpose.
+ *
+ * `h-full` and `mt-auto`, as on the tour card and for the same reason: hotel summaries came
+ * from the operator's own site and are all different lengths, so without them a row of cards
+ * is a row of different heights with the chips landing wherever they land.
  */
 export function HotelCard({ hotel, lang, priority = false }: HotelCardProps) {
   const copy = copyFor(lang);
   const headingId = `hotel-${String(hotel.id)}`;
+  const filters: Record<string, string> = copy.hotelFilters;
+  const kind = filters[hotel.filterKey] ?? '';
+  const extra = hotel.amenities.length - CHIPS;
 
   return (
-    <article className={cardClass({ interactive: true })}>
+    <article className={cardClass({ interactive: true, className: 'group flex h-full flex-col' })}>
       <Link
         to={path.hotel(lang, hotel.slug)}
         aria-labelledby={headingId}
-        className="block no-underline"
+        className="flex flex-1 flex-col no-underline"
       >
         <div className="relative">
           <ImageSlot
@@ -61,24 +80,36 @@ export function HotelCard({ hotel, lang, priority = false }: HotelCardProps) {
           )}
         </div>
 
-        <div className="flex flex-col gap-3 px-5 pb-6 pt-5">
-          {/* Null for a camp and a boutique, which is the whole point of the pair. */}
-          {hotel.stars !== null && (
+        <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-5">
+          {/*
+            The class, drawn or written — never both.
+
+            `filterKey` is `5star` for a five-star hotel, and `hotelFilters` renders that as
+            «5 ★». Putting it beside the stars would print one fact twice on one line, which is
+            the trap D-120 is about and which the first version of this card walked straight
+            into. So: stars when there are stars, the word when there are none — which is
+            exactly the pair `stars` and `category` exist to express.
+          */}
+          {hotel.stars !== null ? (
             <StarRating
               value={hotel.stars}
               label={fill(copy.common.stars, { count: hotel.stars })}
             />
+          ) : (
+            kind !== '' && <span className="text-label font-bold uppercase text-muted">{kind}</span>
           )}
 
           <h3 id={headingId} className="text-cardTitle font-medium text-ink">
             {hotel.name}
           </h3>
 
-          {hotel.summary !== '' && <p className="text-bodySm text-body">{hotel.summary}</p>}
+          {hotel.summary !== '' && (
+            <p className="line-clamp-2 text-bodySm text-body">{hotel.summary}</p>
+          )}
 
           {hotel.amenities.length > 0 && (
             <ul className="flex list-none flex-wrap gap-2 p-0">
-              {hotel.amenities.slice(0, 3).map((amenity) => (
+              {hotel.amenities.slice(0, CHIPS).map((amenity) => (
                 <li
                   key={amenity.code}
                   className="rounded-full bg-line-soft px-3 py-1.5 text-label font-semibold text-body"
@@ -86,17 +117,31 @@ export function HotelCard({ hotel, lang, priority = false }: HotelCardProps) {
                   {amenity.name}
                 </li>
               ))}
+              {/* «+4» rather than a silent cut: a hotel with seven amenities and one with three
+                  looked identical on the card, which is the opposite of what the row is for. */}
+              {extra > 0 && (
+                <li className="rounded-full bg-line-soft px-3 py-1.5 text-label font-semibold text-muted">
+                  +{extra}
+                </li>
+              )}
             </ul>
           )}
 
           {/*
-            No price line, and no «цена по запросу» in its place.
+            The floor of the card — a rule and an affordance, where the price used to be.
 
-            The card carried «от N $» while the column was `NOT NULL`, then said «по запросу»
-            for the sixteen real hotels that arrived without a rate. The owner removed both: a
-            line whose only content is that there is no content earns its space from nobody, and
-            a visitor who wants a figure is going to ask either way.
+            No «цена по запросу» in its place: a line whose only content is that there is no
+            content earns its space from nobody, and a visitor who wants a figure will ask
+            either way. What the row does instead is end the card deliberately.
           */}
+          <div className="mt-auto flex items-center justify-end border-t border-line pt-4">
+            <span
+              aria-hidden="true"
+              className="inline-flex items-center gap-1.5 text-bodySm font-semibold text-accent-text transition-[gap] duration-colour group-hover:gap-2.5"
+            >
+              {copy.common.more} →
+            </span>
+          </div>
         </div>
       </Link>
     </article>
