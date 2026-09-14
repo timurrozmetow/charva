@@ -202,9 +202,22 @@ const RESOURCES: AdminResource[] = [
     search: ['authorName'],
     filters: ['rating', 'isPublished', 'tourId'],
   }),
+  /*
+   * Shared, like `content_blocks` — `site: null` and a `site` column of its own.
+   *
+   * It was registered as Global's, which is wrong twice over and in ways that hid each other.
+   * The admin files a resource under the department its `site` names (D-103), so the screen for
+   * writing questions lived only in «Global» — and the Umrah accordion, built in phase 6 and
+   * opened by default on its first item, had no rows at all because the editor who would have
+   * written them could not reach the screen from the Umrah department.
+   *
+   * And the i18n report scopes a shared table by its own column but takes a named one whole, so
+   * every Turkmen question counted against Global's English coverage. Adding eight of them is
+   * what finally made that visible: Global dropped to 96% in a language nothing had changed.
+   */
   define('faqs', {
     table: t.faqs,
-    site: 'global',
+    site: null,
     localized: ['question', 'answer'],
     filters: ['site', 'isPublished'],
   }),

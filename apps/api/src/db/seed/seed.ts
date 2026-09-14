@@ -24,6 +24,7 @@ import {
   ZIYARAT_CITIES,
 } from './parse';
 import { byLang, ru3, tm2 } from './translations';
+import { seedUmrahFaq } from './umrah-faq';
 
 /**
  * The catalogue, from the prototypes.
@@ -147,6 +148,8 @@ export async function seedAll(db: Database): Promise<SeedCounts> {
   record('videos', await seedVideos(db));
   record('reviews', await seedReviews(db));
   record('faqs', await seedFaqs(db));
+  // The Umrah accordion has been on the page since phase 6 with nothing in it — see `umrah-faq.ts`.
+  record('faqs_umrah', await seedUmrahFaq(db));
   record('places_to_see', await seedPlaces(db));
   record('content_blocks', await seedContentBlocks(db));
   record('umrah_trips', await seedTrips(db));

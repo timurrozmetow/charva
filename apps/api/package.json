@@ -21,7 +21,7 @@
     "admin:create": "tsx src/db/create-admin.ts",
     "i18n:report": "tsx src/db/i18n-report.ts",
     "db:hotels": "tsx src/db/import-hotels.ts",
-    "db:journal": "tsx src/db/journal-apply.ts"
+    "db:content": "tsx src/db/apply-content.ts"
   },
   "dependencies": {
     "@charva/contracts": "workspace:*",
