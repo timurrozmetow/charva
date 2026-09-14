@@ -80,10 +80,22 @@ const schema = z.object({
   UPLOADS_DIR: z.string().min(1).default('uploads'),
 
   /**
-   * The origin `/img` URLs are built against.
+   * The origin `/img` and `/uploads` URLs are built against. **Leave it empty.**
    *
-   * Empty means "same origin as the API", which is what development wants. In production it is
-   * the API host, so a URL survives being copied out of a response into an OG tag.
+   * Empty means «same origin as whoever asked», and every public host already proxies `/api/`
+   * to this API (D-132) — so a photograph arrives over the connection the page is already
+   * using. Production set it to the API host for a while, and that cost every visitor a second
+   * DNS lookup and a second TLS handshake before the largest image on the page could start: the
+   * hero is the LCP element on almost every page here, and the audience is on mobile
+   * connections from Ashgabat.
+   *
+   * The reason it was set — that a URL has to survive being copied into an OG tag — is handled
+   * elsewhere and better: the shell builds `og:image` and every JSON-LD image through
+   * `imageFor`, which falls back to the requesting origin. Absolute, and on the site's own
+   * host, which is what a crawler and a Telegram card want anyway.
+   *
+   * It stays configurable for the day media moves to object storage, which is the one case
+   * where a different origin is the point rather than an accident.
    */
   PUBLIC_MEDIA_BASE_URL: z.string().default(''),
 
