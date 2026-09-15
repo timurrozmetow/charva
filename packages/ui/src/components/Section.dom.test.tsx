@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { Container } from './Container';
 import { Section } from './Section';
 
 /**
@@ -84,5 +88,50 @@ describe('what a painted section owns', () => {
     );
     // Decision D-97: the attribute re-points the theme variables, so nothing inside is told.
     expect(container.querySelector('section')?.dataset['surface']).toBe('dark');
+  });
+});
+
+describe('a container inside a container', () => {
+  it('marks itself, so the stylesheet can collapse the second gutter', () => {
+    /*
+     * `Section` has wrapped its children in a `Container` since it was written, and sixty-seven
+     * places across the two sites wrote `<Section><Container>` anyway. Both components are
+     * correct; stacked, they charge the gutter twice — 1240px of content rail where the design
+     * draws 1360, and 332 instead of 372 on a 412px phone.
+     *
+     * jsdom applies no stylesheet, so what is asserted here is the hook the rule hangs on: the
+     * nesting exists and both levels are marked. The rule itself is checked below, and the
+     * pixels were measured in a real browser.
+     */
+    const { container } = render(
+      <Section>
+        <Container>content</Container>
+      </Section>,
+    );
+
+    const outer = container.querySelector('[data-container]');
+    expect(outer).not.toBeNull();
+    expect(outer?.querySelector('[data-container]')).not.toBeNull();
+  });
+
+  it('is undone by a rule that outranks the utility that set it', () => {
+    const css = readFileSync(join(__dirname, '..', 'styles.css'), 'utf8');
+
+    // Two attribute selectors beat one utility class, so this wins wherever it sits in the
+    // cascade — which is the reason it is written as an attribute rather than a class.
+    expect(css).toMatch(/\[data-container\]\s+\[data-container\]\s*\{/);
+    expect(css).toMatch(/\[data-container\]\s+\[data-container\]\s*\{[^}]*padding-left:\s*0/);
+    expect(css).toMatch(/\[data-container\]\s+\[data-container\]\s*\{[^}]*max-width:\s*none/);
+  });
+
+  it('a bleed section adds no container at all, so nothing is nested', () => {
+    const { container } = render(
+      <Section bleed>
+        <Container>content</Container>
+      </Section>,
+    );
+
+    const all = container.querySelectorAll('[data-container]');
+    expect(all).toHaveLength(1);
   });
 });

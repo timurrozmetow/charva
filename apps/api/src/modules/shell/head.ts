@@ -67,6 +67,17 @@ function preloadTags(context: ShellContext, image: ShareImage): HeadTag[] {
         rel: 'preload',
         as: 'image',
         href: image.url,
+        /*
+         * Without this the preload is an ordinary-priority fetch, and the `<img>` it is meant to
+         * be feeding carries `fetchpriority="high"`.
+         *
+         * A preload starts a picture earlier and then hands it to the element at the priority
+         * the *link* asked for: high on the tag and default here means the hint arrives first
+         * and is then overtaken by every script on the page. Lighthouse names this exactly —
+         * «для запроса предварительной загрузки изображения требуется fetchpriority=high» — and
+         * it is the one line of the LCP insight that was our own doing.
+         */
+        fetchpriority: 'high',
         ...(image.srcSet === null ? {} : { imagesrcset: image.srcSet, imagesizes: '100vw' }),
       },
     },

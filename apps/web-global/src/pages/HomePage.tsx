@@ -206,7 +206,18 @@ export function HomePage({ lang }: HomePageProps) {
               // Three on a phone, six on anything wider: two rows of three become six
               // full-width cards below 768, and «Все туры» is directly above them.
               <li key={tour.id} className={beyondPhonePreview(index, 3)}>
-                <TourCard tour={tour} lang={lang} priority={index < 3} />
+                {/*
+                  No priority here, unlike `/tours`, and the difference is the hero above.
+
+                  `priority` means eager *and* `fetchpriority="high"`, which is right for a
+                  picture at the top of a page. This section is below a `min-h-dvh` photograph:
+                  three card images were being fetched at high priority while the one element
+                  LCP is actually measured against was still arriving, on a connection where
+                  they share a few hundred kilobits. On the catalogue the first row is the top
+                  of the page and there is nothing to take bandwidth from, so it keeps its
+                  priority; here they wait their turn like everything else below the fold.
+                */}
+                <TourCard tour={tour} lang={lang} />
               </li>
             ))}
           </ul>

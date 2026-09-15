@@ -173,5 +173,25 @@ textarea {
   }
 }
 
+/* ======================================================================================
+ * A container inside a container is the same container.
+ *
+ * `Section` wraps its children in a `Container`, and sixty-seven places across the two sites
+ * wrote `<Section><Container>` anyway, so those pages paid the gutter twice: measured in a
+ * browser at 412px the rail is 372 wide, the inner container makes it 332, and a card inside
+ * it 330. On a desktop the content rail is 1240 where the design draws 1360. Nobody chose
+ * 120px gutters — it is what two correct components do when one is put inside the other.
+ *
+ * One rule rather than sixty-seven deletions: a deletion fixes the pages that exist, a rule
+ * fixes the sixty-eighth. Two attribute selectors outrank the utility class, so the cascade
+ * order does not matter.
+ * ====================================================================================== */
+
+[data-container] [data-container] {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* Utilities last: a utility class must beat a component style. */
 @tailwind utilities;
