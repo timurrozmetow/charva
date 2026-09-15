@@ -2,6 +2,7 @@ import { type ReactNode } from 'react';
 
 import { cn } from '../cn';
 
+import { BrandIcon, type BrandName } from './brandIcons';
 import { Container } from './Container';
 
 export interface FooterLink {
@@ -23,9 +24,18 @@ export interface FooterColumn {
 
 export interface FooterSocial {
   key: string;
-  /** Two letters — IG, TG, WA, YT — as the design draws them. */
+  /**
+   * The brand mark. Omit it and the two letters below are drawn instead.
+   *
+   * The design draws two letters in each circle, and the owner asked for the marks — a logo is
+   * recognised without being read, which matters most for the row a visitor scans rather than
+   * reads. The letters stay as the fallback, so a channel whose mark this project does not have
+   * still gets a circle rather than an empty one.
+   */
+  icon?: BrandName;
+  /** Two letters — IG, TG, WA, YT — drawn when there is no mark. */
   short: string;
-  /** The full name, for anyone who cannot see the two letters. */
+  /** The full name. It is the accessible name either way: a logo reads aloud as nothing. */
   label: string;
   href: string;
 }
@@ -127,7 +137,13 @@ export function SiteFooter({
                       'transition-colors duration-colour hover:bg-accent hover:text-accent-on',
                     )}
                   >
-                    <span aria-hidden="true">{social.short}</span>
+                    {social.icon === undefined ? (
+                      <span aria-hidden="true">{social.short}</span>
+                    ) : (
+                      // Decorative: the anchor already carries the name, and an icon that
+                      // announced itself would say it twice.
+                      <BrandIcon name={social.icon} size={18} />
+                    )}
                   </a>
                 </li>
               ))}

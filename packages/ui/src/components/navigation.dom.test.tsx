@@ -361,6 +361,37 @@ describe('SiteFooter and the accounts that have no address', () => {
       'https://youtube.com/@charva',
     );
   });
+  it('draws the brand mark, and keeps the name for anyone who cannot see it', () => {
+    /*
+     * The design draws two letters; the owner asked for the marks. A logo is recognised without
+     * being read, which is what a row of circles is for — but it reads aloud as nothing, so the
+     * anchor keeps the full name and the mark itself is decoration.
+     */
+    renderFooter([
+      {
+        key: 'ig',
+        short: 'IG',
+        icon: 'instagram',
+        label: 'Instagram',
+        href: 'https://instagram.com/x',
+      },
+    ]);
+
+    const link = screen.getByRole('link', { name: 'Instagram' });
+    expect(link.querySelector('svg')).not.toBeNull();
+    expect(link.querySelector('svg')).toHaveAttribute('aria-hidden');
+    expect(link).not.toHaveTextContent('IG');
+  });
+
+  it('falls back to the two letters for a channel with no mark', () => {
+    // imo is not in any icon set this project can use, and a trademark drawn from memory is
+    // worse than two letters. The fallback is what keeps that circle from being empty.
+    renderFooter([{ key: 'x', short: 'XX', label: 'Something', href: 'https://example.com' }]);
+
+    const link = screen.getByRole('link', { name: 'Something' });
+    expect(link).toHaveTextContent('XX');
+    expect(link.querySelector('svg')).toBeNull();
+  });
 });
 
 describe('contactLinks', () => {

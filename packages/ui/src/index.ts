@@ -7,6 +7,7 @@ export * from './image-sizes';
 
 export * from './components/Accordion';
 export * from './components/Badge';
+export * from './components/brandIcons';
 export * from './components/Button';
 export * from './components/Card';
 export * from './components/Carousel';

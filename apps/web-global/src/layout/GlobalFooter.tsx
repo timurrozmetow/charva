@@ -80,23 +80,24 @@ export function GlobalFooter({ lang, settings }: GlobalFooterProps) {
    */
   const socials: FooterSocial[] = (
     [
-      ['instagram', 'IG'],
-      ['telegram', 'TG'],
-      ['whatsapp', 'WA'],
-      ['tiktok', 'TT'],
-      ['facebook', 'FB'],
-      ['youtube', 'YT'],
+      ['instagram', 'IG', 'instagram'],
+      ['telegram', 'TG', 'telegram'],
+      ['whatsapp', 'WA', 'whatsapp'],
+      ['tiktok', 'TT', 'tiktok'],
+      ['facebook', 'FB', 'facebook'],
+      ['youtube', 'YT', 'youtube'],
       /*
        * imo, last, and here for a reason the other six are not.
        *
        * It is the messenger most of Turkmenistan actually uses, which makes it the channel this
        * audience reaches for first and one almost no travel site outside the region carries.
        */
-      ['imo', 'IM'],
+      ['imo', 'IM', 'chat'],
     ] as const
-  ).map(([key, short]) => ({
+  ).map(([key, short, icon]) => ({
     key,
     short,
+    icon,
     label: copy.footer.socials[key],
     href: settings?.socials[key] ?? '',
   }));
