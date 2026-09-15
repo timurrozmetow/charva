@@ -12,8 +12,20 @@
  * Shared rather than duplicated: `Img` builds its `srcSet` from this list and `/img` rejects
  * anything not on it. Without the ceiling, `?w=100000` is a one-request denial of service that
  * asks a server with no GPU to allocate a forty-gigabyte bitmap.
+ *
+ * **Where the steps are matters as much as how many.** A browser takes the first width at or
+ * above what it needs, so a gap in the ladder is paid for in bytes by everyone who lands in it,
+ * and the gaps were in the wrong places. 640 to 960 is a jump of fifty percent, and the two
+ * commonest cheap Android screens — 360 and 375 CSS pixels at two device pixels each — need 720
+ * and 750. Both were served 960: a third more pixels than they asked for, on the largest file
+ * on the page, to an audience on mobile internet. 768 costs them about a third less and is
+ * still above what they requested, so nothing is softer than it was. 1440 closes the same kind
+ * of gap for a 430-pixel phone at three times, which was reaching for 1600.
+ *
+ * Nine widths and not more: each one is a file the server keeps on a disk it has one of, and
+ * the ones added are where real devices actually sit rather than where the numbers look tidy.
  */
-export const IMAGE_WIDTHS = [320, 480, 640, 960, 1280, 1600, 2048] as const;
+export const IMAGE_WIDTHS = [320, 480, 640, 768, 960, 1280, 1440, 1600, 2048] as const;
 
 export type ImageWidth = (typeof IMAGE_WIDTHS)[number];
 
