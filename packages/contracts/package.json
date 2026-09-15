@@ -1,6 +1,7 @@
 {
   "name": "@charva/contracts",
   "version": "0.0.0",
+  "sideEffects": false,
   "private": true,
   "type": "module",
   "main": "./dist/index.js",

@@ -1,5 +1,6 @@
 import { API_PREFIX } from './api/media';
-import { type ApiError, apiErrorSchema } from './errors';
+import { type ApiError } from './errors';
+import { isApiError } from './is-api-error';
 
 /**
  * The client half of the wire format.
@@ -75,8 +76,8 @@ export function createApiClient({ baseUrl = API_PREFIX, headers }: ApiClientOpti
     });
 
     if (!response.ok) {
-      const parsed = apiErrorSchema.safeParse(await response.json().catch(() => null));
-      throw new ApiRequestError(response.status, parsed.success ? parsed.data : null);
+      const body: unknown = await response.json().catch(() => null);
+      throw new ApiRequestError(response.status, isApiError(body) ? body : null);
     }
 
     // 204 is a real answer: the honeypot branch of the lead endpoints returns one deliberately.

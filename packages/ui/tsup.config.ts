@@ -27,4 +27,16 @@ export default defineConfig({
    */
   onSuccess: 'node scripts/emit-css.mjs',
   external: ['react', 'react-dom'],
+  /*
+   * The one thing this package takes from contracts is `IMAGE_WIDTHS`, seven numbers, and it is
+   * bundled in rather than imported.
+   *
+   * Contracts emits one module per source file so that a page wanting `imageUrl` does not have
+   * to download Zod alongside it. That output is written for bundlers — extensionless relative
+   * paths, one directory import — and Node's ESM loader refuses both. `scripts/emit-css.mjs`
+   * loads this package through Node to generate `theme.css`, so leaving contracts external here
+   * failed the build with ERR_UNSUPPORTED_DIR_IMPORT. Inlining seven numbers costs less than
+   * either alternative, and the API does the same thing for the same reason.
+   */
+  noExternal: [/^@charva\//],
 });

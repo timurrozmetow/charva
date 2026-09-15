@@ -67,3 +67,7 @@ export const apiErrorSchema = z.object({
 });
 
 export type ApiError = z.infer<typeof apiErrorSchema>;
+
+// The hand-written guard is in its own module, not here: it is imported by every page before
+// anything is on screen, and a bundler cannot drop a module that holds a top-level z.object().
+export { isApiError } from './is-api-error';
