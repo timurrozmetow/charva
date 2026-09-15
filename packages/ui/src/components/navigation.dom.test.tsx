@@ -316,3 +316,49 @@ describe('SiteFooter', () => {
     expect(container.querySelector('footer')).toHaveAttribute('data-surface', 'dark');
   });
 });
+
+describe('SiteFooter and the accounts that have no address', () => {
+  function renderFooter(socials: Parameters<typeof SiteFooter>[0]['socials']) {
+    return render(
+      <SiteFooter
+        label="Подвал"
+        logo={<span>Charva</span>}
+        legal="—"
+        copyright="—"
+        socials={socials}
+        columns={[]}
+        renderLink={(link, { children, ...props }) => (
+          <a href={link.href} {...props}>
+            {children}
+          </a>
+        )}
+      />,
+    );
+  }
+
+  it('leaves out a social account whose address is still a placeholder', () => {
+    /*
+     * Both public sites shipped with four circles in the footer whose `href` was `#` — the
+     * value seeded into the settings row, not a fallback in the code. Four links that look
+     * like links and do nothing, on every page. An audience deciding whether to trust a tour
+     * operator reads that as the site being broken, which is the same reasoning as D-144.
+     */
+    renderFooter([
+      { key: 'ig', short: 'IG', label: 'Instagram', href: '#' },
+      { key: 'tg', short: 'TG', label: 'Telegram', href: '   ' },
+      { key: 'wa', short: 'WA', label: 'WhatsApp', href: '' },
+      { key: 'yt', short: 'YT', label: 'YouTube', href: 'https://youtube.com/@charva' },
+    ]);
+
+    expect(screen.queryByRole('link', { name: 'Instagram' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Telegram' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'WhatsApp' })).not.toBeInTheDocument();
+
+    // And the one that was filled in is still there — the rule hides what is missing, not the
+    // whole row.
+    expect(screen.getByRole('link', { name: 'YouTube' })).toHaveAttribute(
+      'href',
+      'https://youtube.com/@charva',
+    );
+  });
+});

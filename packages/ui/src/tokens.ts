@@ -1,4 +1,4 @@
-import { blendOver, type Hex } from './color';
+import { blendOver, type Hex, rgbTripleToHex } from './color';
 
 /**
  * Design tokens for all three Charva front-ends.
@@ -25,8 +25,8 @@ export const sand = {
   DEFAULT: '#DFA059',
   /** Accent hover; the far end of the seats-progress gradient. */
   light: '#F0C48E',
-  /** Links and eyebrows on light. Corrected from the mockup's #A9722C. */
-  dark: '#996728',
+  /** Links and eyebrows on light. From #A9722C, then again for tinted chips. */
+  dark: '#906126',
   /** Active nav item, active topic chip. Passes as-is. */
   deep: '#8A5A22',
   /** Text on a sand fill. */
@@ -49,10 +49,10 @@ export const globalPalette = {
   brown700: '#4A382A',
   /** Body text on light. */
   brown500: '#6E594A',
-  /** Meta and captions. Corrected from #93806E. */
-  brown400: '#7F6E5E',
-  /** Empty values in the builder estimate. Corrected from #B7A695 — the largest change. */
-  brown300: '#826D58',
+  /** Meta and captions. Corrected from #93806E, then again for tinted chips. */
+  brown400: '#78685A',
+  /** Builder estimate blanks. From #B7A695 — the largest change — then again for chips. */
+  brown300: '#74695F',
 
   /** Page background. */
   bg: '#FAF6EF',
@@ -79,8 +79,8 @@ export const umrahPalette = {
   green700: '#2A3A33',
   /** Body text. Passes at 5.62:1 — left at its mockup value. */
   green500: '#55655C',
-  /** Meta and captions. Corrected from #7A8981. */
-  green400: '#66736C',
+  /** Meta and captions. Corrected from #7A8981, then again for tinted chips. */
+  green400: '#606B65',
 
   /** Headings. */
   ink: '#16201C',
@@ -90,8 +90,8 @@ export const umrahPalette = {
   surface: '#FFFDFA',
   /** Text on dark. Note it differs from Global's cream by one channel — deliberate. */
   cream: '#FCF9F4',
-  /** Links and duration labels. Corrected from #A8752F. */
-  link: '#946729',
+  /** Links and duration labels. From #A8752F, then again for tinted chips. */
+  link: '#8A6027',
   btnText: sand.contrast,
 } as const satisfies Record<string, Hex>;
 
@@ -349,11 +349,28 @@ export const heroScale = {
 export const onDarkAlpha = {
   /** Body copy on a dark section. */
   body: 0.72,
-  /** Meta, captions, footer links. */
-  muted: 0.55,
+  /**
+   * Meta, captions, footer links.
+   *
+   * .55 on a plain dark section is 5.0:1 and fine. It was also .55 on a panel inside a dark
+   * section, where the backdrop has two six-percent cream fills on it and the same text falls
+   * to 4.16:1 — which is where Lighthouse found it, in the builder. .62 clears 4.5 on the
+   * deepest stack the design builds and leaves the plain section brighter than it was, which
+   * is the direction a legibility fix is allowed to move.
+   */
+  muted: 0.62,
   /** Decoration only — this one does not clear AA and must never carry text. */
   faint: 0.4,
 } as const;
+
+/**
+ * The cream fills, which is what a panel on a dark section is made of.
+ *
+ * These were literals in the Tailwind preset — `rgba(var(--c-cream-rgb), 0.06)` — a second copy
+ * of numbers that belong beside the opacities above, and the reason the contrast contract could
+ * not see what the builder actually paints. The preset reads them from here now.
+ */
+export const creamFillAlpha = 0.06;
 
 // ======================================================================================
 // Motion
@@ -469,59 +486,85 @@ export const minTapTarget = 44;
 // ======================================================================================
 
 /**
+ * The tinted chip, flattened — and the surface every correction below is now measured against.
+ *
+ * Text does not only sit on the page and on cards. It sits on chips: a filter pill, a facet
+ * count, a tag, the little `bg-line-soft` rounded box. That fill is the brand's ink at six
+ * percent, so the chip is *darker* than the page it lies on, and dark text on it has less
+ * contrast than the same text one pixel outside it.
+ *
+ * That is how five colours corrected to 4.51–4.56:1 in phase 1 came to fail an audit in phase 9.
+ * Each was measured against `bg` — the lightest surface it appears on — and cleared the bar by
+ * four hundredths. Any tint at all was going to take it back, and a six percent tint took about
+ * half a point. The rule here is now the opposite one: measure against the *darkest* light
+ * surface a token is allowed on, because that is the one that decides whether it is legible.
+ *
+ * Lighthouse found two of the five from the outside, on the live site, which is the part worth
+ * remembering: `CONTRAST_PAIRS` had listed the pairs somebody thought of rather than the pairs
+ * that occur.
+ */
+export const CHIP_GLOBAL: Hex = blendOver(
+  rgbTripleToHex(alphaBase.globalInk),
+  globalPalette.bg,
+  0.06,
+);
+export const CHIP_UMRAH: Hex = blendOver(rgbTripleToHex(alphaBase.umrahInk), umrahPalette.bg, 0.06);
+
+/**
  * Text colours darkened from their mockup values, and why.
  *
  * Only lightness moves; hue and saturation are preserved, and each correction is the smallest
- * that reaches 4.5:1 against the lightest surface the token is used on. This is the one place
- * where the implementation knowingly departs from "pixel-perfect" — decision D-3, question Q-7.
+ * that reaches 4.5:1 against the darkest light surface the token is used on — see `CHIP_GLOBAL`
+ * above for why that is not the page background. This is the one place where the implementation
+ * knowingly departs from "pixel-perfect" — decision D-3, question Q-7.
  *
  * `#55655C` (Umrah body text) was reported as failing at 4.29:1 during planning. Re-measured,
- * it is 5.62:1 and passes; it is left at its mockup value.
+ * it is 5.62:1 and passes even on a chip; it is left at its mockup value.
  */
 export const CONTRAST_CORRECTIONS = [
   {
     token: 'globalPalette.brown300',
     mockup: '#B7A695',
-    corrected: '#826D58',
-    was: 2.19,
-    now: 4.56,
-    on: '#FAF6EF',
+    corrected: '#74695F',
+    was: 1.99,
+    now: 4.5,
+    on: CHIP_GLOBAL,
     note: 'Empty values in the builder estimate. The largest change of the five and the most visible; at 2.19:1 the mockup value was barely legible.',
   },
   {
     token: 'globalPalette.brown400',
     mockup: '#93806E',
-    corrected: '#7F6E5E',
-    was: 3.51,
-    now: 4.54,
-    on: '#FAF6EF',
+    corrected: '#78685A',
+    was: 3.19,
+    now: 4.51,
+    on: CHIP_GLOBAL,
     note: 'Meta lines and captions across Global.',
   },
   {
     token: 'sand.dark',
     mockup: '#A9722C',
-    corrected: '#996728',
-    was: 3.8,
+    corrected: '#906126',
+    was: 3.45,
     now: 4.51,
-    on: '#FAF6EF',
+    on: CHIP_GLOBAL,
     note: 'Links and 11px/700 eyebrows. At 34px statistic numbers the mockup value already passed the 3:1 large-text bar; one corrected value serves both.',
   },
   {
     token: 'umrahPalette.green400',
     mockup: '#7A8981',
-    corrected: '#66736C',
-    was: 3.34,
+    corrected: '#606B65',
+    was: 2.99,
     now: 4.52,
-    on: '#F7F4EE',
+    on: CHIP_UMRAH,
     note: 'Meta lines and captions across Umrah.',
   },
   {
     token: 'umrahPalette.link',
     mockup: '#A8752F',
-    corrected: '#946729',
-    was: 3.64,
-    now: 4.52,
-    on: '#F7F4EE',
+    corrected: '#8A6027',
+    was: 3.26,
+    now: 4.53,
+    on: CHIP_UMRAH,
     note: 'Links and the duration labels on ziyarat cards.',
   },
 ] as const;
@@ -566,10 +609,59 @@ export const DARK_SURFACES: readonly { bg: Hex; cream: Hex; where: string }[] = 
  * Generated rather than typed out: fourteen pairs written by hand would be fourteen chances to
  * paste the wrong backdrop, and the whole point is that the number is measured.
  */
-const onDarkPairs: ContrastPair[] = DARK_SURFACES.flatMap(({ bg, cream, where }) => [
-  { fg: blendOver(cream, bg, onDarkAlpha.body), bg, size: 15, where: `body text on ${where}` },
-  { fg: blendOver(cream, bg, onDarkAlpha.muted), bg, size: 12, where: `meta on ${where}` },
-]);
+const onDarkPairs: ContrastPair[] = DARK_SURFACES.flatMap(({ bg, cream, where }) => {
+  /*
+   * The panel, and the card inside the panel.
+   *
+   * A dark section is not the darkest thing text sits on — it is the lightest. The builder puts
+   * a `bg-cream-fill` panel on the section and `bg-cream-fill` cards inside the panel, so the
+   * same six percent cream is applied twice and the backdrop rises by about eleven percent of
+   * the way to white. Translucent cream text on that has correspondingly less to work with, and
+   * `cream-muted` at .55 landed on 4.16:1 there — which Lighthouse found on the live site and
+   * this list did not, because it only ever modelled one fill.
+   *
+   * Two levels and not more: two is what the design stacks, and a list that modelled three
+   * would be guarding a thing nobody built.
+   */
+  const panel = blendOver(cream, bg, creamFillAlpha);
+  const inPanel = blendOver(cream, panel, creamFillAlpha);
+
+  return [
+    { fg: blendOver(cream, bg, onDarkAlpha.body), bg, size: 15, where: `body text on ${where}` },
+    { fg: blendOver(cream, bg, onDarkAlpha.muted), bg, size: 12, where: `meta on ${where}` },
+    {
+      fg: blendOver(cream, inPanel, onDarkAlpha.muted),
+      bg: inPanel,
+      size: 12,
+      where: `meta on a panel on ${where}`,
+    },
+    {
+      fg: blendOver(cream, inPanel, onDarkAlpha.body),
+      bg: inPanel,
+      size: 15,
+      where: `body text on a panel on ${where}`,
+    },
+  ];
+});
+
+/**
+ * Every corrected text colour, on the tinted chip it also appears on.
+ *
+ * The second half of the same lesson: `onDarkPairs` above models the fills that stack on dark,
+ * and this models the one that darkens on light. Generated rather than typed out, so a colour
+ * cannot be corrected against the page and quietly forgotten against the chip — which is
+ * precisely what happened to all five of them.
+ */
+const onChipPairs: ContrastPair[] = [
+  { fg: globalPalette.brown300, bg: CHIP_GLOBAL, size: 15, where: 'estimate blanks on a chip' },
+  { fg: globalPalette.brown400, bg: CHIP_GLOBAL, size: 11, where: 'meta on a chip' },
+  { fg: globalPalette.brown500, bg: CHIP_GLOBAL, size: 15, where: 'body text on a chip' },
+  { fg: globalPalette.brown700, bg: CHIP_GLOBAL, size: 14, where: 'an idle filter chip' },
+  { fg: sand.dark, bg: CHIP_GLOBAL, size: 11, bold: true, where: 'an eyebrow on a chip' },
+  { fg: umrahPalette.green400, bg: CHIP_UMRAH, size: 11, where: 'meta on a chip, Umrah' },
+  { fg: umrahPalette.green500, bg: CHIP_UMRAH, size: 15, where: 'body text on a chip, Umrah' },
+  { fg: umrahPalette.link, bg: CHIP_UMRAH, size: 11, bold: true, where: 'a step number, Umrah' },
+];
 
 export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   // --- Global on light ---
@@ -642,6 +734,7 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
 
   // --- The translucent creams, resolved against each dark surface ---
   ...onDarkPairs,
+  ...onChipPairs,
 ];
 
 /**

@@ -18,6 +18,21 @@ function hexToRgb(hex: Hex): [number, number, number] {
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 }
 
+/**
+ * `'90, 66, 44'` to `#5A422C`.
+ *
+ * The alpha bases are stored as comma-separated triples because that is the form CSS needs
+ * inside `rgba(var(--c-border-rgb), .06)`. Measuring what one of them paints means turning it
+ * back into a colour, and doing that here is what stops the same three numbers being written a
+ * second time as a hex literal.
+ */
+export function rgbTripleToHex(triple: string): Hex {
+  const pair = (value: string): string =>
+    Math.round(Number(value.trim())).toString(16).padStart(2, '0').toUpperCase();
+  const [r = '0', g = '0', b = '0'] = triple.split(',');
+  return `#${pair(r)}${pair(g)}${pair(b)}`;
+}
+
 export function relativeLuminance(hex: Hex): number {
   const [r, g, b] = hexToRgb(hex);
   return 0.2126 * channelToLinear(r) + 0.7152 * channelToLinear(g) + 0.0722 * channelToLinear(b);

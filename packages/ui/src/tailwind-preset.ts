@@ -4,6 +4,7 @@ import plugin from 'tailwindcss/plugin';
 import {
   breakpoint,
   choiceScrimGradient,
+  creamFillAlpha,
   heroScrimGradient,
   duration,
   easing,
@@ -12,9 +13,13 @@ import {
   layout,
   minTapTarget,
   mosaic,
+  onDarkAlpha,
   radius,
   type,
 } from './tokens';
+
+/** One cream opacity, as CSS. The base is a variable so the value follows the theme. */
+const creamAlpha = (alpha: number): string => `rgba(var(--c-cream-rgb), ${String(alpha)})`;
 
 /**
  * The Tailwind preset every Charva app extends.
@@ -133,20 +138,28 @@ export const charvaPreset = {
        */
       cream: {
         DEFAULT: 'rgb(var(--c-cream-rgb))',
-        /** Body copy on dark — the lead paragraph of each chooser half. */
-        body: 'rgba(var(--c-cream-rgb), 0.72)',
+        /**
+         * Body, muted and the panel fill come from `tokens.ts` rather than being written here.
+         *
+         * They used to be literals — `0.72`, `0.55`, `0.06` — the same three numbers that
+         * `onDarkAlpha` and `creamFillAlpha` hold and that `theme.ts` builds `--c-body` and
+         * `--c-muted` from. Two copies of one opacity is the same fault as two copies of one
+         * colour, and it had the usual consequence: the contrast contract measured the values
+         * in `tokens.ts` while the builder painted the values in this file.
+         */
+        body: creamAlpha(onDarkAlpha.body),
         /** Slightly brighter: chip labels, which are short and small. */
-        soft: 'rgba(var(--c-cream-rgb), 0.8)',
-        muted: 'rgba(var(--c-cream-rgb), 0.55)',
+        soft: creamAlpha(0.8),
+        muted: creamAlpha(onDarkAlpha.muted),
         /** Stat captions and the bottom line of the chooser. */
-        faint: 'rgba(var(--c-cream-rgb), 0.45)',
+        faint: creamAlpha(0.45),
         /** The oversized «01» / «02» behind each half: present, and barely. */
-        ghost: 'rgba(var(--c-cream-rgb), 0.05)',
-        /** Glass fills — a chip on a photograph, the outline button. */
-        fill: 'rgba(var(--c-cream-rgb), 0.06)',
-        'fill-strong': 'rgba(var(--c-cream-rgb), 0.07)',
+        ghost: creamAlpha(0.05),
+        /** Glass fills — a chip on a photograph, the outline button, the builder panel. */
+        fill: creamAlpha(creamFillAlpha),
+        'fill-strong': creamAlpha(0.07),
         /** The frame the hero search bar shows through its one-pixel gaps. */
-        frame: 'rgba(var(--c-cream-rgb), 0.16)',
+        frame: creamAlpha(0.16),
       },
 
       /** The accent as a tint: the selected topic chip and the passed step of the builder. */

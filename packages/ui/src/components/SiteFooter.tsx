@@ -30,6 +30,19 @@ export interface FooterSocial {
   href: string;
 }
 
+/**
+ * Does this social account have somewhere to go?
+ *
+ * `#` and the empty string are the two ways «not set yet» is spelled: the first is what the
+ * settings row was seeded with, the second is what clearing the field in the admin produces.
+ * Anything else is taken at face value — validating the shape of a URL here would be a second
+ * opinion about a value the admin form already accepted.
+ */
+function isReachable(social: FooterSocial): boolean {
+  const href = social.href.trim();
+  return href !== '' && href !== '#';
+}
+
 export interface SiteFooterProps {
   /** The sand logo, already wrapped in the app's link. */
   logo: ReactNode;
@@ -89,8 +102,21 @@ export function SiteFooter({
             <p className="m-0 max-w-[300px] text-bodySm font-light leading-[1.7] text-muted">
               {legal}
             </p>
+            {/*
+              An account nobody has given an address to is not offered.
+
+              Both sites shipped with four circles in the footer whose `href` was `#` — the
+              value the settings row was seeded with, not a fallback in the code — so Instagram,
+              Telegram, WhatsApp and YouTube each looked like a link and did nothing when
+              tapped. That is worse than a shorter footer for the same reason an empty section
+              is (D-144): a promise that is not kept costs more than one never made, and this
+              audience decides whether to trust an operator by whether the small things work.
+
+              Filtered here rather than in either app, so the third one cannot forget. Each
+              circle comes back by itself the day the address is filled in from the admin.
+            */}
             <ul className="m-0 flex list-none gap-3 p-0">
-              {socials.map((social) => (
+              {socials.filter(isReachable).map((social) => (
                 <li key={social.key}>
                   <a
                     href={social.href}
