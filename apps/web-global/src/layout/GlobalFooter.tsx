@@ -1,5 +1,5 @@
 import { type Lang, type SiteSettings } from '@charva/contracts';
-import { type FooterColumn, type FooterSocial, SiteFooter } from '@charva/ui';
+import { contactLinks, type FooterColumn, type FooterSocial, SiteFooter } from '@charva/ui';
 import { Link } from '@tanstack/react-router';
 
 import logoMark from '../assets/logo-mark-sand.png';
@@ -63,84 +63,43 @@ export function GlobalFooter({ lang, settings }: GlobalFooterProps) {
     {
       key: 'contacts',
       title: copy.footer.columns.contacts,
-      // Real links, not text: a phone number on a phone should dial, and an address that
-      // cannot be copied is an address nobody uses.
-      links: [
-        ...(contacts?.phone === undefined || contacts.phone === ''
-          ? []
-          : [
-              {
-                key: 'phone',
-                label: contacts.phone,
-                href: `tel:${contacts.phone.replace(/[^\d+]/g, '')}`,
-              },
-            ]),
-        ...(contacts?.email === undefined || contacts.email === ''
-          ? []
-          : [{ key: 'email', label: contacts.email, href: `mailto:${contacts.email}` }]),
-        ...(contacts?.hours === undefined || contacts.hours === ''
-          ? []
-          : [{ key: 'hours', label: contacts.hours, href: '' }]),
-        ...(contacts?.address === undefined || contacts.address === ''
-          ? []
-          : [{ key: 'address', label: contacts.address, href: '' }]),
-      ],
+      // Built in `packages/ui`, from the settings row. Both footers wrote the same six
+      // «if it is not empty, make a link» branches and had already drifted apart: this one had
+      // no branch for a second phone number, and neither had one for the WhatsApp line.
+      links: contactLinks(contacts),
     },
   ];
 
-  const socials: FooterSocial[] = [
-    {
-      key: 'instagram',
-      short: 'IG',
-      label: copy.footer.socials.instagram,
-      href: settings?.socials.instagram ?? '#',
-    },
-    {
-      key: 'telegram',
-      short: 'TG',
-      label: copy.footer.socials.telegram,
-      href: settings?.socials.telegram ?? '#',
-    },
-    {
-      key: 'whatsapp',
-      short: 'WA',
-      label: copy.footer.socials.whatsapp,
-      href: settings?.socials.whatsapp ?? '#',
-    },
-    {
-      key: 'youtube',
-      short: 'YT',
-      label: copy.footer.socials.youtube,
-      href: settings?.socials.youtube ?? '#',
-    },
-    {
-      key: 'tiktok',
-      short: 'TT',
-      label: copy.footer.socials.tiktok,
-      href: settings?.socials.tiktok ?? '#',
-    },
-    {
-      key: 'facebook',
-      short: 'FB',
-      label: copy.footer.socials.facebook,
-      href: settings?.socials.facebook ?? '#',
-    },
-    /*
-     * imo, last, and here for a reason the other six are not.
-     *
-     * It is the messenger most of Turkmenistan actually uses, which makes it the channel this
-     * audience reaches for first and one almost no travel site outside the region carries. What
-     * the operator has is a share link rather than a profile, so it opens a conversation and
-     * belongs beside WhatsApp — it is deliberately not in `PROFILE_SOCIALS`, because
-     * `sameAs` is a claim about who this business is and an invite to chat identifies nobody.
-     */
-    {
-      key: 'imo',
-      short: 'IM',
-      label: copy.footer.socials.imo,
-      href: settings?.socials.imo ?? '#',
-    },
-  ];
+  /*
+   * Seven channels in one table rather than seven blocks of four lines.
+   *
+   * The order is the order they appear in the footer, the pair is the key in `settings` and the
+   * two letters the design draws in the circle, and an account with no address is dropped by
+   * `SiteFooter` — so this list is every channel the operator *could* have, not every one they
+   * do. A channel gained in the admin appears without a deploy.
+   */
+  const socials: FooterSocial[] = (
+    [
+      ['instagram', 'IG'],
+      ['telegram', 'TG'],
+      ['whatsapp', 'WA'],
+      ['tiktok', 'TT'],
+      ['facebook', 'FB'],
+      ['youtube', 'YT'],
+      /*
+       * imo, last, and here for a reason the other six are not.
+       *
+       * It is the messenger most of Turkmenistan actually uses, which makes it the channel this
+       * audience reaches for first and one almost no travel site outside the region carries.
+       */
+      ['imo', 'IM'],
+    ] as const
+  ).map(([key, short]) => ({
+    key,
+    short,
+    label: copy.footer.socials[key],
+    href: settings?.socials[key] ?? '',
+  }));
 
   return (
     <SiteFooter

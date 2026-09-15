@@ -1107,7 +1107,10 @@ async function seedSettings(db: Database): Promise<number> {
       settingKey: 'contacts',
       value: {
         phone: '+993 65 618 530',
-        whatsapp: '+993 65 618 530',
+        // A different number from the line above, which is why the field exists. Nothing on
+        // either site renders it yet — a contact page that offers «write on WhatsApp» is the
+        // reader it is waiting for.
+        whatsapp: '+993 65 805 675',
         email: 'global@charva-travel.com',
         hours: ru3('Пн–Сб, 09:00–18:00'),
         address: ru3('Ашхабад, Туркменистан'),
@@ -1142,8 +1145,8 @@ async function seedSettings(db: Database): Promise<number> {
       settingKey: 'socials',
       value: {
         instagram: 'https://www.instagram.com/travelcharva',
-        telegram: '',
-        whatsapp: '',
+        telegram: 'https://t.me/Charwa_yoly',
+        whatsapp: 'https://wa.me/99365805675',
         youtube: '',
         tiktok: 'https://www.tiktok.com/@travel.charva.tour',
         facebook: 'https://www.facebook.com/share/188QSMAdnQ/',
@@ -1156,7 +1159,7 @@ async function seedSettings(db: Database): Promise<number> {
       value: {
         phone: '+993 71 309 060',
         phoneAlt: '+993 71 309 070',
-        whatsapp: '+993 71 309 060',
+        whatsapp: '+993 65 805 675',
         email: 'umra@charva-travel.com',
         hours: tm2('Du–Şe, 09:00–18:00'),
         address: tm2('Aşgabat, Türkmenistan'),
@@ -1167,13 +1170,29 @@ async function seedSettings(db: Database): Promise<number> {
       settingKey: 'legal',
       value: { license: null, unconfirmed: false },
     },
+    /*
+     * Umrah has its own Instagram and TikTok, and shares the operator's two messengers.
+     *
+     * «mekge.medine.ashygy» is «one who longs for Mecca and Medina» — a separate account for a
+     * separate audience, which is the whole reason the two sites are two sites. WhatsApp and
+     * Telegram are the same number and the same handle as Global: one desk answers both.
+     *
+     * Facebook, YouTube and imo are empty rather than absent. An empty field is what the admin
+     * writes when it is cleared, the footer reads it as «no account» and hides the circle, and
+     * the row is where the owner will look when one is opened.
+     */
     {
       site: 'umrah',
       settingKey: 'socials',
-      // Empty, not '#': the footer reads both as «no address» and hides the circle, and an
-      // empty string is what the admin writes when the field is cleared. Umrah's accounts have
-      // not been given, and guessing one would publish a link to somebody else.
-      value: { instagram: '', telegram: '', whatsapp: '', youtube: '' },
+      value: {
+        instagram: 'https://www.instagram.com/mekge.medine.ashygy',
+        telegram: 'https://t.me/Charwa_yoly',
+        whatsapp: 'https://wa.me/99365805675',
+        youtube: '',
+        tiktok: 'https://www.tiktok.com/@charwayoly',
+        facebook: '',
+        imo: '',
+      },
     },
     /*
      * The counters, empty and waiting.

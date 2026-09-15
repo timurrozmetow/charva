@@ -93,11 +93,17 @@ export type ContentBlockItem = z.infer<typeof contentBlockSchema>;
  * parse. Google ignores what it cannot match and this sort of noise is how a `sameAs` set stops
  * being trusted as a whole.
  *
- * So the split is declared here rather than inferred from the value: telegram is on the list
- * because a business telegram is a channel with a name, and whatsapp and imo are off it because
- * neither has ever been anything but a way to message.
+ * The split is declared here rather than inferred from the value, because a URL cannot be read
+ * to tell the two apart — and Telegram is the case that proves it. A business Telegram is often
+ * a channel with a name, which would belong on this list; this operator's is not. Fetching
+ * `t.me/Charwa_yoly` returns «You can contact @Charwa_yoly right away», which is what Telegram
+ * says about an account rather than a channel. So it sits with WhatsApp and imo: a way to send a
+ * message, not a page that identifies anyone.
+ *
+ * If a channel is ever opened, moving the key back up is the whole change — and it should be
+ * done by looking at the page, not by assuming.
  */
-export const PROFILE_SOCIALS = ['instagram', 'facebook', 'tiktok', 'youtube', 'telegram'] as const;
+export const PROFILE_SOCIALS = ['instagram', 'facebook', 'tiktok', 'youtube'] as const;
 
 /** Contacts, socials and the licence number, from `settings`. */
 export const siteSettingsSchema = z.object({

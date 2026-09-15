@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { LangSwitcher, type LangOption } from './LangSwitcher';
-import { SiteFooter } from './SiteFooter';
+import { contactLinks, SiteFooter } from './SiteFooter';
 import { SiteNav, type NavItem } from './SiteNav';
 
 const ITEMS: NavItem[] = [
@@ -360,5 +360,63 @@ describe('SiteFooter and the accounts that have no address', () => {
       'href',
       'https://youtube.com/@charva',
     );
+  });
+});
+
+describe('contactLinks', () => {
+  it('turns every number the operator gave into a line that dials', () => {
+    /*
+     * Both footers wrote the same six «if it is not empty, make a link» branches and had drifted
+     * apart. Umrah rendered a second phone line; Global had no branch for one at all, so a
+     * second number entered in the admin appeared nowhere. And `whatsapp` was in the schema, in
+     * the seed and in neither footer — which is how a field ends up holding a number for months
+     * with no reader. The Umrah desk answers on three lines; all three have to be reachable.
+     */
+    const links = contactLinks({
+      phone: '+993 71 309 060',
+      phoneAlt: '+993 71 309 070',
+      whatsapp: '+993 65 805 675',
+      email: 'umra@charva-travel.com',
+      hours: 'Du–Şe, 09:00–18:00',
+      address: 'Aşgabat',
+    });
+
+    expect(links.map((link) => link.key)).toEqual([
+      'phone',
+      'phoneAlt',
+      'whatsapp',
+      'email',
+      'hours',
+      'address',
+    ]);
+
+    // The spaces a human reads the number with are not part of what a phone dials.
+    expect(links[0]?.href).toBe('tel:+99371309060');
+    expect(links[2]?.href).toBe('tel:+99365805675');
+    expect(links[3]?.href).toBe('mailto:umra@charva-travel.com');
+  });
+
+  it('leaves out what has not been filled in, and keeps the order of the rest', () => {
+    // Global has one office line and a WhatsApp number, and no second landline. The gap closes
+    // rather than rendering an empty row.
+    const links = contactLinks({
+      phone: '+993 65 618 530',
+      phoneAlt: '',
+      whatsapp: '+993 65 805 675',
+      email: '',
+      hours: '',
+      address: 'Aşgabat',
+    });
+
+    expect(links.map((link) => link.key)).toEqual(['phone', 'whatsapp', 'address']);
+  });
+
+  it('gives an address no href, so it renders as text rather than a dead link', () => {
+    const [address] = contactLinks({ address: 'Aşgabat, Türkmenistan' });
+    expect(address?.href).toBe('');
+  });
+
+  it('survives a settings row that has not arrived yet', () => {
+    expect(contactLinks(undefined)).toEqual([]);
   });
 });

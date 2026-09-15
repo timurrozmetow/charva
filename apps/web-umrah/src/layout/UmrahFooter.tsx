@@ -1,5 +1,5 @@
 import { type Lang, type SiteSettings } from '@charva/contracts';
-import { type FooterColumn, type FooterSocial, SiteFooter } from '@charva/ui';
+import { contactLinks, type FooterColumn, type FooterSocial, SiteFooter } from '@charva/ui';
 import { Link } from '@tanstack/react-router';
 
 import logoMark from '../assets/logo-mark-sand.png';
@@ -49,54 +49,42 @@ export function UmrahFooter({ lang, settings }: UmrahFooterProps) {
     {
       key: 'contacts',
       title: copy.footer.columns.contacts,
-      // Real links: a phone number on a phone should dial, and an address that cannot be
-      // copied is an address nobody uses.
-      links: [
-        ...(contacts?.phone === undefined || contacts.phone === ''
-          ? []
-          : [
-              {
-                key: 'phone',
-                label: contacts.phone,
-                href: `tel:${contacts.phone.replace(/[^\d+]/g, '')}`,
-              },
-            ]),
-        // The Umrah desk answers on two lines and both belong in the footer: a pilgrim who
-        // cannot get through on the first should not have to hunt for the second.
-        ...(contacts?.phoneAlt === undefined || contacts.phoneAlt === ''
-          ? []
-          : [
-              {
-                key: 'phoneAlt',
-                label: contacts.phoneAlt,
-                href: `tel:${contacts.phoneAlt.replace(/[^\d+]/g, '')}`,
-              },
-            ]),
-        ...(contacts?.email === undefined || contacts.email === ''
-          ? []
-          : [{ key: 'email', label: contacts.email, href: `mailto:${contacts.email}` }]),
-        ...(contacts?.hours === undefined || contacts.hours === ''
-          ? []
-          : [{ key: 'hours', label: contacts.hours, href: '' }]),
-        ...(contacts?.address === undefined || contacts.address === ''
-          ? []
-          : [{ key: 'address', label: contacts.address, href: '' }]),
-      ],
+      // Built in `packages/ui`, from the settings row. Both footers wrote the same six
+      // «if it is not empty, make a link» branches and had already drifted apart: this one had
+      // no branch for a second phone number, and neither had one for the WhatsApp line.
+      links: contactLinks(contacts),
     },
   ];
 
+  /*
+   * Seven channels in one table rather than seven blocks of four lines.
+   *
+   * The order is the order they appear in the footer, the pair is the key in `settings` and the
+   * two letters the design draws in the circle, and an account with no address is dropped by
+   * `SiteFooter` — so this list is every channel the operator *could* have, not every one they
+   * do. A channel gained in the admin appears without a deploy.
+   */
   const socials: FooterSocial[] = (
     [
       ['instagram', 'IG'],
       ['telegram', 'TG'],
       ['whatsapp', 'WA'],
+      ['tiktok', 'TT'],
+      ['facebook', 'FB'],
       ['youtube', 'YT'],
+      /*
+       * imo, last, and here for a reason the other six are not.
+       *
+       * It is the messenger most of Turkmenistan actually uses, which makes it the channel this
+       * audience reaches for first and one almost no travel site outside the region carries.
+       */
+      ['imo', 'IM'],
     ] as const
   ).map(([key, short]) => ({
     key,
     short,
     label: copy.footer.socials[key],
-    href: settings?.socials[key] ?? '#',
+    href: settings?.socials[key] ?? '',
   }));
 
   return (

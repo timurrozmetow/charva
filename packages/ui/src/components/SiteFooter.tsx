@@ -162,3 +162,49 @@ export function SiteFooter({
     </footer>
   );
 }
+
+/** The subset of a site's `contacts` this turns into footer links. */
+export interface FooterContacts {
+  phone: string;
+  phoneAlt: string;
+  whatsapp: string;
+  email: string;
+  hours: string;
+  address: string;
+}
+
+/**
+ * The contacts column, built from the settings row rather than written out twice.
+ *
+ * Both footers had the same six spread-conditionals — «if the field is not empty, make a link» —
+ * and they had already drifted: Umrah rendered a second phone line and Global had no branch for
+ * one at all, so a second Global number could be entered in the admin and would appear nowhere.
+ * `whatsapp` was in the schema, in the seed and in neither footer, which is how a field ends up
+ * holding a number for months with no reader.
+ *
+ * Every line is a real link where a real link exists. A phone number on a phone should dial; an
+ * address should be selectable and nothing more, so it gets an empty `href` and `SiteFooter`
+ * renders it as text.
+ *
+ * The WhatsApp number dials rather than opening a chat, and the circle in the row above opens
+ * the chat. That is not the same fact twice: it is one number and the two things anyone does
+ * with it — and the operator's WhatsApp is a different number from the office line, which is
+ * the reason the field exists at all.
+ */
+export function contactLinks(contacts: Partial<FooterContacts> | undefined): FooterLink[] {
+  const dial = (value: string): string => `tel:${value.replace(/[^\d+]/g, '')}`;
+
+  const entries: [keyof FooterContacts, (value: string) => string][] = [
+    ['phone', dial],
+    ['phoneAlt', dial],
+    ['whatsapp', dial],
+    ['email', (value) => `mailto:${value}`],
+    ['hours', () => ''],
+    ['address', () => ''],
+  ];
+
+  return entries.flatMap(([key, href]) => {
+    const value = contacts?.[key] ?? '';
+    return value === '' ? [] : [{ key, label: value, href: href(value) }];
+  });
+}
