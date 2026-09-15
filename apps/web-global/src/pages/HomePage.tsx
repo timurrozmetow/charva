@@ -272,7 +272,7 @@ export function HomePage({ lang }: HomePageProps) {
               // Two on a phone: the row of four is already two rows at `lap:`, and one column
               // of four is most of a screen each.
               <li key={hotel.id} className={beyondPhonePreview(index, 2)}>
-                <HotelCard hotel={hotel} lang={lang} />
+                <HotelCard hotel={hotel} lang={lang} sizes={imageSizes.cardGrid4} />
               </li>
             ))}
           </ul>

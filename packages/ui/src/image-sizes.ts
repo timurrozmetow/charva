@@ -43,8 +43,32 @@ export const imageSizes = {
   /**
    * The card grids — tours, hotels, articles, places, ziyarat, group videos. Every one of them
    * is `grid-cols-3 lap:grid-cols-2 mob:grid-cols-1`, so one string serves all of them.
+   *
+   * The gutters are subtracted and the rail is capped, and both corrections were worth a step
+   * of the ladder. `33vw` on a 1920-pixel screen claims 634 pixels for a card that is 436 wide,
+   * because the container stops growing at 1480 and a viewport unit does not — measured in a
+   * browser, the catalogue was fetching `w=640` to draw a 322-pixel thumbnail. Below the cap
+   * the mistake is smaller and the same: a column is the viewport *less* the container's
+   * padding and the gaps, and declaring the viewport asks for a picture nobody will see.
+   *
+   * Every figure still rounds up. Being a few pixels generous costs nothing, because the value
+   * only has to land in the right bucket of `IMAGE_WIDTHS`; being short draws the photograph
+   * soft, which is the one failure here a reader can see.
    */
-  cardGrid: '(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw',
+  cardGrid:
+    '(max-width: 767px) calc(100vw - 32px), (max-width: 1279px) calc(50vw - 40px), ' +
+    '(max-width: 1479px) calc(33vw - 50px), 440px',
+
+  /**
+   * The same cards, four to a row: the hotel strip on the Global homepage.
+   *
+   * `HotelCard` appears in both — three across on `/hotels` and four across here — and used one
+   * string for both, so on a wide screen it asked for a third of the rail and was given a
+   * quarter of it. That is a whole step: 640 where 480 does, on four pictures at once.
+   */
+  cardGrid4:
+    '(max-width: 767px) calc(100vw - 32px), (max-width: 1279px) calc(50vw - 40px), ' +
+    '(max-width: 1479px) calc(25vw - 40px), 336px',
 
   /**
    * One side of a two-column section. The design uses `1fr 1.05fr` and `1.35fr 1fr` in

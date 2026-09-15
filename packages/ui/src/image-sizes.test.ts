@@ -137,7 +137,18 @@ describe('the sizes themselves', () => {
       const parts = value.split(',').map((part) => part.trim());
       expect(parts.every((part) => part !== '')).toBe(true);
       expect(parts.at(-1)).not.toMatch(/^\(/);
-      for (const part of parts.slice(0, -1)) expect(part).toMatch(/^\(max-width: \d+px\) \S+$/);
+      /*
+       * A value may be a length, a viewport unit or a `calc()` — and `calc()` contains spaces,
+       * which the first version of this pattern read as a missing value.
+       *
+       * The spaces are not optional: `calc(100vw-32px)` is invalid CSS, the browser drops the
+       * whole attribute, and every image on the page goes back to claiming `100vw`. So the
+       * pattern has to admit the one form that legitimately contains them rather than forbid
+       * spaces outright.
+       */
+      for (const part of parts.slice(0, -1)) {
+        expect(part).toMatch(/^\(max-width: \d+px\) (?:\S+|calc\([^()]*\))$/);
+      }
     }
   });
 

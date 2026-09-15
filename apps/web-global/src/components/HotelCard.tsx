@@ -9,6 +9,16 @@ export interface HotelCardProps {
   hotel: HotelCardData;
   lang: Lang;
   priority?: boolean;
+  /**
+   * How wide this card will be drawn, when it is not the usual three across.
+   *
+   * The same card is in a three-column catalogue on /hotels and a four-column strip on the
+   * homepage. It declared the three-column width in both, so on a wide screen it asked for a
+   * third of the rail and was handed a quarter of it — a whole step of the ladder, on four
+   * pictures at once. The string still lives in ; only the choice between two
+   * layouts is made here, by the page that chose the layout.
+   */
+  sizes?: string;
 }
 
 /** How many amenity chips fit on one card before the row starts wrapping into a wall. */
@@ -38,7 +48,12 @@ const CHIPS = 3;
  * from the operator's own site and are all different lengths, so without them a row of cards
  * is a row of different heights with the chips landing wherever they land.
  */
-export function HotelCard({ hotel, lang, priority = false }: HotelCardProps) {
+export function HotelCard({
+  hotel,
+  lang,
+  priority = false,
+  sizes = imageSizes.cardGrid,
+}: HotelCardProps) {
   const copy = copyFor(lang);
   const headingId = `hotel-${String(hotel.id)}`;
   const filters: Record<string, string> = copy.hotelFilters;
@@ -69,7 +84,7 @@ export function HotelCard({ hotel, lang, priority = false }: HotelCardProps) {
             }
             ratio="4/3"
             priority={priority}
-            sizes={imageSizes.cardGrid}
+            sizes={sizes}
             className="h-[220px] w-full rounded-media"
           />
 

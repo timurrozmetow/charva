@@ -29,6 +29,16 @@ async function render(open = true): Promise<{ calls: StubbedCall[] }> {
   return { calls };
 }
 
+/**
+ * No delay between keystrokes.
+ *
+ * `userEvent.setup()` types at a human pace by default, so this suite spent its time waiting
+ * for a scheduler rather than exercising anything: two seconds alone, nine under a parallel
+ * run, and a timeout twice in one afternoon. A form test should be measuring what the form does
+ * with the characters, not how fast they arrive.
+ */
+const typist = () => userEvent.setup({ delay: null });
+
 async function fillIn(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await user.type(screen.getByLabelText(/^Ady we familiýasy/), 'Meret Aýdogdyýew');
   await user.type(screen.getByLabelText(/^Telefon/), '+993 65 123456');
@@ -37,7 +47,7 @@ async function fillIn(user: ReturnType<typeof userEvent.setup>): Promise<void> {
 
 describe('the signup form', () => {
   it('sends consent and a room code, and no price', async () => {
-    const user = userEvent.setup();
+    const user = typist();
     const { calls } = await render();
 
     await user.click(screen.getByRole('button', { name: '3 adamlyk' }));
@@ -57,7 +67,7 @@ describe('the signup form', () => {
   });
 
   it('leaves the passport number out when it was not given', async () => {
-    const user = userEvent.setup();
+    const user = typist();
     const { calls } = await render();
 
     await fillIn(user);
@@ -87,7 +97,7 @@ describe('the signup form', () => {
   });
 
   it('refuses to submit without consent, and says why', async () => {
-    const user = userEvent.setup();
+    const user = typist();
     const { calls } = await render();
 
     await user.type(screen.getByLabelText(/^Ady we familiýasy/), 'Meret');
