@@ -6,6 +6,7 @@ import {
   routeMeta,
   type Site,
   SITE_BRAND,
+  SITE_ORIGINS,
   type SiteRoute,
 } from '@charva/contracts';
 
@@ -70,6 +71,43 @@ function preloadTags(context: ShellContext, image: ShareImage): HeadTag[] {
       },
     },
   ];
+}
+
+/**
+ * The white screen between the chooser and the site it sends you to.
+ *
+ * Reported by the owner, and it is not slowness — it is arithmetic. The chooser is on
+ * `charva-travel.com` and both its answers are on *other* hosts, so a click is a cross-origin
+ * navigation: the browser has to resolve a name, open a socket and complete a TLS handshake
+ * before the first byte of the new page can arrive. Measured from here, that is 1.5 to 2.1
+ * seconds, of which the handshake alone is about 1.4. Chrome holds the old page for roughly
+ * half a second and then paints white, so the visitor watches a blank screen for a second or
+ * more between deciding and arriving.
+ *
+ * `preconnect` moves all of it earlier: the name is resolved and the connection is opened and
+ * secured *while the visitor is still looking at the chooser*, so the click spends its time on
+ * the request rather than on getting ready to make one. Two idle sockets is the whole cost, on
+ * a page whose entire purpose is to send you to one of exactly two places — this is the case
+ * the hint was invented for.
+ *
+ * No `crossorigin`: that attribute warms the anonymous connection pool, and a top-level
+ * navigation uses the credentialled one. Getting it wrong here opens a socket the navigation
+ * cannot use, which is the failure mode that makes people believe preconnect does nothing.
+ *
+ * `dns-prefetch` beside it is for browsers that ignore the first: it is a much smaller win —
+ * four milliseconds here, since the name is usually already cached — but it costs one tag.
+ *
+ * The origins come from `SITE_ORIGINS` rather than from this file (D-131), which also means
+ * the tags are emitted only in production: in development the shell is not in the path and the
+ * chooser links to localhost, where none of this matters.
+ */
+function preconnectTags(context: ShellContext): HeadTag[] {
+  if (context.site !== 'choice') return [];
+
+  return (['global', 'umrah'] as const).flatMap((target) => [
+    { tag: 'link' as const, attributes: { rel: 'preconnect', href: SITE_ORIGINS[target] } },
+    { tag: 'link' as const, attributes: { rel: 'dns-prefetch', href: SITE_ORIGINS[target] } },
+  ]);
 }
 
 export interface ShellContext {
@@ -166,6 +204,9 @@ export function buildHead(context: ShellContext): HeadTag[] {
   const image = context.content?.image ?? context.defaultImage ?? null;
 
   const tags: HeadTag[] = [
+    // First, and before the title: a preconnect is a race against the visitor's finger, and
+    // every byte of head in front of it is a byte of head-start given away.
+    ...preconnectTags(context),
     { tag: 'title', text: meta.title },
     { tag: 'meta', attributes: { name: 'description', content: meta.description } },
     { tag: 'link', attributes: { rel: 'canonical', href: canonical } },

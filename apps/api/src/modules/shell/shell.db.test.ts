@@ -793,3 +793,57 @@ describe('the body a crawler that renders nothing receives', () => {
     expect(injectBody(odd, '<h1>Туры</h1>')).toBe(odd);
   });
 });
+
+describe('the chooser warms the connections it is about to need', () => {
+  it('preconnects to both brand hosts, before anything else in the head', async () => {
+    /*
+     * The owner reported a white screen between choosing and arriving. It is not slowness: both
+     * answers live on other hosts, so a click is a cross-origin navigation and the browser has
+     * to resolve, connect and shake hands before the first byte of the new page exists —
+     * measured at 1.5 to 2.1 seconds, of which the handshake is about 1.4. Chrome holds the old
+     * page for roughly half a second and then paints white.
+     *
+     * Asserted as the *first* tags, because a hint that arrives after four kilobytes of head has
+     * given away most of what it was for.
+     */
+    const { tags } = await render('choice', '/ru');
+    const hrefs = (rel: string) =>
+      tags
+        .filter((tag) => tag.tag === 'link' && tag.attributes?.['rel'] === rel)
+        .map((tag) => tag.attributes?.['href']);
+
+    expect(hrefs('preconnect')).toEqual([
+      'https://global.charva-travel.com',
+      'https://umra.charva-travel.com',
+    ]);
+    expect(hrefs('dns-prefetch')).toHaveLength(2);
+    expect(tags[0]?.attributes?.['rel']).toBe('preconnect');
+  });
+
+  it('does not carry crossorigin, which a navigation cannot use', async () => {
+    // `crossorigin` warms the anonymous connection pool; a top-level navigation uses the
+    // credentialled one. Getting this wrong opens a socket the click cannot reuse, which is
+    // exactly how preconnect earns its reputation for doing nothing.
+    const { tags } = await render('choice', '/ru');
+    const preconnects = tags.filter(
+      (tag) => tag.tag === 'link' && tag.attributes?.['rel'] === 'preconnect',
+    );
+
+    expect(preconnects).toHaveLength(2);
+    for (const tag of preconnects) {
+      expect(tag.attributes?.['crossorigin']).toBeUndefined();
+    }
+  });
+
+  it('is emitted by the chooser only', async () => {
+    // The two sites link to each other from the footer, which nobody is about to click; two
+    // idle sockets are worth it on the page whose only purpose is to leave for one of them.
+    for (const site of ['global', 'umrah'] as const) {
+      const { tags } = await render(site, site === 'global' ? '/ru' : '/tm');
+      expect(
+        tags.filter((tag) => tag.attributes?.['rel'] === 'preconnect'),
+        site,
+      ).toHaveLength(0);
+    }
+  });
+});
