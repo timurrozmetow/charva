@@ -87,7 +87,17 @@ export function settings(overrides: Partial<GlobalSettingsResponse> = {}): Globa
       hours: 'Пн–Сб, 09:00–18:00',
       address: 'Ашхабад, Битарап Туркменистан 42',
     },
-    socials: { instagram: '#', telegram: '#', whatsapp: '#', youtube: '#' },
+    // Placeholders on purpose: the footer hides an account with no address (there is a test),
+    // so a fixture full of real URLs would quietly disable that behaviour everywhere.
+    socials: {
+      instagram: '#',
+      telegram: '#',
+      whatsapp: '#',
+      youtube: '#',
+      tiktok: '#',
+      facebook: '#',
+      imo: '#',
+    },
     legal: { license: 'TM-1428', unconfirmed: true },
     langs: ['ru', 'en', 'tr'],
     defaultLang: 'ru',

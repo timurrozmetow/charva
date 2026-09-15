@@ -113,6 +113,33 @@ export function GlobalFooter({ lang, settings }: GlobalFooterProps) {
       label: copy.footer.socials.youtube,
       href: settings?.socials.youtube ?? '#',
     },
+    {
+      key: 'tiktok',
+      short: 'TT',
+      label: copy.footer.socials.tiktok,
+      href: settings?.socials.tiktok ?? '#',
+    },
+    {
+      key: 'facebook',
+      short: 'FB',
+      label: copy.footer.socials.facebook,
+      href: settings?.socials.facebook ?? '#',
+    },
+    /*
+     * imo, last, and here for a reason the other six are not.
+     *
+     * It is the messenger most of Turkmenistan actually uses, which makes it the channel this
+     * audience reaches for first and one almost no travel site outside the region carries. What
+     * the operator has is a share link rather than a profile, so it opens a conversation and
+     * belongs beside WhatsApp — it is deliberately not in `PROFILE_SOCIALS`, because
+     * `sameAs` is a claim about who this business is and an invite to chat identifies nobody.
+     */
+    {
+      key: 'imo',
+      short: 'IM',
+      label: copy.footer.socials.imo,
+      href: settings?.socials.imo ?? '#',
+    },
   ];
 
   return (

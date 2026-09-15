@@ -1118,10 +1118,37 @@ async function seedSettings(db: Database): Promise<number> {
       settingKey: 'legal',
       value: { license: null, unconfirmed: false },
     },
+    /*
+     * Four of these are real, so they are seeded rather than left as placeholders.
+     *
+     * The footer hides an account with no address, so a fresh database that quietly withheld
+     * four working channels would be wrong in a way nobody would go looking for. The three the
+     * operator does not have stay empty, which is how that rule is told there is nothing there.
+     *
+     * Each address was cleaned, and each cleaning is a decision:
+     *
+     *   — Instagram arrived with `?stkn=…` on it, a share token belonging to whoever copied the
+     *     link. It is stripped: that token is not part of the address and not ours to publish.
+     *   — TikTok gains its `www`, which is the canonical host; without it every visit is a
+     *     redirect.
+     *   — Facebook keeps the share permalink rather than the `/people/…/pfbid…` it resolves to.
+     *     Facebook rotates those tokens for privacy and the short form outlives them.
+     *   — imo is a chat invite rather than a profile — it answers 302 to an app deep link — so
+     *     it is a way to reach the operator, not a page that identifies them. That is exactly
+     *     the distinction `PROFILE_SOCIALS` draws, and why imo is not on that list.
+     */
     {
       site: 'global',
       settingKey: 'socials',
-      value: { instagram: '#', telegram: '#', whatsapp: '#', youtube: '#' },
+      value: {
+        instagram: 'https://www.instagram.com/travelcharva',
+        telegram: '',
+        whatsapp: '',
+        youtube: '',
+        tiktok: 'https://www.tiktok.com/@travel.charva.tour',
+        facebook: 'https://www.facebook.com/share/188QSMAdnQ/',
+        imo: 'https://s.imoim.net/SUrmHP',
+      },
     },
     {
       site: 'umrah',
@@ -1143,7 +1170,10 @@ async function seedSettings(db: Database): Promise<number> {
     {
       site: 'umrah',
       settingKey: 'socials',
-      value: { instagram: '#', telegram: '#', whatsapp: '#', youtube: '#' },
+      // Empty, not '#': the footer reads both as «no address» and hides the circle, and an
+      // empty string is what the admin writes when the field is cleared. Umrah's accounts have
+      // not been given, and guessing one would publish a link to somebody else.
+      value: { instagram: '', telegram: '', whatsapp: '', youtube: '' },
     },
     /*
      * The counters, empty and waiting.

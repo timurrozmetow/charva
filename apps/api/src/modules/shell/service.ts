@@ -5,6 +5,7 @@ import {
   IMAGE_WIDTHS,
   imageUrl,
   type Lang,
+  PROFILE_SOCIALS,
   routeMeta,
   SITE_BRAND,
   SITE_ORIGINS,
@@ -74,7 +75,16 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
       phone: settings.contacts.phone,
       email: settings.contacts.email,
       address: settings.contacts.address,
-      socials: Object.values(settings.socials).filter((value) => value !== ''),
+      /*
+       * Profiles only — `sameAs` is a claim about identity, not a list of ways to get in touch.
+       *
+       * It used to be every value in the row, which put a click-to-chat WhatsApp link among the
+       * organisation's profiles. `wa.me/993…` identifies nobody; it opens a conversation. The
+       * same is true of the imo invite that arrived with the rest, and imo is the messenger this
+       * audience reaches for first, so the field exists and simply does not belong here.
+       * `PROFILE_SOCIALS` is where the two kinds are told apart.
+       */
+      socials: PROFILE_SOCIALS.map((key) => settings.socials[key]).filter((value) => value !== ''),
       // The one image on these sites that is not a photograph and not content: it ships with the
       // SPA at a fixed path, so it survives every rebuild, which a hashed asset would not.
       // Google wants a logo on the organisation to put a mark on a knowledge panel.

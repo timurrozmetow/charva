@@ -874,6 +874,9 @@ export async function getSettings(
       telegram: value(socials, 'telegram'),
       whatsapp: value(socials, 'whatsapp'),
       youtube: value(socials, 'youtube'),
+      tiktok: value(socials, 'tiktok'),
+      facebook: value(socials, 'facebook'),
+      imo: value(socials, 'imo'),
     },
     legal: {
       // Empty collapses to null: a licence that is not set and a licence set to an empty string

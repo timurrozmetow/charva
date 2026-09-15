@@ -83,6 +83,22 @@ export const contentBlockSchema = z.object({
 
 export type ContentBlockItem = z.infer<typeof contentBlockSchema>;
 
+/**
+ * The socials that are *profiles*, and the reason the rest are not listed with them.
+ *
+ * `sameAs` in structured data means «other pages that are this same entity» — a search engine
+ * uses it to tie the site to an Instagram account and decide they are one business. A page that
+ * opens a chat is not that: `wa.me/993…` and an imo invite identify nobody, they start a
+ * conversation, and listing them among an organisation's profiles is a claim that does not
+ * parse. Google ignores what it cannot match and this sort of noise is how a `sameAs` set stops
+ * being trusted as a whole.
+ *
+ * So the split is declared here rather than inferred from the value: telegram is on the list
+ * because a business telegram is a channel with a name, and whatsapp and imo are off it because
+ * neither has ever been anything but a way to message.
+ */
+export const PROFILE_SOCIALS = ['instagram', 'facebook', 'tiktok', 'youtube', 'telegram'] as const;
+
 /** Contacts, socials and the licence number, from `settings`. */
 export const siteSettingsSchema = z.object({
   contacts: z.object({
@@ -99,6 +115,16 @@ export const siteSettingsSchema = z.object({
     telegram: z.string(),
     whatsapp: z.string(),
     youtube: z.string(),
+    tiktok: z.string(),
+    facebook: z.string(),
+    /**
+     * imo, which matters here and almost nowhere else.
+     *
+     * It is the messenger most of Turkmenistan actually uses, so leaving it out would drop the
+     * channel the audience reaches for first. What arrives is a share link rather than a
+     * profile — see `PROFILE_SOCIALS` for why that distinction is load-bearing.
+     */
+    imo: z.string(),
   }),
   legal: z.object({
     /**

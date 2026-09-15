@@ -2,6 +2,7 @@ import { bcp47, SITE_LANGS } from '@charva/contracts';
 import { and, desc, eq } from 'drizzle-orm';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
+import { API_PREFIX } from '../../app';
 import * as t from '../../db/schema';
 import { buildTestApp, type TestApp } from '../../test/app';
 
@@ -845,5 +846,53 @@ describe('the chooser warms the connections it is about to need', () => {
         site,
       ).toHaveLength(0);
     }
+  });
+});
+
+describe('sameAs lists profiles, not ways to send a message', () => {
+  it('carries the accounts that identify the operator', async () => {
+    const { tags } = await render('global', '/ru');
+    const agency = head(tags).jsonLd[0];
+    const sameAs = (agency?.['sameAs'] ?? []) as string[];
+
+    // Four real accounts were given for Global; three of the seven fields are empty and an
+    // empty field is not an account.
+    expect(sameAs).toContain('https://www.instagram.com/travelcharva');
+    expect(sameAs).toContain('https://www.tiktok.com/@travel.charva.tour');
+    expect(sameAs).toContain('https://www.facebook.com/share/188QSMAdnQ/');
+    expect(sameAs.every((url) => url !== '')).toBe(true);
+  });
+
+  it('leaves out the chat links, which identify nobody', async () => {
+    /*
+     * `sameAs` means «other pages that are this same entity», and a search engine uses it to
+     * decide that a site and an Instagram account are one business. A click-to-chat link is not
+     * that: `wa.me/993…` and an imo invite open a conversation. Listing them among an
+     * organisation's profiles is a claim that does not parse, and a set with noise in it stops
+     * being trusted as a whole — which is why this is asserted rather than left to judgement.
+     */
+    const { tags } = await render('global', '/ru');
+    const sameAs = (head(tags).jsonLd[0]?.['sameAs'] ?? []) as string[];
+
+    expect(sameAs.some((url) => url.includes('imoim.net'))).toBe(false);
+    expect(sameAs.some((url) => url.includes('wa.me'))).toBe(false);
+
+    // And the imo address is still in the settings the footer reads — it is a channel, not a
+    // profile, so it belongs on the page and not in the structured data.
+    const settings = await context.app.inject({
+      method: 'GET',
+      url: `${API_PREFIX}/global/settings?lang=ru`,
+    });
+    const body = settings.json<{ socials: Record<string, string> }>();
+    expect(body.socials['imo']).toContain('imoim.net');
+  });
+
+  it('keeps the tracking token out of the Instagram address', async () => {
+    // The link arrived as `instagram.com/travelcharva?stkn=…`. That token belongs to whoever
+    // copied it, not to the account, and a settings row is published on every page of the site.
+    const { tags } = await render('global', '/ru');
+    const sameAs = (head(tags).jsonLd[0]?.['sameAs'] ?? []) as string[];
+
+    expect(sameAs.some((url) => url.includes('stkn='))).toBe(false);
   });
 });

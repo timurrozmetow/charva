@@ -107,7 +107,17 @@ export function settings(overrides: Partial<UmrahSettingsResponse> = {}): UmrahS
       hours: 'Du–Şe, 09:00–18:00',
       address: 'Aşgabat, Bitarap Türkmenistan 42',
     },
-    socials: { instagram: '#', telegram: '#', whatsapp: '#', youtube: '#' },
+    // Placeholders on purpose: the footer hides an account with no address (there is a test),
+    // so a fixture full of real URLs would quietly disable that behaviour everywhere.
+    socials: {
+      instagram: '#',
+      telegram: '#',
+      whatsapp: '#',
+      youtube: '#',
+      tiktok: '#',
+      facebook: '#',
+      imo: '#',
+    },
     legal: { license: 'TM-1428', unconfirmed: true },
     // Umrah has none of Global's four sections, so `false` is the true answer rather than a
     // placeholder — its menu never asks.
