@@ -1,4 +1,5 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { mkdir, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { IMAGE_WIDTHS } from '@charva/contracts';
@@ -7,6 +8,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { API_PREFIX } from '../../app';
 import { buildTestApp, problem, type TestApp } from '../../test/app';
+
+import { DERIVATIVE, DERIVATIVE_TAG } from './routes';
 
 /**
  * Images: the originals, and derivatives made on request.
@@ -153,5 +156,48 @@ describe('GET /uploads', () => {
     const meta = await sharp(response.rawPayload).metadata();
     expect(meta.width).toBe(1200);
     expect(meta.format).toBe('png');
+  });
+});
+
+describe('the derivative cache remembers how it was encoded', () => {
+  it('names the file after the settings, not only the picture and the width', async () => {
+    /*
+     * The bug this replaces: the name was `sha256(key|width)`, so the file on disk outlived the
+     * settings that produced it. Changing the quality would have changed nothing anybody could
+     * see — the old file is found and returned, with a year of `immutable` on it, and the site
+     * serves two encodings at once with no way to tell them apart. A setting that cannot be
+     * changed is not a setting.
+     *
+     * Asserted both ways round, because only the negative half proves the tag is load-bearing.
+     */
+    const width = 960;
+
+    const name = (material: string) =>
+      join(
+        uploadsRoot,
+        '.cache',
+        `${createHash('sha256').update(material).digest('hex').slice(0, 24)}.webp`,
+      );
+
+    const withTag = name(`${KEY}|${String(width)}|${DERIVATIVE_TAG}`);
+    const withoutTag = name(`${KEY}|${String(width)}`);
+
+    // Both candidates are cleared first, because the cache outlives a test run by design — and
+    // the first time this ran it failed on a file the *old* code had left there weeks earlier,
+    // which is the hazard stated rather more plainly than intended.
+    await rm(withTag, { force: true });
+    await rm(withoutTag, { force: true });
+
+    await context.app.inject({ method: 'GET', url: `${API_PREFIX}/img/${KEY}?w=${String(width)}` });
+
+    await expect(stat(withTag)).resolves.toBeDefined();
+    await expect(stat(withoutTag)).rejects.toThrow();
+  });
+
+  it('encodes at an effort above sharp’s default, because the result is kept', () => {
+    // Seven percent smaller at identical quality. An upload is an editor waiting at a progress
+    // bar; a derivative is written once and read for a year, so the extra second is free here
+    // in a way it is not there.
+    expect(DERIVATIVE.effort).toBeGreaterThan(4);
   });
 });

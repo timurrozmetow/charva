@@ -34,6 +34,46 @@ const CACHE_DIRECTORY = '.cache';
 /** A year. The key contains a content hash, so a changed picture is a changed URL. */
 const IMMUTABLE = 'public, max-age=31536000, immutable';
 
+/**
+ * How a derivative is encoded — which is not how the master is encoded, and must not become it.
+ *
+ * `admin/media/service.ts` stores one 2560px master per upload at quality 86. That is an
+ * archival copy: nothing derives from anything else, so every visible pixel on the site passes
+ * through it once, and buying the last few percent of fidelity there is worth it. What is
+ * *served* is this, made from that master, and a second lossy pass through the same picture is
+ * a different trade entirely. The two numbers were both literal `86` and equal by coincidence —
+ * the kind of coincidence that reads as a shared setting until somebody changes one of them.
+ *
+ * `effort: 6` against sharp's default of 4 is seven percent smaller at identical quality, and
+ * it is free here in a way it is not on upload: an upload is an editor waiting at a progress
+ * bar, and a derivative is written to disk and read from it for a year afterwards. The extra
+ * second is paid once per picture per width, ever.
+ *
+ * Measured on the Darvaza hero — the site's own LCP image, 2560×1920 — at 1280 wide:
+ *
+ *   q86 effort 4   255 KB   38.3 dB   ← what this was
+ *   q86 effort 6   235 KB   38.1 dB
+ *   q82 effort 6   189 KB   36.6 dB   ← what this is, chosen by the owner 2026-09-15
+ *   q78 effort 6   161 KB   35.4 dB
+ *
+ * PSNR is against the master, so it measures what a visitor loses relative to what is stored.
+ * 82 rather than 78 because of what these photographs are of: sunset skies over Yangykala and
+ * Karakum sand are smooth gradients, which is the one thing WebP bands on, and banding is the
+ * artefact somebody notices without knowing what they are looking at. Below about 35 dB it
+ * starts to show; above 36 it does not.
+ */
+export const DERIVATIVE = { quality: 82, effort: 6 } as const;
+
+/**
+ * The encoder settings, as a string, for the derivative's file name.
+ *
+ * Without this the cache is keyed on the picture and the width alone, so changing anything
+ * above would have had no effect on any image anybody had already looked at — the old file is
+ * found and returned, for a year, and the site serves a mixture of two encodings with no way to
+ * tell them apart. A setting that cannot be changed is not a setting.
+ */
+export const DERIVATIVE_TAG = `q${String(DERIVATIVE.quality)}e${String(DERIVATIVE.effort)}`;
+
 const resizeQuery = z.object({
   w: z.coerce
     .number()
@@ -158,14 +198,21 @@ export const mediaRoutes: FastifyPluginAsync = async (instance) => {
       const source = safeJoin(uploadsRoot, key);
 
       /*
-       * The derivative's name is a hash of what produced it.
+       * The derivative's name is a hash of everything that produced it.
        *
-       * Key and width both, so re-uploading a different picture under the same name cannot be
-       * served from a stale derivative, and so the flat cache directory never has to mirror the
-       * year/month tree underneath `uploads/`.
+       * The key, so re-uploading a different picture under the same name cannot be served from
+       * a stale derivative and the flat cache directory never has to mirror the year/month tree
+       * underneath `uploads/`. The width, obviously. And the encoder settings, which were
+       * missing: without them the file on disk outlives the settings that made it, and changing
+       * the quality changes nothing anybody can see for a year.
+       *
+       * Old derivatives are left where they are rather than swept. They are unreachable — no
+       * request can name them again — and deleting files inside `uploads/` from a request
+       * handler is the one thing in this directory that has no undo (R-7). `DEPLOY.md` says how
+       * to clear them by hand.
        */
       const digest = createHash('sha256')
-        .update(`${key}|${String(width)}`)
+        .update(`${key}|${String(width)}|${DERIVATIVE_TAG}`)
         .digest('hex')
         .slice(0, 24);
       const derivative = join(uploadsRoot, CACHE_DIRECTORY, `${digest}.webp`);
@@ -186,7 +233,7 @@ export const mediaRoutes: FastifyPluginAsync = async (instance) => {
           // `withoutEnlargement` so a small original is not upscaled into a blurry large file
           // that is bigger than the picture it came from.
           .resize({ width, withoutEnlargement: true })
-          .webp({ quality: 86 })
+          .webp(DERIVATIVE)
           .toBuffer();
       } catch (error) {
         request.log.warn({ err: error, key }, 'could not resize');
