@@ -154,3 +154,32 @@ export function injectBody(template: string, body: string): string {
   if (body === '' || !template.includes(ROOT)) return template;
   return template.replace(ROOT, `<div id="root">${body}</div>`);
 }
+
+const BOOT = '<div id="boot">';
+
+/**
+ * Puts the page's own hero photograph behind the loading spinner.
+ *
+ * Measured on a throttled phone: the photograph has finished downloading at about two seconds —
+ * it is preloaded from the head with `fetchpriority="high"` — and the visitor does not see it
+ * until about three and a third, because until React has mounted the whole homepage the splash
+ * is an opaque cream rectangle covering everything. One and a third seconds of a spinner over a
+ * picture that is already in memory.
+ *
+ * Not a trick to move a number. Painting the hero *underneath* the splash would do that and
+ * would be worth nothing, because the splash is `position: fixed; inset: 0` and opaque: nobody
+ * would see it. This paints it in the splash, where it is the first real thing on the screen,
+ * and the spinner stays over it so the page still says it is not finished.
+ *
+ * The styles are inline literals for the reason D-125 gives about the splash's colours: the
+ * token stylesheet is one of the files being waited for, so nothing here can use a class or a
+ * `var(--c-*)`. The scrim matches the one the real hero lays under its light text, so the
+ * 360ms fade between the two is a fade between two nearly identical pictures.
+ *
+ * A template whose splash is written some other way is left alone rather than guessed at — the
+ * same rule as the body above, for the same reason.
+ */
+export function injectBootImage(template: string, markup: string): string {
+  if (markup === '' || !template.includes(BOOT)) return template;
+  return template.replace(BOOT, `${BOOT}${markup}`);
+}

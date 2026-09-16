@@ -20,8 +20,8 @@ import { deriveTripState } from '../../lib/trip-status';
 import { getSettings, reviewSummary } from '../global/service';
 import { currentTripRows } from '../umrah/service';
 
-import { anchorText, type FallbackLink, renderFallback } from './fallback';
-import { buildHead, resolveMeta, type ShareImage, type ShellContext } from './head';
+import { anchorText, type FallbackLink, renderBootImage, renderFallback } from './fallback';
+import { buildHead, heroImage, resolveMeta, type ShareImage, type ShellContext } from './head';
 import { type HeadTag } from './html';
 import * as ld from './jsonld';
 import { resolveRoute, unmatchedRoute } from './routes-map';
@@ -57,6 +57,13 @@ export interface ShellResult {
   found: boolean;
   /** Markup for `#root`, for a reader that runs no JavaScript — see `fallback.ts`. */
   body: string;
+  /**
+   * Markup for inside `#boot`: the homepage's hero photograph, behind the spinner.
+   *
+   * Empty on every other page and on the chooser, for the same reason the `preload` hint is —
+   * only a full-bleed hero is known to be worth `100vw`.
+   */
+  bootImage: string;
 }
 
 export async function renderShellHead(request: ShellRequest): Promise<ShellResult> {
@@ -161,6 +168,9 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
       links: await fallbackLinks(db, site, lang, resolved.pathAfterLang),
       contacts: { phone: settings.contacts.phone, email: settings.contacts.email },
     }),
+    // The same picture the head preloads, from the same predicate, so the splash never asks for
+    // a file the hint did not start.
+    bootImage: renderBootImage(heroImage(context)),
   };
 }
 

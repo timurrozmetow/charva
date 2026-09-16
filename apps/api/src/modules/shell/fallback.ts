@@ -87,6 +87,52 @@ export function renderFallback(input: FallbackInput): string {
 }
 
 /**
+ * The hero photograph, as it appears behind the loading spinner.
+ *
+ * Measured on a throttled phone: the picture has finished downloading at about two seconds, and
+ * the visitor first sees it at about three and a third — because until React has mounted the
+ * whole homepage the splash is an opaque cream rectangle over everything. One and a third
+ * seconds of a spinner in front of a photograph that is already in memory.
+ *
+ * It is the same file the head preloads, from the same `heroImage()`, so this costs no request:
+ * the preload started it before the stylesheet was parsed, and this element is what it was
+ * started for. Painting it *under* the splash instead would move the largest-paint number and
+ * show the visitor nothing, which is the opposite of the point.
+ *
+ * Inline styles and literal colours, for the reason D-125 gives about the splash itself: the
+ * token stylesheet is one of the files being waited for, so a class or a `var(--c-*)` would
+ * resolve to nothing during the only moment this element exists.
+ *
+ * `alt=""` and `aria-hidden`: the page's real hero carries the description a moment later, and
+ * a screen reader that announced this one would announce it twice. The scrim matches the one
+ * the real hero lays under its light text, so the 360ms fade is between two near-identical
+ * pictures rather than a step change in brightness.
+ */
+export function renderBootImage(
+  image: {
+    url: string;
+    srcSet: string | null;
+  } | null,
+): string {
+  if (image === null) return '';
+
+  const cover =
+    'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;' +
+    // Only once it has arrived. A half-decoded photograph appearing in strips under a spinner
+    // reads as a fault; the splash is cream until there is something whole to show.
+    'opacity:0;transition:opacity 420ms ease';
+
+  return (
+    `<img src="${escapeHtml(image.url)}"` +
+    (image.srcSet === null ? '' : ` srcset="${escapeHtml(image.srcSet)}" sizes="100vw"`) +
+    ` alt="" aria-hidden="true" decoding="async" fetchpriority="high"` +
+    ` onload="this.style.opacity=1" style="${cover}">` +
+    // The scrim, and the reason the spinner stays legible over a photograph of a desert at noon.
+    `<span aria-hidden="true" style="position:absolute;inset:0;background:rgba(32,26,20,0.38)"></span>`
+  );
+}
+
+/**
  * A page's title, trimmed of the brand, for use as the text of a link to it.
  *
  * `seo.ts` writes «Готовые туры по Туркменистану — Charva Travel», which is right for a tab and

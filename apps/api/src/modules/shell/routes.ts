@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 import { ApiProblem } from '../../plugins/error-handler';
 
-import { injectBody, injectHead, renderHead } from './html';
+import { injectBody, injectBootImage, injectHead, renderHead } from './html';
 import { renderShellHead } from './service';
 import { collectEntries, renderRobots, renderSitemap } from './sitemap';
 
@@ -69,7 +69,13 @@ export const shellRoutes: FastifyPluginCallback = (instance, _options, done) => 
       });
 
       const template = await loadTemplate(app.env.SHELL_DIST_DIR, site, templates);
-      const html = injectBody(injectHead(template, renderHead(result.tags)), result.body);
+      // Three injections into one template, in the order they appear in it: the head, the
+      // splash, and the container React will clear. Each one leaves the template alone if its
+      // marker is not there — a site whose index.html is written differently still gets served.
+      const html = injectBootImage(
+        injectBody(injectHead(template, renderHead(result.tags)), result.body),
+        result.bootImage,
+      );
 
       return (
         reply

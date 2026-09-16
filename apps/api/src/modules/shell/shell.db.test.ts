@@ -6,7 +6,15 @@ import { API_PREFIX } from '../../app';
 import * as t from '../../db/schema';
 import { buildTestApp, type TestApp } from '../../test/app';
 
-import { escapeHtml, escapeJsonLd, type HeadTag, injectBody, injectHead, renderHead } from './html';
+import {
+  escapeHtml,
+  escapeJsonLd,
+  type HeadTag,
+  injectBody,
+  injectBootImage,
+  injectHead,
+  renderHead,
+} from './html';
 import { resolveRoute } from './routes-map';
 import { renderShellHead } from './service';
 import { collectEntries, renderRobots, renderSitemap } from './sitemap';
@@ -436,6 +444,51 @@ describe('the picture a shared link shows', () => {
 
     const chooser = await render('choice', '/ru');
     expect(head(chooser.tags).links('preload')).toHaveLength(0);
+  });
+
+  it('shows that same file behind the spinner, instead of holding it back', async () => {
+    /*
+     * Measured on a throttled phone: the hero finished downloading at about two seconds and the
+     * visitor first saw it at about three and a third — the splash is `position: fixed; inset: 0`
+     * and opaque, so until React had mounted the whole homepage there was a spinner in front of a
+     * photograph already in memory.
+     *
+     * The assertion that matters is the second one: it has to be the *same* URL the preload
+     * started. A splash that named a different width would spend the picture twice and be worse
+     * than the spinner it replaced.
+     */
+    const home = await render('global', '/ru');
+    const preload = head(home.tags).links('preload')[0]?.attributes;
+
+    expect(home.bootImage).toContain('<img');
+    expect(home.bootImage).toContain(`src="${preload?.['href'] ?? 'no-preload'}"`);
+    expect(home.bootImage).toContain(`srcset="${preload?.['imagesrcset'] ?? 'no-srcset'}"`);
+    expect(home.bootImage).toContain('sizes="100vw"');
+    // Decoration, and the real hero announces itself a moment later: two descriptions of one
+    // photograph is one more than a screen reader should hear.
+    expect(home.bootImage).toContain('alt=""');
+
+    // Nowhere the preload does not go, for the same reason — see the test above.
+    expect((await render('global', '/ru/tours')).bootImage).toBe('');
+    expect((await render('choice', '/ru')).bootImage).toBe('');
+
+    const umrah = await render('umrah', '/tm');
+    expect(umrah.bootImage).toContain('<img');
+  });
+
+  it('puts the splash picture inside the splash, and leaves a template without one alone', () => {
+    const splash = '<body><div id="boot"><i></i></div><div id="root"></div></body>';
+
+    const injected = injectBootImage(splash, '<img src="/x.webp" alt="">');
+    expect(injected).toContain('<div id="boot"><img src="/x.webp" alt=""><i></i></div>');
+    // The spinner stays, and stays last: it is what says the page is not finished yet.
+    expect(injected.indexOf('<img')).toBeLessThan(injected.indexOf('<i>'));
+
+    // A page with no splash — the admin — is served unchanged rather than guessed at, the same
+    // rule `injectBody` follows for `#root`.
+    const none = '<body><div id="root"></div></body>';
+    expect(injectBootImage(none, '<img src="/x.webp" alt="">')).toBe(none);
+    expect(injectBootImage(splash, '')).toBe(splash);
   });
 
   it('says so plainly when there is no photograph anywhere', async () => {

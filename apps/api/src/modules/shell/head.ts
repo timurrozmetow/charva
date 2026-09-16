@@ -57,8 +57,21 @@ export interface ShareImage {
  * Everywhere else the largest image is a cover whose displayed width depends on the layout, and
  * a preload that guesses wrong is exactly the fault above; no hint beats a wrong hint.
  */
-function preloadTags(context: ShellContext, image: ShareImage): HeadTag[] {
-  if (context.route !== 'home' || context.site === 'choice') return [];
+/**
+ * The photograph a homepage opens with, or null everywhere else.
+ *
+ * One predicate for two readers — the `preload` hint below and the splash image the shell puts
+ * in `#boot` — because they must name the same file or the second one downloads a picture the
+ * first did not ask for, which would be worse than not doing it at all.
+ */
+export function heroImage(context: ShellContext): ShareImage | null {
+  if (context.route !== 'home' || context.site === 'choice') return null;
+  return context.content?.image ?? context.defaultImage ?? null;
+}
+
+function preloadTags(context: ShellContext): HeadTag[] {
+  const image = heroImage(context);
+  if (image === null) return [];
 
   return [
     {
@@ -258,7 +271,7 @@ export function buildHead(context: ShellContext): HeadTag[] {
        */
       { tag: 'meta', attributes: { name: 'twitter:card', content: 'summary_large_image' } },
       { tag: 'meta', attributes: { name: 'twitter:image', content: image.url } },
-      ...preloadTags(context, image),
+      ...preloadTags(context),
     );
 
     if (image.width !== null && image.height !== null) {
