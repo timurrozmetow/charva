@@ -184,6 +184,29 @@ if ! "${SSH[@]}" "cd $TARGET/apps/api && node dist/migrate.js"; then
 fi
 
 # --------------------------------------------------------------------------------------
+# 4b. Keep every build's assets reachable, before the symlink moves
+# --------------------------------------------------------------------------------------
+# The HTML outlives the release it names — the shell is cached for a minute and served stale
+# while the API restarts, which is what keeps the site up during a deploy — but `current` moves
+# the instant the link is rewritten. For up to a minute after every deploy nginx therefore
+# handed out HTML naming the previous release's entry script while `root` had already become a
+# directory that did not contain it, and the page came up blank. The same fault breaks a lazy
+# chunk for anyone who had a tab open, and that window is as long as the tab is.
+#
+# Hard links, so the archive costs no disk while a release still holds the file, and `-n` so a
+# rebuild that produced an identical hash does not fail on an existing name. Before the switch,
+# because the point is that nothing is ever missing.
+#
+# The prune is the same idea read backwards: a file with one link is one no release references
+# any more, and thirty days is longer than any HTML can survive anywhere.
+say "archive assets"
+for app in web-choice web-global web-umrah admin; do
+  "${SSH[@]}" "mkdir -p $ROOT/shared/$app/assets && \
+    cp -rln $TARGET/apps/$app/assets/. $ROOT/shared/$app/assets/ 2>/dev/null || true"
+done
+"${SSH[@]}" "find $ROOT/shared -type f -links 1 -mtime +30 -delete 2>/dev/null || true"
+
+# --------------------------------------------------------------------------------------
 # 5. Switch, restart, check
 # --------------------------------------------------------------------------------------
 # `test -L` first, and that guard is the whole point. `readlink -f` prints a canonical path even
