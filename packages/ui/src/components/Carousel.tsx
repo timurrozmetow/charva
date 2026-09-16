@@ -391,21 +391,32 @@ function Indicators({
       className={cn(
         'absolute z-[4] flex',
         /*
-          The rail loses its words on a phone, not its controls.
+          On a phone the rail keeps its pause button and loses everything else, and moves to the
+          top of the hero to do it.
 
-          `mob:hidden` used to sit here, on the whole block — which took the pause button with
-          it. Measured in a browser at 412px: five controls in the markup, none of them visible,
-          on a photograph that advances by itself every six and a half seconds and never stops.
-          WCAG 2.2.2 asks for a mechanism for exactly that, and D-34 records that this button is
-          the one visible element in the package added on top of the drawn design to satisfy it.
-          Hiding it on the devices most of this audience uses is where it was needed most.
+          `mob:hidden` used to sit here, on the whole block, which took the pause button with it.
+          Measured in a browser at 412px: five controls in the markup, none of them visible, on a
+          photograph that advances by itself every six and a half seconds and never stops. WCAG
+          2.2.2 asks for a mechanism for exactly that, and D-34 records that this button is the
+          one visible element the package adds on top of the drawn design to satisfy it — hidden,
+          it turned out, on the devices most of this audience uses.
 
-          What genuinely does not fit at 412px is the column of uppercase place names beside the
-          bars, so that is what `mob:hidden` moves to. The bars are 18 to 40px wide and sit at
-          the right edge, vertically centred, where the hero's own text — bottom-aligned — is not.
+          Simply un-hiding it was wrong in a way only a screenshot showed: `top-1/2` is 463px on a
+          927px hero, which on a phone is neither empty nor near the middle of anything. The bars
+          struck through the hero paragraph and the pause button sat on the corner of the search
+          panel. The vertical centre is free at 1440 because the hero's text is a left column
+          there; at 412 that text is the full width.
+
+          Measured instead of guessed: the navigation island ends at 84px and the headline starts
+          at 191, and the gap is not luck — the hero's container carries `pt-40`, so 160px of
+          clearance exists whatever the headline does. `top-24` puts a 44px button at 96–140,
+          inside a space the layout guarantees. The four bars would need 120px more and would run
+          into the headline, which is the honest reason they stay hidden: the rail is a desktop
+          element, and what the phone needs from it is the ability to stop.
         */
         rail
-          ? 'right-gutter top-1/2 -translate-y-1/2 flex-col gap-[14px] lap:right-10 tab:right-8'
+          ? 'right-gutter top-1/2 -translate-y-1/2 flex-col gap-[14px] lap:right-10 tab:right-8 ' +
+              'mob:top-24 mob:translate-y-0'
           : 'bottom-6 left-1/2 -translate-x-1/2 flex-row items-center gap-3',
         className,
       )}
@@ -430,11 +441,9 @@ function Indicators({
                 the rail looks exactly as drawn and can be hit.
               */
               'group -my-2.5 flex items-center gap-3 py-2.5 transition-colors duration-caret',
-              // With the label hidden the button is only as wide as its bar, and an inactive bar
-              // is 18px — under the 24×24 floor WCAG 2.5.8 sets. The extra six pixels are
-              // transparent and `justify-end` keeps the bar itself flush against the edge, so
-              // the rail looks exactly as drawn and can still be hit.
-              rail && 'justify-end mob:min-w-6',
+              // The bars are the part that does not fit at 412px — see the note on the rail
+              // above. The pause button is a sibling of these and stays.
+              rail && 'justify-end mob:hidden',
             )}
           >
             {rail && slide.label !== undefined && (
@@ -442,9 +451,6 @@ function Indicators({
                 aria-hidden="true"
                 className={cn(
                   'font-bold uppercase text-label tracking-[0.14em] transition-opacity duration-caret',
-                  // The part that does not fit on a phone. The name is still on the button's
-                  // `aria-label`, so nothing is lost to a screen reader by dropping the glyphs.
-                  'mob:hidden',
                   showing ? 'text-accent opacity-100' : 'text-dark-on opacity-45',
                 )}
               >
