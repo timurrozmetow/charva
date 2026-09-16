@@ -1,3 +1,4 @@
+import { fill } from '@charva/contracts';
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 import { cn } from '../cn';
@@ -17,11 +18,56 @@ export interface CarouselLabels {
   /** Names the carousel as a whole — «Слайдер главной страницы». */
   region: string;
   /** «Слайд 2 из 4». Built by the caller: the word order differs across four languages. */
-  slide: (index: number, total: number) => string;
+  slide: (number: number, total: number) => string;
   /** Accessible name of an indicator — «Перейти к слайду 2, Йангыкала». */
-  goTo: (index: number, label?: string) => string;
+  goTo: (number: number, label?: string) => string;
   pause: string;
   play: string;
+}
+
+/*
+ * Both callbacks take the *one-based* position, and the parameter is named `number` because it
+ * was named `index` and both homepages read that the way the word is normally used.
+ *
+ * They each added a `+ 1` on top of the one this component already applies, so the first slide
+ * announced itself as «Слайд 2 из 4» and the last as «Слайд 5 из 4» — a number past the total,
+ * on both sites, to every screen reader. Nothing caught it: the unit test and the Storybook
+ * story happen to use the argument as given, so the component was right and only its two real
+ * consumers were wrong. A name that invites one reading and means the other is the defect; the
+ * `+ 1` was the symptom.
+ */
+
+/** The five strings each site's copy already holds for its slider, under `home`. */
+export interface CarouselCopy {
+  /** «Слайдер главной страницы» */
+  sliderLabel: string;
+  /** «Слайд {index} из {total}» */
+  slide: string;
+  /** «Перейти к слайду {index}» — the place name is appended by the builder below. */
+  goToSlide: string;
+  pause: string;
+  play: string;
+}
+
+/*
+ * One builder for both homepages, for the reason recorded as D-155 about the footer: the same
+ * eight lines written twice is two chances for one of them to be wrong, and here both copies
+ * were wrong in the same way. The caller no longer does arithmetic on the position at all, so
+ * the mistake has nowhere left to live, and the numbering is tested once instead of never.
+ *
+ * The key inside the templates stays `{index}` because that is what the translators have already
+ * written in eight JSON files across two sites; it is the parameter of this function that had to
+ * stop inviting the wrong reading.
+ */
+export function carouselLabels(copy: CarouselCopy): CarouselLabels {
+  return {
+    region: copy.sliderLabel,
+    slide: (number, total) => fill(copy.slide, { index: number, total }),
+    goTo: (number, label) =>
+      `${fill(copy.goToSlide, { index: number })}${label === undefined ? '' : `, ${label}`}`,
+    pause: copy.pause,
+    play: copy.play,
+  };
 }
 
 export type CarouselIndicators = 'rail' | 'dots' | 'none';
@@ -96,6 +142,62 @@ export function Carousel({
    */
   const [leaving, setLeaving] = useState<number | null>(null);
   const shown = useRef(index);
+
+  /*
+   * The highest slide whose content has been put in the page. Everything past it is an empty
+   * shell until the carousel gets near it.
+   *
+   * Measured on the live homepage, throttled to slow 4G on a 412px phone: the page pulled 406 KB
+   * of photographs and 255 KB of that — 63% — was slides 2, 3 and 4, which appear at 6.5, 13 and
+   * 19.5 seconds. They were downloading in the same seconds as the one the visitor is actually
+   * looking at, on the connection this audience has, and competing with it for the bandwidth.
+   *
+   * This is not D-36 revisited. That decision is about a slide that is *in rotation*: hidden with
+   * `visibility` rather than unmounted, because unmounting makes the cross-fade impossible and
+   * transparency leaves its links in the tab order. Both still hold — a slide once reached stays
+   * mounted forever, so every fade has both halves. What changes is only the slides nobody has
+   * been near yet, which have no fade to take part in.
+   */
+  const [reached, setReached] = useState(0);
+
+  /*
+   * The slide being shown is mounted at once — including the case nobody plans for, where the
+   * visitor presses the last indicator before the carousel has ever advanced. It comes up empty
+   * for as long as its photograph takes, and that is what the held slide underneath is for: the
+   * one being left stays fully opaque until the fade is over (see `leaving`).
+   */
+  useEffect(() => {
+    setReached((current) => Math.max(current, index));
+  }, [index]);
+
+  /*
+   * Its neighbour waits for the page to go quiet.
+   *
+   * It has `intervalMs` — six and a half seconds on both heroes — to arrive before it is needed,
+   * so there is no reason for it to compete with the LCP photograph, the stylesheet and the
+   * bundle, which is exactly what all four slides were doing. `requestIdleCallback` is missing in
+   * Safari before 16.4; the timeout is the fallback for it rather than a second call, and either
+   * way `setReached` only ever raises the number, so arriving twice costs nothing.
+   */
+  useEffect(() => {
+    if (total < 2) return;
+
+    const advance = () => {
+      setReached((current) => Math.max(current, index + 1));
+    };
+
+    if (typeof requestIdleCallback === 'function') {
+      const handle = requestIdleCallback(advance, { timeout: 2000 });
+      return () => {
+        cancelIdleCallback(handle);
+      };
+    }
+
+    const timer = setTimeout(advance, 1200);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [index, total]);
 
   useEffect(() => {
     if (shown.current === index) return;
@@ -226,7 +328,12 @@ export function Carousel({
                     : 'invisible z-0 opacity-0',
               )}
             >
-              {slide.content}
+              {/*
+                The wrapper stays whatever happens: the indicator for this slide points at its
+                id with `aria-controls`, and a control referring to an element that is not in the
+                document is the defect D-88 was written about.
+              */}
+              {position <= reached ? slide.content : null}
             </div>
           );
         })}
@@ -283,8 +390,22 @@ function Indicators({
     <div
       className={cn(
         'absolute z-[4] flex',
+        /*
+          The rail loses its words on a phone, not its controls.
+
+          `mob:hidden` used to sit here, on the whole block — which took the pause button with
+          it. Measured in a browser at 412px: five controls in the markup, none of them visible,
+          on a photograph that advances by itself every six and a half seconds and never stops.
+          WCAG 2.2.2 asks for a mechanism for exactly that, and D-34 records that this button is
+          the one visible element in the package added on top of the drawn design to satisfy it.
+          Hiding it on the devices most of this audience uses is where it was needed most.
+
+          What genuinely does not fit at 412px is the column of uppercase place names beside the
+          bars, so that is what `mob:hidden` moves to. The bars are 18 to 40px wide and sit at
+          the right edge, vertically centred, where the hero's own text — bottom-aligned — is not.
+        */
         rail
-          ? 'right-gutter top-1/2 -translate-y-1/2 flex-col gap-[14px] lap:right-10 tab:right-8 mob:hidden'
+          ? 'right-gutter top-1/2 -translate-y-1/2 flex-col gap-[14px] lap:right-10 tab:right-8'
           : 'bottom-6 left-1/2 -translate-x-1/2 flex-row items-center gap-3',
         className,
       )}
@@ -309,7 +430,11 @@ function Indicators({
                 the rail looks exactly as drawn and can be hit.
               */
               'group -my-2.5 flex items-center gap-3 py-2.5 transition-colors duration-caret',
-              rail && 'justify-end',
+              // With the label hidden the button is only as wide as its bar, and an inactive bar
+              // is 18px — under the 24×24 floor WCAG 2.5.8 sets. The extra six pixels are
+              // transparent and `justify-end` keeps the bar itself flush against the edge, so
+              // the rail looks exactly as drawn and can still be hit.
+              rail && 'justify-end mob:min-w-6',
             )}
           >
             {rail && slide.label !== undefined && (
@@ -317,6 +442,9 @@ function Indicators({
                 aria-hidden="true"
                 className={cn(
                   'font-bold uppercase text-label tracking-[0.14em] transition-opacity duration-caret',
+                  // The part that does not fit on a phone. The name is still on the button's
+                  // `aria-label`, so nothing is lost to a screen reader by dropping the glyphs.
+                  'mob:hidden',
                   showing ? 'text-accent opacity-100' : 'text-dark-on opacity-45',
                 )}
               >

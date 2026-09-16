@@ -2,6 +2,7 @@ import { type Lang, type MediaRef } from '@charva/contracts';
 import {
   buttonClass,
   Carousel,
+  carouselLabels,
   Container,
   Eyebrow,
   Heading,
@@ -137,16 +138,7 @@ export function HomePage({ lang }: HomePageProps) {
               <Carousel
                 slides={heroSlides}
                 indicators="rail"
-                labels={{
-                  region: copy.home.sliderLabel,
-                  slide: (index, total) => fill(copy.home.slide, { index: index + 1, total }),
-                  goTo: (index, label) =>
-                    `${fill(copy.home.goToSlide, { index: index + 1 })}${
-                      label === undefined ? '' : `, ${label}`
-                    }`,
-                  pause: copy.home.pause,
-                  play: copy.home.play,
-                }}
+                labels={carouselLabels(copy.home)}
                 className="size-full"
               />
             </div>

@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Carousel, type CarouselLabels } from './Carousel';
+import { Carousel, carouselLabels, type CarouselLabels } from './Carousel';
 
 const LABELS: CarouselLabels = {
   region: 'Слайдер главной страницы',
@@ -266,5 +266,119 @@ describe('Carousel', () => {
 
     rerender(<Carousel slides={[]} labels={LABELS} />);
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
+  });
+
+  it('puts only the slide being shown in the page, then its neighbour once idle', () => {
+    /*
+     * Measured on the live homepage at 412px, throttled to slow 4G: 406 KB of photographs, of
+     * which 255 KB — 63% — was slides 2, 3 and 4, arriving in the same seconds as the one the
+     * visitor was looking at and competing with it for the connection. They are not seen until
+     * 6.5, 13 and 19.5 seconds in.
+     */
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<Carousel slides={SLIDES} labels={LABELS} intervalMs={5000} />);
+
+      const mounted = () =>
+        [...container.querySelectorAll('[aria-roledescription="slide"]')].filter(
+          (slide) => slide.textContent !== '',
+        ).length;
+
+      // The wrappers are all there — the indicators point at them with `aria-controls`, and a
+      // control naming an element that is not in the document is the defect of D-88.
+      expect(container.querySelectorAll('[aria-roledescription="slide"]')).toHaveLength(3);
+      expect(mounted()).toBe(1);
+
+      act(() => {
+        vi.advanceTimersByTime(1300);
+      });
+      expect(mounted()).toBe(2);
+      expect(mounted()).toBeLessThan(SLIDES.length);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('mounts a slide jumped to straight away, without waiting to be idle', () => {
+    render(<Carousel slides={SLIDES} labels={LABELS} />);
+
+    act(() => {
+      screen.getByRole('button', { name: 'Перейти к слайду 3, Мерв' }).click();
+    });
+    expect(showing()).toBe('Древний Мерв');
+  });
+
+  it('keeps the pause control at every width', () => {
+    /*
+     * `mob:hidden` used to sit on the whole rail, which took the pause button with it. Measured
+     * in a browser at 412px: five controls in the markup and none of them visible, on a
+     * photograph that advances by itself every six and a half seconds — the exact case WCAG
+     * 2.2.2 covers, on the devices most of this audience uses.
+     *
+     * jsdom applies no stylesheet, so this reads the arrangement rather than the result. That is
+     * the whole of the bug: the control was in the document and unreachable, and what put it out
+     * of reach was a class on something above it.
+     */
+    const { container } = render(<Carousel slides={SLIDES} labels={LABELS} />);
+    const pause = screen.getByRole('button', { name: 'Остановить' });
+
+    for (
+      let node: HTMLElement | null = pause;
+      node !== null && container.contains(node);
+      node = node.parentElement
+    ) {
+      expect(node.className, node.className).not.toMatch(/(?:^|\s|:)hidden(?:\s|$)/);
+    }
+  });
+});
+
+describe('carouselLabels', () => {
+  // The stub belongs to each `describe`; the reduced-motion hook asks for `matchMedia` on mount.
+  beforeEach(() => {
+    stubMatchMedia(false);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const COPY = {
+    sliderLabel: 'Слайдер главной страницы',
+    slide: 'Слайд {index} из {total}',
+    goToSlide: 'Перейти к слайду {index}',
+    pause: 'Остановить показ',
+    play: 'Продолжить показ',
+  };
+
+  /*
+   * Both homepages wrote these five lines themselves and both added a `+ 1` to a position that
+   * arrives one-based already: the first slide announced itself as «Слайд 2 из 4» and the last as
+   * «Слайд 5 из 4» — a number past the total — to every screen reader on both sites.
+   *
+   * Nothing caught it because the component was right. The unit test above and the Storybook
+   * story use the argument as given; only the two real consumers were wrong, in the same way,
+   * which is the signature of an interface that invites a reading it does not mean.
+   */
+  it('numbers the slides the way a reader counts them', () => {
+    const labels = carouselLabels(COPY);
+
+    expect(labels.slide(1, 4)).toBe('Слайд 1 из 4');
+    expect(labels.slide(4, 4)).toBe('Слайд 4 из 4');
+    expect(labels.goTo(1, 'Дарваза')).toBe('Перейти к слайду 1, Дарваза');
+    expect(labels.goTo(4)).toBe('Перейти к слайду 4');
+  });
+
+  it('is what the carousel actually renders', () => {
+    // The pair that matters: the first indicator and the first slide must agree, and must say
+    // one. Asserting the builder alone would not have caught the two pages, which never used it.
+    render(<Carousel slides={SLIDES} labels={carouselLabels(COPY)} />);
+
+    expect(screen.getByRole('group', { name: 'Слайд 1 из 3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Перейти к слайду 1, Дарваза' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Перейти к слайду 3, Мерв' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /слайду 4/ })).not.toBeInTheDocument();
   });
 });
