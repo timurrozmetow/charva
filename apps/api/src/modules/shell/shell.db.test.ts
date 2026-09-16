@@ -1,4 +1,4 @@
-import { bcp47, SITE_LANGS } from '@charva/contracts';
+import { bcp47, SCRIM_RGB, SITE_LANGS } from '@charva/contracts';
 import { and, desc, eq } from 'drizzle-orm';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
@@ -474,6 +474,29 @@ describe('the picture a shared link shows', () => {
 
     const umrah = await render('umrah', '/tm');
     expect(umrah.bootImage).toContain('<img');
+  });
+
+  it('lays the hero’s own overlay over it, per site', async () => {
+    /*
+     * Without this the splash showed a bright desert and the page a dark one, and the 360ms
+     * handover between them was a step change in brightness on the largest element either site
+     * has. The gradient is `heroScrimCss` from contracts — the same function `bg-scrim-hero` is
+     * built from — with the site's base substituted for the CSS variable, because no stylesheet
+     * has loaded at the moment this element exists.
+     *
+     * Asserted per site rather than by re-deriving it here: re-deriving would restate the call
+     * the code makes and prove nothing. What is worth stating is that the two differ, in base
+     * and in direction, because a constant would be the bug this replaced.
+     */
+    const home = await render('global', '/ru');
+    expect(home.bootImage).toContain(`rgba(${SCRIM_RGB.global}, 0.94) 0%`);
+    expect(home.bootImage).toContain('linear-gradient(to top,');
+
+    const umrah = await render('umrah', '/tm');
+    expect(umrah.bootImage).toContain(`rgba(${SCRIM_RGB.umrah}, 0.94) 0%`);
+    // Umrah's hero runs diagonally; a shared constant would have got this wrong and looked fine.
+    expect(umrah.bootImage).toContain('linear-gradient(105deg,');
+    expect(umrah.bootImage).not.toContain(SCRIM_RGB.global);
   });
 
   it('puts the splash picture inside the splash, and leaves a template without one alone', () => {

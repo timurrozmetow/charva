@@ -42,7 +42,14 @@
         display: block;
         width: 46px;
         height: 46px;
-        border: 2px solid rgba(102, 115, 108, 0.18);
+        /* Light, not green-grey: the shell paints this homepage's own hero photograph behind
+           the splash, and a ring in a muted version of the page's own palette vanished into it.
+           Cream at a fifth reads on both the empty splash and a photograph. */
+        border: 2px solid rgba(252, 249, 244, 0.22);
+        /* Positioned, so it stays on top of the photograph and the overlay the shell puts in
+           here: those are `position: absolute`, and a positioned element paints above an
+           in-flow one whatever the document order says. */
+        position: relative;
         border-top-color: #dfa059;
         border-radius: 50%;
         animation: boot-spin 900ms linear infinite;

@@ -170,7 +170,7 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
     }),
     // The same picture the head preloads, from the same predicate, so the splash never asks for
     // a file the hint did not start.
-    bootImage: renderBootImage(heroImage(context)),
+    bootImage: renderBootImage(site, heroImage(context)),
   };
 }
 

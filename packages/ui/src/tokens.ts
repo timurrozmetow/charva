@@ -1,3 +1,5 @@
+import { HERO_SCRIM_STOPS, heroScrimCss, SCRIM_RGB } from '@charva/contracts';
+
 import { blendOver, type Hex, rgbTripleToHex } from './color';
 
 /**
@@ -147,12 +149,19 @@ export const alphaBase = {
   umrahCream: '252, 249, 244',
   /** The sand accent as a tint. */
   sand: '223, 160, 89',
-  /** Photo scrims, Global. */
-  globalScrim: '38, 27, 18',
+  /**
+   * Photo scrims, Global — read from contracts rather than restated here.
+   *
+   * The shell draws this same overlay into the loading splash, where no stylesheet exists yet
+   * and no Tailwind class can be used, so the value had to live somewhere both the browser and
+   * the server read. `scrim.ts` in contracts says why it is there and not here; this package
+   * bundles contracts, so the move costs the browser nothing.
+   */
+  globalScrim: SCRIM_RGB.global,
   /** Photo scrims, the Global video page. */
   globalVideoScrim: '20, 14, 8',
-  /** Photo scrims, Umrah. */
-  umrahScrim: '14, 23, 20',
+  /** Photo scrims, Umrah. From contracts, for the same reason as Global's above. */
+  umrahScrim: SCRIM_RGB.umrah,
   /** Choice glass and scrims. */
   choiceGlass: '20, 14, 10',
   /** The gradient over the Global half of the chooser. */
@@ -199,15 +208,13 @@ export function choiceScrimGradient(half: keyof typeof choiceScrim): string {
  * hand-written literals in the handoff. Umrah's runs at 105° instead of vertically, which is a
  * genuine difference and gets its own token when phase 6 needs it.
  */
-export const heroScrim = [0.94, 0.5, 0.34] as const;
+export const heroScrim = HERO_SCRIM_STOPS;
 
 export function heroScrimGradient(direction = 'to top'): string {
-  const [bottom, mid, top] = heroScrim;
-  return (
-    `linear-gradient(${direction}, rgba(var(--c-scrim-rgb), ${String(bottom)}) 0%, ` +
-    `rgba(var(--c-scrim-rgb), ${String(mid)}) 46%, ` +
-    `rgba(var(--c-scrim-rgb), ${String(top)}) 100%)`
-  );
+  // The variable rather than a literal base: one rule serves both sites, because `--c-scrim-rgb`
+  // is redirected per theme. The server calls the same builder with the site's own triple, so
+  // the splash and the hero are the same overlay rather than two that look alike.
+  return heroScrimCss('var(--c-scrim-rgb)', direction);
 }
 
 export function alpha(base: keyof typeof alphaBase, opacity: number): string {

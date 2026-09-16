@@ -48,8 +48,15 @@
         display: block;
         width: 46px;
         height: 46px;
-        border: 2px solid rgba(130, 109, 88, 0.18);
+        /* Light, not brown: the shell paints the page's own hero photograph behind this on
+           the two homepages, and a ring the colour of dry sand disappeared into a picture of
+           dry sand. Cream at a fifth reads on both the empty splash and a photograph. */
+        border: 2px solid rgba(250, 246, 239, 0.22);
         border-top-color: #dfa059;
+        /* Positioned, so it stays on top of the photograph and the overlay the shell puts in
+           here: those are `position: absolute`, and a positioned element paints above an
+           in-flow one whatever the document order says. */
+        position: relative;
         border-radius: 50%;
         animation: boot-spin 900ms linear infinite;
       }

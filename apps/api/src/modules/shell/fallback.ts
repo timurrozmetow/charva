@@ -1,4 +1,11 @@
-import { SITE_BRAND, type Lang, type Site } from '@charva/contracts';
+import {
+  HERO_SCRIM_DIRECTION,
+  heroScrimCss,
+  type Lang,
+  SCRIM_RGB,
+  SITE_BRAND,
+  type Site,
+} from '@charva/contracts';
 
 import { escapeHtml } from './html';
 
@@ -109,6 +116,7 @@ export function renderFallback(input: FallbackInput): string {
  * pictures rather than a step change in brightness.
  */
 export function renderBootImage(
+  site: Site,
   image: {
     url: string;
     srcSet: string | null;
@@ -119,16 +127,26 @@ export function renderBootImage(
   const cover =
     'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;' +
     // Only once it has arrived. A half-decoded photograph appearing in strips under a spinner
-    // reads as a fault; the splash is cream until there is something whole to show.
+    // reads as a fault; the splash stays cream until there is something whole to show.
     'opacity:0;transition:opacity 420ms ease';
+
+  /*
+   * The hero's own overlay, not an approximation of it.
+   *
+   * Without it the splash showed a bright desert and the page a dark one, and the 360ms handover
+   * between them was a step change in brightness on the largest element either site has. The
+   * gradient comes from `heroScrimCss` in contracts — the same function the stylesheet's
+   * `bg-scrim-hero` is built from — with this site's base substituted for the CSS variable,
+   * because no stylesheet has loaded at the moment this element exists.
+   */
+  const scrim = heroScrimCss(SCRIM_RGB[site], HERO_SCRIM_DIRECTION[site]);
 
   return (
     `<img src="${escapeHtml(image.url)}"` +
     (image.srcSet === null ? '' : ` srcset="${escapeHtml(image.srcSet)}" sizes="100vw"`) +
     ` alt="" aria-hidden="true" decoding="async" fetchpriority="high"` +
     ` onload="this.style.opacity=1" style="${cover}">` +
-    // The scrim, and the reason the spinner stays legible over a photograph of a desert at noon.
-    `<span aria-hidden="true" style="position:absolute;inset:0;background:rgba(32,26,20,0.38)"></span>`
+    `<span aria-hidden="true" style="position:absolute;inset:0;background:${escapeHtml(scrim)}"></span>`
   );
 }
 
