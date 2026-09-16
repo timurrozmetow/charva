@@ -43,11 +43,14 @@ const marks = {
  * It is in no icon set this project can use, and a trademark drawn from memory produces
  * something that is nearly the logo — the one outcome worse than not having it. A speech
  * bubble says what imo is, which is the honest thing a circle can say about a messenger whose
- * mark we do not have. It is stroked rather than filled because it is ours, drawn at the
- * weight of the hand-drawn set; if the real mark is ever obtained, this is the line to change.
+ * mark we do not have, and if the real one is ever obtained properly this is the line to change.
+ *
+ * Filled, like the five beside it. Drawn as an outline first, it came out visibly lighter than
+ * the marks it shares a row with — a stroke and a fill do not weigh the same at eighteen pixels,
+ * and the odd one out read as a rendering fault rather than as a different icon.
  */
 const CHAT =
-  'M12 3c5 0 9 3.4 9 7.6 0 4.2-4 7.6-9 7.6-.9 0-1.8-.1-2.6-.3L4 21l1.2-3.6C3.8 16 3 13.4 3 10.6 3 6.4 7 3 12 3z';
+  'M12 2.6C6.2 2.6 1.5 6.4 1.5 11.1c0 2.6 1.4 4.9 3.7 6.5L3.6 21.9l4.9-2.6c1.1.2 2.3.4 3.5.4 5.8 0 10.5-3.8 10.5-8.6S17.8 2.6 12 2.6z';
 
 export type BrandName = keyof typeof marks | 'chat';
 
@@ -58,7 +61,6 @@ export interface BrandIconProps extends Omit<SVGProps<SVGSVGElement>, 'children'
 
 /** Always decorative: the link around it carries the name, and a logo reads aloud as nothing. */
 export function BrandIcon({ name, size = '1em', className, ...rest }: BrandIconProps) {
-  const chat = name === 'chat';
   return (
     <svg
       width={size}
@@ -68,18 +70,7 @@ export function BrandIcon({ name, size = '1em', className, ...rest }: BrandIconP
       className={cn('inline-block shrink-0', className)}
       {...rest}
     >
-      <path
-        d={chat ? CHAT : marks[name]}
-        fill={chat ? 'none' : 'currentColor'}
-        {...(chat
-          ? {
-              stroke: 'currentColor',
-              strokeWidth: 1.6,
-              strokeLinecap: 'round' as const,
-              strokeLinejoin: 'round' as const,
-            }
-          : {})}
-      />
+      <path d={name === 'chat' ? CHAT : marks[name]} fill="currentColor" />
     </svg>
   );
 }
