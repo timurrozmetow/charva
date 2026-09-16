@@ -359,6 +359,9 @@ describe('the picture a shared link shows', () => {
       sizeBytes: 900_000,
       checksum: 'shelltestfixture'.padEnd(64, '0'),
       alt: { ru: 'Пустыня на рассвете', en: 'The desert at dawn' },
+      // The splash paints this while the full file is still arriving, so the fixture has to
+      // carry one or the branch that matters most on a dense screen goes untested.
+      lqip: 'data:image/webp;base64,UklGRhoAAABXRUJQVlA4IA4AAAAwAQCdASoBAAEAAgA0JaQAA3AA/vuUAAA=',
     });
     mediaId = inserted.insertId;
 
@@ -474,6 +477,24 @@ describe('the picture a shared link shows', () => {
 
     const umrah = await render('umrah', '/tm');
     expect(umrah.bootImage).toContain('<img');
+  });
+
+  it('paints the blurred thumbnail underneath, which is the half that works on a dense screen', async () => {
+    /*
+     * Measured on a throttled phone: the full-size hero is on screen for 597ms at one device
+     * pixel per CSS pixel, 18ms at two, and never at three — at three it is four times the bytes
+     * and React has taken the splash away before it lands. So on the phones most of this
+     * audience carries, the photograph in the splash was a feature nobody would ever see.
+     *
+     * The thumbnail is already on the media row and already sent to the browser for the page's
+     * own use. Inline, it costs no request and paints with the first frame, on every device.
+     */
+    const { bootImage } = await render('global', '/ru');
+
+    expect(bootImage).toContain('data:image/webp;base64,');
+    expect(bootImage).toContain('filter:blur(');
+    // It has to be behind the real photograph, or it is a blur over a sharp picture.
+    expect(bootImage.indexOf('data:image/webp')).toBeLessThan(bootImage.indexOf('<img'));
   });
 
   it('lays the hero’s own overlay over it, per site', async () => {

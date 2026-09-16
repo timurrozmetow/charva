@@ -120,6 +120,7 @@ export function renderBootImage(
   image: {
     url: string;
     srcSet: string | null;
+    lqip: string | null;
   } | null,
 ): string {
   if (image === null) return '';
@@ -150,7 +151,30 @@ export function renderBootImage(
    */
   const scrim = heroScrimCss(SCRIM_RGB[site], HERO_SCRIM_DIRECTION[site]);
 
+  /*
+   * The blurred thumbnail underneath, and it is the half that actually works.
+   *
+   * Measured on a throttled phone: the full-size hero is on screen for 597ms at one device pixel
+   * per CSS pixel, **18ms at two, and never at three** — at three it is four times the bytes and
+   * React has taken the splash away before it lands. So on the phones most of this audience
+   * carries, the photograph in the splash was a feature nobody would ever see.
+   *
+   * The thumbnail is about a hundred characters of data URI already stored on the media row and
+   * already sent to the browser for the page's own use. Inline, it costs no request and paints
+   * with the first frame, on every device. `blur` because ten pixels across scaled to a phone is
+   * a mosaic otherwise, and `scale` because a blur of that radius leaves a soft edge that would
+   * otherwise show as a lighter band around the screen.
+   */
+  const backdrop =
+    image.lqip === null
+      ? ''
+      : `<span aria-hidden="true" style="position:absolute;inset:0;overflow:hidden">` +
+        `<span style="position:absolute;inset:0;background-image:url(${escapeHtml(image.lqip)});` +
+        `background-size:cover;background-position:center;filter:blur(24px);transform:scale(1.12)">` +
+        `</span></span>`;
+
   return (
+    backdrop +
     `<img src="${escapeHtml(image.url)}"` +
     (image.srcSet === null ? '' : ` srcset="${escapeHtml(image.srcSet)}" sizes="100vw"`) +
     ` alt="" aria-hidden="true" decoding="async" fetchpriority="high"` +

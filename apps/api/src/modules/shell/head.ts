@@ -39,6 +39,13 @@ export interface ShareImage {
    * actually going to use — see the note on `preloadTags`.
    */
   srcSet: string | null;
+  /**
+   * A blurred thumbnail as a data URI, around a hundred characters, stored on the media row.
+   *
+   * Used only by the splash — it is what the loading screen paints while the full file is still
+   * arriving, and it is the reason that feature works on a three-times-density phone at all.
+   */
+  lqip: string | null;
 }
 
 /**
