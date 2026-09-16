@@ -87,6 +87,43 @@ function bootAssets(html) {
   return [...hrefs].filter((href) => CODE.test(href));
 }
 
+/**
+ * Chunks that import the same module twice — once to defer it, once by accident.
+ *
+ * `verbatimModuleSyntax` is on across this repository, and it means exactly what it says: an
+ * import *statement* survives compilation with only its type bindings removed. So
+ * `import { type LeadFormProps } from './LeadForm'` — the inline form written in every other
+ * file here — compiles to a bare `import './LeadForm'`, which is a static edge to the module the
+ * file exists to keep out of the graph.
+ *
+ * That is how the lead form kept arriving in the homepage's first burst after being wrapped in a
+ * `lazy()` and an intersection observer: the deferral was written, the chunk was emitted, the
+ * source read correctly, and 26 KB still came down at exactly the moment it had before. Nothing
+ * about it is visible in a diff, and the only place it shows is the built output — so this is
+ * where it is checked.
+ *
+ * A failure is real: it means a deliberate boundary is not one.
+ */
+function defeatedBoundaries(files) {
+  const found = [];
+
+  for (const { path, code } of files) {
+    if (code === undefined) continue;
+
+    const dynamic = new Set(
+      [...code.matchAll(/import\(\s*["']\.\/([^"']+)["']\s*\)/g)].map((match) => match[1]),
+    );
+    if (dynamic.size === 0) continue;
+
+    // A side-effect import — no bindings — is the shape the erased type import leaves behind.
+    for (const [, target] of code.matchAll(/(?:^|[;}\n])\s*import\s*["']\.\/([^"']+)["']/g)) {
+      if (dynamic.has(target)) found.push({ chunk: path, target });
+    }
+  }
+
+  return found;
+}
+
 async function measure(site) {
   const dist = resolve(process.cwd(), 'apps', site.name, 'dist');
 
@@ -134,7 +171,14 @@ async function measure(site) {
     const gzipBytes = gzipSync(raw, { level: 9 }).length;
 
     total += bytes;
-    files.push({ path: path.slice(dist.length + 1).replaceAll('\\', '/'), bytes, gzipBytes });
+    files.push({
+      path: path.slice(dist.length + 1).replaceAll('\\', '/'),
+      bytes,
+      gzipBytes,
+      // Only the JavaScript is read back as text, and only to look for a boundary that is not
+      // one. The stylesheet has no imports worth checking.
+      ...(path.endsWith('.js') ? { code: raw.toString('utf8') } : {}),
+    });
   }
 
   const html = await readFile(join(dist, 'index.html'), 'utf8');
@@ -155,6 +199,7 @@ async function measure(site) {
     ...site,
     missing: false,
     parsed,
+    defeated: defeatedBoundaries(files),
     boot: parsed ? bootFiles.reduce((sum, file) => sum + file.bytes, 0) : total,
     bootGzip: parsed
       ? bootFiles.reduce((sum, file) => sum + file.gzipBytes, 0)
@@ -217,6 +262,24 @@ if (built.length > 0) {
   );
 }
 
+const defeated = results.flatMap((result) =>
+  (result.defeated ?? []).map((entry) => ({ ...entry, label: result.label })),
+);
+
+if (defeated.length > 0) {
+  process.stdout.write('\nA lazy boundary that is not one:\n');
+  for (const entry of defeated) {
+    process.stdout.write(
+      `  ${entry.label.padEnd(8)} ${entry.chunk} also imports ${entry.target}\n`,
+    );
+  }
+  process.stdout.write(
+    'That chunk both defers a module and pulls it in anyway, so the deferral does nothing. The\n' +
+      "usual cause is an inline `import { type X } from './Heavy'`: with verbatimModuleSyntax the\n" +
+      "statement survives as a bare `import './Heavy'`. Write `import type { X } from './Heavy'`.\n",
+  );
+}
+
 if (missing.length > 0) {
   process.stdout.write(
     `\n${String(missing.length)} site(s) not built — run pnpm build first. Not counted as a failure.\n`,
@@ -232,8 +295,12 @@ if (unparsed.length > 0) {
 
 if (over.length > 0) {
   process.stderr.write(
-    `\nOver the ${human(BOOT_BUDGET_BYTES)} gzip boot budget: ${over.map((result) => result.label).join(', ')}\n` +
+    `\nOver the ${human(BOOT_BUDGET_BYTES)} brotli boot budget: ${over.map((result) => result.label).join(', ')}\n` +
       'Split a route, lazy-load the lightbox or the player, or argue the budget up in PLAN.md.\n',
   );
   process.exit(1);
 }
+
+// Fails the build, and deliberately: the whole symptom is that everything looks right. A warning
+// here would be read past exactly as easily as the diff was.
+if (defeated.length > 0) process.exit(1);

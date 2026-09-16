@@ -1,7 +1,15 @@
 import { Deferred, Skeleton } from '@charva/ui';
 import { lazy, Suspense } from 'react';
 
-import { type LeadFormProps } from './LeadForm';
+// `import type`, and not the inline `{ type … }` this repository writes everywhere else.
+//
+// `verbatimModuleSyntax` is on, and it means what it says: the import *statement* survives
+// compilation with only its type bindings removed, so `import { type LeadFormProps } from
+// './LeadForm'` emits a bare `import './LeadForm'` — a static edge to the very module this file
+// exists to keep out of the graph. The build was correct and the chunk was correct and the
+// homepage fetched all 26 KB of the form anyway, at the same moment as before. Only the
+// statement-level form is erased outright.
+import type { LeadFormProps } from './LeadForm';
 
 /*
  * The lead form, fetched when the reader is on their way to it rather than on arrival.
