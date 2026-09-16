@@ -40,9 +40,18 @@ const COMPRESSIBLE = new Set([
   '.svg',
   '.xml',
   '.txt',
-  '.map',
   '.webmanifest',
 ]);
+
+/*
+ * Source maps are excluded, though they compress well.
+ *
+ * Nothing fetches one unless a developer has the tools open, so the only thing level 11 on a
+ * 1.2 MB map buys is a slower deploy — and there are five of them per site. They are still
+ * served, just compressed on the fly by the filters nginx already has, on the rare request that
+ * asks.
+ */
+const SKIP = new Set(['.map']);
 
 /*
  * Below a kilobyte the headers and the framing cost more than the saving, and nginx's own
@@ -68,6 +77,7 @@ let gz = 0;
 for (const root of process.argv.slice(2)) {
   for (const path of walk(root)) {
     if (path.endsWith('.br') || path.endsWith('.gz')) continue;
+    if (SKIP.has(extname(path))) continue;
     if (!COMPRESSIBLE.has(extname(path))) continue;
     if (statSync(path).size < MIN_BYTES) continue;
 
