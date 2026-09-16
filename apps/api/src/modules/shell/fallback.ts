@@ -124,11 +124,20 @@ export function renderBootImage(
 ): string {
   if (image === null) return '';
 
-  const cover =
-    'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;' +
-    // Only once it has arrived. A half-decoded photograph appearing in strips under a spinner
-    // reads as a fault; the splash stays cream until there is something whole to show.
-    'opacity:0;transition:opacity 420ms ease';
+  /*
+   * No fade in, and that is a correction rather than a simplification.
+   *
+   * It began as `opacity:0` with an `onload` that set it to one, on the theory that a
+   * half-decoded photograph appearing in strips reads as a fault. WebP has no progressive mode —
+   * it paints whole or not at all — so the guard protected against something that cannot happen,
+   * and it cost the thing the change exists for: Chrome does not accept an element with zero
+   * opacity as a largest-contentful-paint candidate, so the picture the visitor could see at 1.9
+   * seconds was still being reported at 3.2. Measured both ways.
+   *
+   * Removing it also removes the only inline event handler on these pages, which is worth having
+   * on the day a content security policy is written.
+   */
+  const cover = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
 
   /*
    * The hero's own overlay, not an approximation of it.
@@ -145,7 +154,7 @@ export function renderBootImage(
     `<img src="${escapeHtml(image.url)}"` +
     (image.srcSet === null ? '' : ` srcset="${escapeHtml(image.srcSet)}" sizes="100vw"`) +
     ` alt="" aria-hidden="true" decoding="async" fetchpriority="high"` +
-    ` onload="this.style.opacity=1" style="${cover}">` +
+    ` style="${cover}">` +
     `<span aria-hidden="true" style="position:absolute;inset:0;background:${escapeHtml(scrim)}"></span>`
   );
 }
