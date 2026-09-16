@@ -379,6 +379,11 @@ certbot renew --dry-run             # проходит целиком
 mkdir -p /var/cache/nginx/charva
 chown -R www-data:www-data /var/cache/nginx/charva
 
+# Два модуля, которых нет в сборке nginx по умолчанию. Без них `charva-tls.conf` не пройдёт
+# проверку: `brotli_static` — неизвестная директива, а не игнорируемая. Пакеты сами кладут
+# `load_module` в /etc/nginx/modules-enabled/, руками туда дописывать ничего не надо.
+apt-get install -y libnginx-mod-http-brotli-filter libnginx-mod-http-brotli-static
+
 cp deploy/nginx/charva.conf     /etc/nginx/sites-available/charva.conf
 cp deploy/nginx/snippets/*.conf /etc/nginx/snippets/
 

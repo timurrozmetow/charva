@@ -63,6 +63,13 @@ done
 [[ -f apps/api/dist/server.js ]] || { echo "apps/api/dist/server.js is missing" >&2; exit 1; }
 [[ -d apps/api/dist/migrations ]] || { echo "apps/api/dist/migrations is missing" >&2; exit 1; }
 
+# Compress the static files here, at level 11, rather than on the server at level 6 per request.
+# nginx hands out the derivative with `brotli_static`/`gzip_static`; see scripts/precompress.mjs
+# for the measurement. Runs after the budget check on purpose — the budget is about what the
+# browser downloads, and it does its own compression to answer that.
+say "pre-compressing static assets"
+node scripts/precompress.mjs apps/web-choice/dist apps/web-global/dist apps/web-umrah/dist apps/admin/dist
+
 # --------------------------------------------------------------------------------------
 # 2. Refuse to ship a borrowed photograph with nobody's name on it — decision D-25
 # --------------------------------------------------------------------------------------

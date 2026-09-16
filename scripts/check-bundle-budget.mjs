@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { gzipSync } from 'node:zlib';
+import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
 
 /**
  * The bundle budget, enforced rather than remembered.
@@ -25,6 +25,13 @@ import { gzipSync } from 'node:zlib';
  * here, because that file *is* the list, and any other list would be a second copy of it. The
  * lazy chunks are still measured and printed as a total: a route that quietly doubles is worth
  * seeing even when nobody waits for it on arrival.
+ *
+ * **Measured as the server sends it, which is brotli.** It was gzip until the deploy started
+ * writing a `.br` beside every asset for nginx to hand out — and a guard that measures a file
+ * the browser never receives is measuring the wrong thing, in the direction that hides 14% of
+ * the page. The 200 KB ceiling is unchanged, so this reads as one step down and then tracks
+ * growth exactly as before; the gzip figure is printed underneath so the older numbers in
+ * STATE.md remain comparable to something.
  *
  * **Why fonts are outside it.** The three Stolzl weights are a fixed ~69 KB decided once (D-14)
  * and possibly replaced wholesale if question Q-2 comes back badly; folding them in would spend
@@ -86,7 +93,16 @@ async function measure(site) {
   try {
     await stat(dist);
   } catch {
-    return { ...site, missing: true, boot: 0, total: 0, fonts: 0, files: [], bootFiles: [] };
+    return {
+      ...site,
+      missing: true,
+      boot: 0,
+      bootGzip: 0,
+      total: 0,
+      fonts: 0,
+      files: [],
+      bootFiles: [],
+    };
   }
 
   const files = [];
@@ -94,18 +110,31 @@ async function measure(site) {
   let fonts = 0;
 
   for (const path of await walk(dist)) {
+    // The deploy leaves its own derivatives in `dist`. Counting them would report every asset
+    // three times and put every site instantly over budget.
+    if (path.endsWith('.br') || path.endsWith('.gz')) continue;
+
     const raw = await readFile(path);
 
     if (FONT.test(path)) {
-      // WOFF2 is already compressed; gzipping it again measures nothing real, and nginx will
+      // WOFF2 is already compressed; compressing it again measures nothing real, and nginx will
       // not do it either.
       fonts += raw.length;
       continue;
     }
 
-    const bytes = gzipSync(raw, { level: 9 }).length;
+    // Level 11 and level 9: the same settings scripts/precompress.mjs writes to disk, so this
+    // reports the size of the file nginx actually hands out rather than an approximation of it.
+    const bytes = brotliCompressSync(raw, {
+      params: {
+        [constants.BROTLI_PARAM_QUALITY]: constants.BROTLI_MAX_QUALITY,
+        [constants.BROTLI_PARAM_SIZE_HINT]: raw.length,
+      },
+    }).length;
+    const gzipBytes = gzipSync(raw, { level: 9 }).length;
+
     total += bytes;
-    files.push({ path: path.slice(dist.length + 1).replaceAll('\\', '/'), bytes });
+    files.push({ path: path.slice(dist.length + 1).replaceAll('\\', '/'), bytes, gzipBytes });
   }
 
   const html = await readFile(join(dist, 'index.html'), 'utf8');
@@ -127,6 +156,9 @@ async function measure(site) {
     missing: false,
     parsed,
     boot: parsed ? bootFiles.reduce((sum, file) => sum + file.bytes, 0) : total,
+    bootGzip: parsed
+      ? bootFiles.reduce((sum, file) => sum + file.gzipBytes, 0)
+      : files.reduce((sum, file) => sum + file.gzipBytes, 0),
     total,
     fonts,
     files,
@@ -144,7 +176,7 @@ const over = results.filter((result) => !result.missing && result.boot > BOOT_BU
 const unparsed = results.filter((result) => !result.missing && !result.parsed);
 
 process.stdout.write(
-  `  bundle budget: ${human(BOOT_BUDGET_BYTES)} gzip of boot script and style\n\n`,
+  `  bundle budget: ${human(BOOT_BUDGET_BYTES)} brotli of boot script and style\n\n`,
 );
 
 for (const result of results) {
@@ -171,6 +203,18 @@ for (const result of results) {
       process.stdout.write(`      ${human(file.bytes).padStart(9)}  ${file.path}\n`);
     }
   }
+}
+
+// The same boot set at gzip 9 — the measure this printed until the deploy began pre-compressing,
+// kept so the figures recorded in STATE.md stay comparable to something rather than looking like
+// a sudden 14% win nobody made.
+const built = results.filter((result) => !result.missing);
+if (built.length > 0) {
+  process.stdout.write(
+    `\n  same boot set at gzip: ` +
+      built.map((result) => `${result.label} ${human(result.bootGzip)}`).join(', ') +
+      '\n',
+  );
 }
 
 if (missing.length > 0) {
