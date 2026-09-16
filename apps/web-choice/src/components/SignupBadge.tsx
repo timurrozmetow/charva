@@ -1,6 +1,6 @@
 import { type Lang, type UmrahTrip } from '@charva/contracts';
 
-import { COPY, plural } from '../i18n';
+import { copyFor, plural } from '../i18n';
 
 export interface SignupBadgeProps {
   trip: UmrahTrip | null;
@@ -25,7 +25,7 @@ export interface SignupBadgeProps {
  * number it has to agree with.
  */
 export function SignupBadge({ trip, lang }: SignupBadgeProps) {
-  const copy = COPY[lang].badge;
+  const copy = copyFor(lang).badge;
 
   const text =
     trip === null

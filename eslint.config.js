@@ -12,6 +12,15 @@ import { reactBlock } from '@charva/config/eslint/react';
  * `projectService` maps each file to its nearest tsconfig.json.
  */
 export default [
+  {
+    /*
+     * `packages/config` is deliberately outside every TypeScript project — it is loaded by
+     * esbuild from a Vite config and by ESLint itself, both before any build has run, so it is
+     * plain JavaScript on purpose. Its one hand-written declaration file therefore belongs to no
+     * tsconfig, and the type-aware rules cannot parse a file they have no program for.
+     */
+    ignores: ['packages/config/**/*.d.ts'],
+  },
   ...baseConfig({ tsconfigRootDir: import.meta.dirname }),
   ...reactBlock({
     files: [

@@ -14,8 +14,8 @@ import { Link } from '@tanstack/react-router';
 
 import { hotelQuery } from '../api/queries';
 import { Breadcrumbs } from '../components/Breadcrumbs';
+import { DeferredLeadForm } from '../components/DeferredLeadForm';
 import { HotelEquipment, HotelFacts, HotelShowcase } from '../components/HotelShowcase';
-import { LeadForm } from '../components/LeadForm';
 import { Prose } from '../components/Prose';
 import { QueryState } from '../components/QueryState';
 import { copyFor, fill } from '../i18n';
@@ -278,7 +278,7 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                 {copy.hotel.formLead}
               </p>
             </div>
-            <LeadForm
+            <DeferredLeadForm
               lang={lang}
               kind="tour"
               {...(hotel === undefined ? {} : { contextTitle: hotel.name })}

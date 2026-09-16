@@ -1,7 +1,12 @@
 import { LANGS, SITE_LANGS } from '@charva/contracts';
 import { describe, expect, it } from 'vitest';
 
-import { COPY, fill, plural } from './index';
+import tr from './tr.json';
+
+import { type Copy, COPY, fill, plural } from './index';
+
+/** What ships, plus the one that does not. Turkish is checked here and served nowhere. */
+const ALL: Record<string, Copy> = { ...COPY, tr: tr satisfies Copy };
 
 /**
  * The copy files, checked for the things a type cannot check.
@@ -29,41 +34,46 @@ function at(source: unknown, path: string): string {
 }
 
 describe('every language has every string', () => {
-  it('carries every language of the project, and offers the ones the chooser serves', () => {
+  it('ships the three languages the chooser serves, and checks the fourth anyway', () => {
     /*
-     * Two different statements, and they stopped being the same statement when Turkish was
-     * retired (Q-17). The file still holds all four — that is the point of retiring rather than
-     * deleting, and it is what keeps the Turkish strings under the placeholder and shape checks
-     * below instead of rotting until somebody needs them. What the switcher lists is the second
-     * line, and it is a subset.
+     * Three statements, and they came apart when Turkish was retired (Q-17).
+     *
+     * What the bundle carries is the first line: a language nothing can request has no business
+     * travelling to every visitor, and it used to, here and on Global — where it was fifteen
+     * kilobytes of a 372 KB entry chunk rather than one and a half.
+     *
+     * What still has to stay correct is the second: the file is real work and one entry in
+     * `SITE_LANGS` serves it again, so every check below runs over `ALL` rather than `COPY`.
+     * That is a stronger guard than the runtime table gave it, not a weaker one.
      */
-    expect(Object.keys(COPY).sort()).toEqual([...LANGS].sort());
-
-    for (const lang of SITE_LANGS.choice) expect(Object.keys(COPY)).toContain(lang);
-    expect(SITE_LANGS.choice as readonly string[]).not.toContain('tr');
+    expect(Object.keys(COPY).sort()).toEqual([...SITE_LANGS.choice].sort());
+    expect(Object.keys(COPY)).not.toContain('tr');
+    expect(Object.keys(ALL).sort()).toEqual([...LANGS].sort());
   });
 
   it('keeps the placeholders a template needs', () => {
-    for (const lang of LANGS) {
+    for (const lang of Object.keys(ALL)) {
       for (const [path, placeholder] of KEYS_WITH_PLACEHOLDERS) {
-        expect(at(COPY[lang], path), `${lang}.${path}`).toContain(placeholder);
+        expect(at(ALL[lang]!, path), `${lang}.${path}`).toContain(placeholder);
       }
     }
   });
 
   it('gives each half five chips and three stat labels', () => {
     // The design draws five and three; a language file with four would silently shorten a row.
-    for (const lang of LANGS) {
-      expect(COPY[lang].global.chips, lang).toHaveLength(5);
-      expect(COPY[lang].umrah.chips, lang).toHaveLength(5);
-      expect(Object.keys(COPY[lang].global.stats), lang).toHaveLength(3);
-      expect(Object.keys(COPY[lang].umrah.stats), lang).toHaveLength(3);
+    for (const lang of Object.keys(ALL)) {
+      expect(ALL[lang]!.global.chips, lang).toHaveLength(5);
+      expect(ALL[lang]!.umrah.chips, lang).toHaveLength(5);
+      expect(Object.keys(ALL[lang]!.global.stats), lang).toHaveLength(3);
+      expect(Object.keys(ALL[lang]!.umrah.stats), lang).toHaveLength(3);
     }
   });
 
   it('leaves nothing empty', () => {
     const empties: string[] = [];
-    walk(COPY, [], (path, value) => {
+    // `ALL`, not `COPY`: an empty string in the retired file is the shape a half-finished
+    // translation pass leaves behind, and it would sit there unnoticed until the day it ships.
+    walk(ALL, [], (path, value) => {
       if (value.trim() === '') empties.push(path);
     });
     expect(empties).toEqual([]);
@@ -94,8 +104,8 @@ describe('plural', () => {
 
   it('substitutes the count in every language', () => {
     for (const lang of LANGS) {
-      expect(plural(COPY[lang].badge.open, 12, lang)).toContain('12');
-      expect(plural(COPY[lang].badge.open, 12, lang)).not.toContain('{count}');
+      expect(plural(ALL[lang]!.badge.open, 12, lang)).toContain('12');
+      expect(plural(ALL[lang]!.badge.open, 12, lang)).not.toContain('{count}');
     }
   });
 });

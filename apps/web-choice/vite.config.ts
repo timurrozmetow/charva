@@ -1,3 +1,4 @@
+import { uiSourceAlias } from '@charva/config/vite/ui-source-alias';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
@@ -20,6 +21,9 @@ const proxy = {
 
 export default defineConfig({
   plugins: [react()],
+  // Bundles `@charva/ui` from its source rather than its single published module — see the
+  // helper, which explains what that is worth and why the published build stays as it is.
+  resolve: { alias: uiSourceAlias() },
   server: { port: 5180, proxy },
   preview: { port: 4180, proxy },
   build: {

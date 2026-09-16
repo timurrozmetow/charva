@@ -3,7 +3,7 @@ import { LangSwitcher } from '@charva/ui';
 import { Link } from '@tanstack/react-router';
 
 import logoMark from '../assets/logo-mark-sand.png';
-import { COPY } from '../i18n';
+import { copyFor } from '../i18n';
 
 export interface ChoiceNavProps {
   lang: Lang;
@@ -29,7 +29,7 @@ export interface ChoiceNavProps {
  * hovering it expands neither half, which is right: it belongs to neither.
  */
 export function ChoiceNav({ lang }: ChoiceNavProps) {
-  const copy = COPY[lang];
+  const copy = copyFor(lang);
 
   const options = SITE_LANGS.choice.map((code) => ({
     code,

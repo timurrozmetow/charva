@@ -19,8 +19,8 @@ import { Link } from '@tanstack/react-router';
 import { homeQuery } from '../api/queries';
 import { TourBuilder } from '../builder/TourBuilder';
 import { ArticleCard } from '../components/ArticleCard';
+import { DeferredLeadForm } from '../components/DeferredLeadForm';
 import { HotelCard } from '../components/HotelCard';
-import { LeadForm } from '../components/LeadForm';
 import { QueryState } from '../components/QueryState';
 import { ReviewCard } from '../components/ReviewCard';
 import { TourCard } from '../components/TourCard';
@@ -235,7 +235,7 @@ export function HomePage({ lang }: HomePageProps) {
             lang={lang}
             basePath={path.home(lang)}
             renderForm={({ selection }) => (
-              <LeadForm
+              <DeferredLeadForm
                 lang={lang}
                 kind="builder"
                 selection={selection}
@@ -529,7 +529,7 @@ export function HomePage({ lang }: HomePageProps) {
                 {copy.home.contact.lead}
               </p>
             </div>
-            <LeadForm lang={lang} kind="tour" showTopics={false} />
+            <DeferredLeadForm lang={lang} kind="tour" showTopics={false} />
           </div>
         </Container>
       </Section>

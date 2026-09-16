@@ -1,6 +1,6 @@
 import { type Lang } from '@charva/contracts';
 
-import { COPY, fill } from '../i18n';
+import { copyFor, fill } from '../i18n';
 
 export interface ChoiceFooterProps {
   lang: Lang;
@@ -20,7 +20,7 @@ export interface ChoiceFooterProps {
  * the cursor would collapse whichever half it crossed.
  */
 export function ChoiceFooter({ lang, license }: ChoiceFooterProps) {
-  const copy = COPY[lang].footer;
+  const copy = copyFor(lang).footer;
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 px-[46px] pb-[22px] text-[11px] font-bold uppercase tracking-[.16em] text-cream-faint tab:px-6 mob:px-4 mob:text-[10px]">

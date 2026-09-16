@@ -11,7 +11,11 @@
     "./tsconfig/base.json": "./tsconfig/base.json",
     "./tsconfig/library.json": "./tsconfig/library.json",
     "./tsconfig/node.json": "./tsconfig/node.json",
-    "./tsconfig/react.json": "./tsconfig/react.json"
+    "./tsconfig/react.json": "./tsconfig/react.json",
+    "./vite/ui-source-alias": {
+      "types": "./vite/ui-source-alias.d.ts",
+      "default": "./vite/ui-source-alias.js"
+    }
   },
   "files": [
     "eslint",

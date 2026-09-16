@@ -18,7 +18,7 @@ import { type ReactNode } from 'react';
 
 import { tourQuery } from '../api/queries';
 import { Breadcrumbs } from '../components/Breadcrumbs';
-import { LeadForm } from '../components/LeadForm';
+import { DeferredLeadForm } from '../components/DeferredLeadForm';
 import { Prose } from '../components/Prose';
 import { QueryState } from '../components/QueryState';
 import { TourCard } from '../components/TourCard';
@@ -331,7 +331,7 @@ export function TourDetailPage({ lang, slug }: TourDetailPageProps) {
             </div>
             {/* `contextTitle` is why the manager knows which page this came from — and it is
                 rendered above the fields as well, so nothing is attached out of sight. */}
-            <LeadForm
+            <DeferredLeadForm
               lang={lang}
               kind="tour"
               {...(tour === undefined ? {} : { contextTitle: tour.title })}

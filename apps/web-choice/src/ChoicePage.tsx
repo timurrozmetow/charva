@@ -7,7 +7,7 @@ import { ChoiceFooter } from './components/ChoiceFooter';
 import { type HalfStat, ChoiceHalf } from './components/ChoiceHalf';
 import { ChoiceNav } from './components/ChoiceNav';
 import { SignupBadge } from './components/SignupBadge';
-import { COPY } from './i18n';
+import { copyFor } from './i18n';
 import { SITE_URLS } from './lib/sites';
 import { useDocumentMeta } from './lib/useDocumentMeta';
 
@@ -24,7 +24,7 @@ export interface ChoicePageProps {
 }
 
 export function ChoicePage({ lang }: ChoicePageProps) {
-  const copy = COPY[lang];
+  const copy = copyFor(lang);
   const { data } = useQuery(choiceQuery(lang));
 
   const trip = data?.umrah.trip ?? null;
