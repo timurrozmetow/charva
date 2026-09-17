@@ -6,6 +6,7 @@ import { API_PREFIX } from '../../app';
 import * as t from '../../db/schema';
 import { buildTestApp, type TestApp } from '../../test/app';
 
+import { renderFallback } from './fallback';
 import {
   escapeHtml,
   escapeJsonLd,
@@ -898,6 +899,57 @@ describe('the body a crawler that renders nothing receives', () => {
     // And each anchor says the hotel's name, not its slug: a link whose text is
     // `yyldyz-hotel` carries nothing a reader or a crawler can weigh.
     expect(body).toMatch(/<a href="\/ru\/hotels\/[a-z0-9-]+">[^<]*[А-Яа-яA-Za-z][^<]*<\/a>/);
+  });
+
+  it('carries the row’s own prose, which is most of what the page says', async () => {
+    /*
+     * Measured on the live site: `/ru/articles/drevniy-merv` answered with 654 bytes inside
+     * `#root` for an article 1573 characters long. A crawler that runs no JavaScript was offered
+     * the title, one sentence of summary and the site menu — the exact shape a search engine
+     * files under «thin» and does not index. The page's actual subject was not in the response.
+     */
+    const [article] = await context.app.db
+      .select({ slug: t.articles.slug, body: t.articles.body })
+      .from(t.articles)
+      .where(eq(t.articles.isPublished, true))
+      .limit(1);
+
+    const russian = (article?.body as Record<string, string> | null)?.['ru'] ?? '';
+    expect(russian.length).toBeGreaterThan(200);
+
+    const { body } = await render('global', `/ru/articles/${article?.slug ?? ''}`);
+    const first = russian.split(/\n\s*\n/)[0]?.trim() ?? '';
+
+    expect(body).toContain(`<p>${first}</p>`);
+    // Not a fragment of it: the whole column, paragraph by paragraph.
+    expect(body.length).toBeGreaterThan(russian.length);
+  });
+
+  it('does not print the summary twice when the prose opens with it', () => {
+    /*
+     * The sixteen imported hotels all open their `body` with the sentence their `summary` holds
+     * — «Мары Отель — идеальная база для изучения древнего Мерва…» is both — so rendering the two
+     * put one line in the page twice within four lines of itself, which reads as a fault rather
+     * than as emphasis, to a reader and to a crawler weighing the page.
+     *
+     * Against the function rather than the database, deliberately: the demo catalogue the tests
+     * are seeded with does not have that overlap, and a test whose precondition is a property of
+     * one dataset proves nothing about the rule. Here the overlap is constructed.
+     */
+    const opener = 'Мары Отель — идеальная база для изучения древнего Мерва.';
+    const body = renderFallback({
+      site: 'global',
+      lang: 'ru',
+      title: 'Мары Отель — Charva Travel',
+      description: opener,
+      body: `${opener}\n\nВторой абзац, которого в аннотации нет.`,
+      links: [],
+      rows: [],
+      contacts: { phone: '', email: '' },
+    });
+
+    expect(body.split(opener).length - 1).toBe(1);
+    expect(body).toContain('<p>Второй абзац, которого в аннотации нет.</p>');
   });
 
   it('lists nothing extra on a page that lists nothing', async () => {

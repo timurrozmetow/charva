@@ -25,6 +25,13 @@ export interface FallbackInput {
   description: string;
   links: readonly FallbackLink[];
   /**
+   * The row's own prose on a detail page, exactly as the page renders it.
+   *
+   * Empty everywhere else. Split on blank lines, the same rule `Prose` follows (D-66), and
+   * escaped rather than trusted — it is text an editor typed into the admin panel.
+   */
+  body?: string | undefined;
+  /**
    * The rows this section lists — every hotel, every article — as links.
    *
    * Empty on a page that lists nothing. Separate from `links`, which is the site's navigation,
@@ -91,6 +98,29 @@ export function renderFallback(input: FallbackInput): string {
    */
   const rowItems = list(rows);
 
+  /*
+   * The page's own paragraphs, which until now no reader that skipped the render ever saw.
+   *
+   * Measured on the live site: `/ru/articles/drevniy-merv` answered with 654 bytes inside
+   * `#root`, and the article it describes is 1573 characters long. A crawler that does not run
+   * JavaScript was offered the title, one sentence of summary and the site menu — which is
+   * exactly the shape of a page a search engine files under «thin» and does not index.
+   *
+   * This stays inside the boundary D-147 drew and it is worth saying why. That note refuses to
+   * render *the page*: a tour's itinerary, a hotel's amenity grid, a card list — a second
+   * implementation of every screen, in another language, kept in step by hand. One column of
+   * prose is not that. It is the same field the page renders through `Prose`, split by the same
+   * rule, and it is the page's actual subject rather than a description of it.
+   *
+   * A leading paragraph identical to the summary is dropped: every hotel's `body` opens with the
+   * sentence its `summary` holds, and printing it twice in four lines reads as a fault.
+   */
+  const paragraphs = (input.body ?? '')
+    .split(/\n\s*\n/)
+    .map((part) => part.trim())
+    .filter((part) => part !== '' && part !== description)
+    .map((part) => `<p>${escapeHtml(part)}</p>`);
+
   const contactLines: string[] = [];
   if (contacts.phone !== '') {
     // `tel:` wants the number without the spaces a human reads it with.
@@ -109,6 +139,7 @@ export function renderFallback(input: FallbackInput): string {
     // it. `og:site_name` in the head is where a reader is told whose site this is.
     `<h1>${escapeHtml(anchorText(title, input.site))}</h1>`,
     `<p>${escapeHtml(description)}</p>`,
+    paragraphs.join(''),
     rowItems.length === 0 ? '' : `<ul>${rowItems.join('')}</ul>`,
     items.length === 0 ? '' : `<ul>${items.join('')}</ul>`,
     contactLines.length === 0 ? '' : `<p>${contactLines.join(' ')}</p>`,

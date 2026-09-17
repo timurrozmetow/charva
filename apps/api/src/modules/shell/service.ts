@@ -168,6 +168,8 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
       title: meta.title,
       description: meta.description,
       links: await fallbackLinks(db, site, lang, resolved.pathAfterLang),
+      // The row's own prose, which a reader that skips the render would otherwise never see.
+      body: content?.body ?? '',
       // What this section actually lists, for a crawler that does not press «Показать ещё».
       rows: await sectionRows(request, route, lang),
       contacts: { phone: settings.contacts.phone, email: settings.contacts.email },
@@ -257,6 +259,14 @@ async function analyticsFor(
 interface ShellContent {
   name: string;
   summary: string | null;
+  /**
+   * The row's own prose, as the page renders it — paragraphs separated by a blank line (D-66).
+   *
+   * Measured on the live site: a crawler that runs no JavaScript saw 654 bytes on
+   * `/ru/articles/drevniy-merv`, an article whose body is 1573 characters. The page's actual
+   * subject matter was not in the response at all — only its one-sentence summary.
+   */
+  body: string;
   image: ShareImage | null;
   /** «отель 5★, Ашхабад» — what the title says besides the name. Hotels only, so far. */
   qualifier?: string;
@@ -289,6 +299,7 @@ async function loadContent(
       text(row.summary, lang),
       row.coverMediaId,
       lang,
+      text(row.body, lang),
     );
     jsonLd.push(
       ld.touristTrip({
@@ -314,6 +325,7 @@ async function loadContent(
       text(row.summary, lang),
       row.coverMediaId,
       lang,
+      text(row.body, lang),
     );
     /*
      * «Мары Отель — отель 3★, Мары».
@@ -351,6 +363,7 @@ async function loadContent(
       text(row.summary, lang),
       row.coverMediaId,
       lang,
+      text(row.body, lang),
     );
     jsonLd.push(
       ld.article({
@@ -379,6 +392,8 @@ async function loadContent(
       text(row.description, lang),
       row.coverMediaId,
       lang,
+      // A place of ziyarat keeps its prose in `description`; there is no second column.
+      text(row.description, lang),
     );
     jsonLd.push(
       ld.touristAttraction({
@@ -401,10 +416,12 @@ async function asContent(
   summary: string,
   mediaId: number | null,
   lang: Lang,
+  body = '',
 ): Promise<ShellContent> {
   return {
     name,
     summary: summary === '' ? null : summary,
+    body,
     image: await imageFor(request, mediaId, lang),
   };
 }
