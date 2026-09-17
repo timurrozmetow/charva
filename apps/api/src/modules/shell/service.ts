@@ -167,6 +167,8 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
       title: meta.title,
       description: meta.description,
       links: await fallbackLinks(db, site, lang, resolved.pathAfterLang),
+      // What this section actually lists, for a crawler that does not press «Показать ещё».
+      rows: await sectionRows(request, route, lang),
       contacts: { phone: settings.contacts.phone, email: settings.contacts.email },
     }),
     // The same picture the head preloads, from the same predicate, so the splash never asks for
@@ -405,6 +407,83 @@ function shareWidth(intrinsic: number | null): ImageWidth {
     (width) => width <= 1280 && (intrinsic === null || width <= intrinsic),
   );
   return usable.at(-1) ?? IMAGE_WIDTHS[0];
+}
+
+/**
+ * The rows a section lists, as links, for a crawler that does not press buttons.
+ *
+ * Measured against the live site: eight of Global's thirty-six Russian addresses are named by the
+ * sitemap and linked from nowhere a crawler starts — seven hotels and an article. «Показать ещё»
+ * raises the page size rather than paging (D-61), which is right for a reader and invisible to
+ * anything that only follows `href`s, so a catalogue of sixteen hotels is a catalogue of nine as
+ * far as indexing is concerned. Search Console calls the result «обнаружена, не проиндексирована»
+ * — thirty-seven of a hundred URLs on Global.
+ *
+ * This is the same argument as D-147 one level down. A sitemap supplies addresses and no link
+ * graph: no anchor text, no sense of which pages the site considers important, nothing that
+ * connects them. The fallback body already fixed that for the site's sections; the rows inside a
+ * section were still behind a button.
+ *
+ * It stays what D-147 said it must stay — a list of links, not a rendering of the page. Nothing
+ * here is written for this purpose: the slug is the row's own, the label is the row's own name in
+ * the page's language, and React clears all of it on mount.
+ */
+async function sectionRows(
+  request: ShellRequest,
+  route: string,
+  lang: Lang,
+): Promise<FallbackLink[]> {
+  const { db, site } = request;
+
+  // The name column is a translated JSON blob on every one of these tables, and `text` is the
+  // one place that resolves one (D-47). Typed as the column's own shape rather than `unknown`
+  // so a table whose name is a plain string cannot be added here without noticing.
+  type Translated = Partial<Record<Lang, string>> | null;
+  const link = (prefix: string) => (row: { slug: string; title: Translated }) => ({
+    href: `/${lang}${prefix}/${row.slug}`,
+    label: text(row.title, lang),
+    current: false,
+  });
+
+  if (site === 'global') {
+    if (route === 'tours') {
+      const rows = await db
+        .select({ slug: t.tours.slug, title: t.tours.title })
+        .from(t.tours)
+        .where(eq(t.tours.isPublished, true))
+        .orderBy(t.tours.sortOrder);
+      return rows.map(link('/tours'));
+    }
+
+    if (route === 'hotels') {
+      const rows = await db
+        .select({ slug: t.hotels.slug, title: t.hotels.name })
+        .from(t.hotels)
+        .where(eq(t.hotels.isPublished, true))
+        .orderBy(t.hotels.sortOrder);
+      return rows.map(link('/hotels'));
+    }
+
+    if (route === 'articles') {
+      const rows = await db
+        .select({ slug: t.articles.slug, title: t.articles.title })
+        .from(t.articles)
+        .where(eq(t.articles.isPublished, true))
+        .orderBy(t.articles.sortOrder);
+      return rows.map(link('/articles'));
+    }
+  }
+
+  if (site === 'umrah' && route === 'ziyarat') {
+    const rows = await db
+      .select({ slug: t.ziyaratPlaces.slug, title: t.ziyaratPlaces.name })
+      .from(t.ziyaratPlaces)
+      .where(eq(t.ziyaratPlaces.isPublished, true))
+      .orderBy(t.ziyaratPlaces.sortOrder);
+    return rows.map(link('/ziyarat'));
+  }
+
+  return [];
 }
 
 /**

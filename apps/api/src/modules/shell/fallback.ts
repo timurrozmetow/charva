@@ -24,6 +24,13 @@ export interface FallbackInput {
   title: string;
   description: string;
   links: readonly FallbackLink[];
+  /**
+   * The rows this section lists — every hotel, every article — as links.
+   *
+   * Empty on a page that lists nothing. Separate from `links`, which is the site's navigation,
+   * because these are the page's subject and belong above it.
+   */
+  rows: readonly FallbackLink[];
   contacts: { phone: string; email: string };
 }
 
@@ -60,13 +67,29 @@ export interface FallbackInput {
  * whose script never arrived.
  */
 export function renderFallback(input: FallbackInput): string {
-  const { title, description, links, contacts } = input;
+  const { title, description, links, rows, contacts } = input;
+
+  const list = (entries: readonly FallbackLink[]) =>
+    entries
+      .filter((entry) => !entry.current)
+      .map(
+        (entry) => `<li><a href="${escapeHtml(entry.href)}">${escapeHtml(entry.label)}</a></li>`,
+      );
 
   // The page being rendered is left out rather than listed unlinked: the `<h1>` directly above
   // is the same string, and a self-link carries nothing a crawler can follow.
-  const items = links
-    .filter((link) => !link.current)
-    .map((link) => `<li><a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a></li>`);
+  const items = list(links);
+
+  /*
+   * What this section lists, above the site's navigation, because it is what the page is about.
+   *
+   * Measured against the live site: eight of Global's thirty-six Russian addresses were named by
+   * the sitemap and linked from nowhere a crawler starts — seven hotels and an article, all of
+   * them behind «Показать ещё», which raises the page size rather than paging (D-61) and is a
+   * button rather than an `href`. Search Console's «обнаружена, не проиндексирована» on
+   * thirty-seven of a hundred URLs is what that looks like from the outside.
+   */
+  const rowItems = list(rows);
 
   const contactLines: string[] = [];
   if (contacts.phone !== '') {
@@ -86,6 +109,7 @@ export function renderFallback(input: FallbackInput): string {
     // it. `og:site_name` in the head is where a reader is told whose site this is.
     `<h1>${escapeHtml(anchorText(title, input.site))}</h1>`,
     `<p>${escapeHtml(description)}</p>`,
+    rowItems.length === 0 ? '' : `<ul>${rowItems.join('')}</ul>`,
     items.length === 0 ? '' : `<ul>${items.join('')}</ul>`,
     contactLines.length === 0 ? '' : `<p>${contactLines.join(' ')}</p>`,
   ]

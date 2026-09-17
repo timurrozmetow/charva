@@ -869,6 +869,44 @@ describe('the body a crawler that renders nothing receives', () => {
     expect(body).toContain('href="/ru/tours"');
   });
 
+  it('links every row a section lists, not only the ones the first screen shows', async () => {
+    /*
+     * Measured against the live site before this existed: eight of Global's thirty-six Russian
+     * addresses were named by the sitemap and linked from nowhere a crawler starts — seven
+     * hotels and an article. «Показать ещё» raises the page size rather than paging (D-61),
+     * which is right for a reader and invisible to anything that only follows `href`s, so a
+     * catalogue of sixteen hotels was a catalogue of nine as far as indexing went. Search
+     * Console reported thirty-seven of a hundred URLs as «обнаружена, не проиндексирована».
+     *
+     * The check is against the sitemap rather than against a number, because the two have to
+     * agree: an address offered by one and withheld by the other is the same half-applied rule
+     * D-144 exists to prevent.
+     */
+    const { body } = await render('global', '/ru/hotels');
+    const hotels = (await collectEntries(context.app.db, 'global'))
+      .map((entry) => entry.pathAfterLang)
+      .filter((path) => path.startsWith('/hotels/'));
+
+    expect(hotels.length).toBeGreaterThan(0);
+    for (const path of hotels) expect(body, path).toContain(`href="/ru${path}"`);
+
+    // Counted as well as checked one by one: the failure this guards against is truncation, and
+    // a loop over the sitemap would pass just as happily against a body that listed more.
+    const linked = [...body.matchAll(/href="\/ru\/hotels\/[^"]+"/g)].length;
+    expect(linked).toBe(hotels.length);
+
+    // And each anchor says the hotel's name, not its slug: a link whose text is
+    // `yyldyz-hotel` carries nothing a reader or a crawler can weigh.
+    expect(body).toMatch(/<a href="\/ru\/hotels\/[a-z0-9-]+">[^<]*[А-Яа-яA-Za-z][^<]*<\/a>/);
+  });
+
+  it('lists nothing extra on a page that lists nothing', async () => {
+    // The rule is «this section's own rows», not «some rows»: a contact page advertising the
+    // hotel catalogue would be writing a link graph rather than describing one.
+    const { body } = await render('global', '/ru/contact');
+    expect(body).not.toContain('href="/ru/hotels/');
+  });
+
   it('leaves out a section with nothing in it, exactly as the sitemap does', async () => {
     /*
      * One list, two readers (D-144). A page advertised here and withheld from the sitemap — or
