@@ -1,6 +1,7 @@
 import {
   breadcrumbHome,
   breadcrumbSection,
+  hotelQualifier,
   type ImageWidth,
   IMAGE_WIDTHS,
   imageUrl,
@@ -257,6 +258,8 @@ interface ShellContent {
   name: string;
   summary: string | null;
   image: ShareImage | null;
+  /** «отель 5★, Ашхабад» — what the title says besides the name. Hotels only, so far. */
+  qualifier?: string;
 }
 
 /**
@@ -312,6 +315,19 @@ async function loadContent(
       row.coverMediaId,
       lang,
     );
+    /*
+     * «Мары Отель — отель 3★, Мары».
+     *
+     * The title used to be the name and the brand, which names neither what the page is nor
+     * where it is: somebody searching «гостиницы Мары» was offered a title with neither word in
+     * it. Every part of this comes from a column — see `hotelQualifier`, which also explains why
+     * there is a comma where Russian would want «в».
+     */
+    content.qualifier = hotelQualifier(lang, {
+      category: row.category,
+      stars: row.stars,
+      city: text(row.city, lang),
+    });
     jsonLd.push(
       ld.hotel({
         name: content.name,

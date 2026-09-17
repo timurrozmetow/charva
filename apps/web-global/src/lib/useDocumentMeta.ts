@@ -21,7 +21,14 @@ export interface DocumentMeta {
    * Absent while it is loading, and absent on a 404 — in both cases the section's own title is
    * the honest thing to show, rather than an empty tab or the word «undefined».
    */
-  content?: { name: string; summary?: string | null | undefined } | undefined;
+  content?:
+    | {
+        name: string;
+        summary?: string | null | undefined;
+        /** «отель 5★, Ашхабад» — what the title says besides the name. See `hotelQualifier`. */
+        qualifier?: string | null | undefined;
+      }
+    | undefined;
 }
 
 /**

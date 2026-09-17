@@ -1,4 +1,4 @@
-import { type Lang } from '@charva/contracts';
+import { hotelQualifier, type Lang } from '@charva/contracts';
 import {
   buttonClass,
   Container,
@@ -53,7 +53,21 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
     {
       route: 'hotels',
       pathAfterLang: `/hotels/${slug}`,
-      ...(hotel === undefined ? {} : { content: { name: hotel.name, summary: hotel.summary } }),
+      ...(hotel === undefined
+        ? {}
+        : {
+            content: {
+              name: hotel.name,
+              summary: hotel.summary,
+              // The same phrase the crawler is served, from the same builder: the head is one
+              // string with two writers, and two copies of it disagree silently (D-84).
+              qualifier: hotelQualifier(lang, {
+                category: hotel.category,
+                stars: hotel.stars,
+                city: hotel.city,
+              }),
+            },
+          }),
     },
     lang,
   );

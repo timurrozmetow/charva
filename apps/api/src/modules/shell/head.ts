@@ -174,7 +174,13 @@ export interface ShellContext {
   pathAfterLang: string;
   /** A tour, hotel, article or place, when the path named one and it exists. */
   content?:
-    | { name: string; summary?: string | null | undefined; image?: ShareImage | null | undefined }
+    | {
+        name: string;
+        summary?: string | null | undefined;
+        image?: ShareImage | null | undefined;
+        /** «отель 5★, Ашхабад» — what the title says besides the name. See `hotelQualifier`. */
+        qualifier?: string | null | undefined;
+      }
     | undefined;
   /** What this page shows when it has no row of its own — the section's own first photograph. */
   defaultImage?: ShareImage | null | undefined;

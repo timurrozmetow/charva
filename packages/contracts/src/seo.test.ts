@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { bcp47, SITES, SITE_LANGS } from './constants';
-import { contentMeta, hreflangSet, routeMeta, SITE_BRAND, SITE_ROUTES } from './seo';
+import {
+  contentMeta,
+  hotelQualifier,
+  hreflangSet,
+  routeMeta,
+  SITE_BRAND,
+  SITE_ROUTES,
+} from './seo';
 
 /**
  * The head, checked for the things the type cannot say.
@@ -82,6 +89,65 @@ describe('content meta', () => {
     expect(contentMeta('global', { name: 'x', summary: 'Коротко.' }).description).toBe('Коротко.');
     expect(contentMeta('global', { name: 'x' }).description).toBe('');
     expect(contentMeta('global', { name: 'x', summary: null }).description).toBe('');
+  });
+
+  it('keeps the brand last, whatever else the title carries', () => {
+    /*
+     * `anchorText` builds the text of a link by stripping exactly « — Charva Travel» off the
+     * end. A title that put the qualifier after the brand would leave the brand inside every
+     * anchor on the fallback body — twenty links all ending in the same two words.
+     */
+    const { title } = contentMeta('global', { name: 'Мары Отель', qualifier: 'отель 3★, Мары' });
+
+    expect(title).toBe('Мары Отель — отель 3★, Мары — Charva Travel');
+    expect(title.endsWith(` — ${SITE_BRAND.global}`)).toBe(true);
+  });
+});
+
+describe('what a hotel title says besides its name', () => {
+  /*
+   * Search Console indexed fewer than six in ten of Global's pages, and the hotels are the
+   * thinnest of them. Nothing can be invented to fix that — the operator's own description is
+   * one paragraph, and D-137 records why an amenity or a floor area must not be guessed at — but
+   * the title was «Мары Отель — Charva Travel», which names neither what the page is nor where it
+   * is. Somebody searching «гостиницы Мары» was offered a title with neither word in it.
+   */
+  it('names the kind, the rating and the city, from the columns that hold them', () => {
+    expect(hotelQualifier('ru', { category: 'hotel', stars: 3, city: 'Мары' })).toBe(
+      'отель 3★, Мары',
+    );
+    expect(hotelQualifier('en', { category: 'hotel', stars: 5, city: 'Ashgabat' })).toBe(
+      'hotel 5★, Ashgabat',
+    );
+  });
+
+  it('writes a comma where Russian would want a case ending', () => {
+    /*
+     * «в Ашхабаде», «в Дашогузе», «в Мары» — the locative differs per name, and inflecting one
+     * from a string is the kind of guess that produces «в Мары Отель». A comma is correct in
+     * every language this site speaks.
+     */
+    for (const city of ['Ашхабад', 'Дашогуз', 'Мары', 'Балкан']) {
+      expect(hotelQualifier('ru', { category: 'hotel', stars: 4, city })).toBe(`отель 4★, ${city}`);
+    }
+  });
+
+  it('leaves the stars out when there are none rather than printing an empty rating', () => {
+    // A camp has no star rating, and «лагерь ★» would be a rating nobody gave it.
+    expect(hotelQualifier('ru', { category: 'camp', stars: null, city: 'Каракумы' })).toBe(
+      'лагерь, Каракумы',
+    );
+    expect(hotelQualifier('ru', { category: 'boutique', stars: 4, city: 'Ашхабад' })).toBe(
+      'бутик-отель 4★, Ашхабад',
+    );
+  });
+
+  it('falls back to the plain kind for a category it has no word for', () => {
+    // The column is an enum, so this is a guard against the enum growing rather than a case that
+    // exists — and a title reading «, Мары» would be worse than one reading «отель, Мары».
+    expect(hotelQualifier('ru', { category: 'nosuchkind', stars: 3, city: 'Мары' })).toBe(
+      'отель 3★, Мары',
+    );
   });
 });
 

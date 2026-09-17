@@ -451,13 +451,56 @@ export function routeMeta<S extends Site>(site: S, route: SiteRoute<S>, lang: La
  * strings are: the API renders this for the crawler and the SPA renders it again on
  * navigation, and they have to produce the same string.
  */
+/**
+ * What a hotel's title says besides its name — «отель 5★, Ашхабад».
+ *
+ * Search Console indexed fewer than six in ten of Global's pages, and the hotels are the thinnest
+ * of them: measured, 1400 to 1650 characters each with more than half the vocabulary shared with
+ * the hotel next door. Nothing can be invented to fix that — the operator's own description is
+ * one paragraph and D-137 records why an amenity or a floor area must not be guessed at — but the
+ * title was saying «Мары Отель — Charva Travel», which names neither what the page is nor where
+ * it is. Somebody searching «гостиницы Мары» was being offered a title with neither word in it.
+ *
+ * Every part comes from a column: the kind from `category`, the number from `stars`, the place
+ * from `city`. A comma rather than «в», because Russian would want the locative — «в Ашхабаде»,
+ * «в Дашогузе» — and inflecting a city name from a string is the kind of guess that produces
+ * «в Мары Отель». The comma is correct in every language this site speaks and costs nothing.
+ */
+const HOTEL_KIND: Record<string, Partial<Record<Lang, string>>> = {
+  hotel: { ru: 'отель', en: 'hotel', tr: 'otel' },
+  boutique: { ru: 'бутик-отель', en: 'boutique hotel', tr: 'butik otel' },
+  camp: { ru: 'лагерь', en: 'camp', tr: 'kamp' },
+};
+
+export function hotelQualifier(
+  lang: Lang,
+  hotel: { category: string; stars: number | null; city: string },
+): string {
+  const kind = HOTEL_KIND[hotel.category]?.[lang] ?? HOTEL_KIND['hotel']?.[lang] ?? '';
+  // A camp has no stars and a hotel with none is a hotel whose rating nobody recorded; either
+  // way an empty «★» in a title is worse than a title that does not mention stars.
+  const rated = kind === '' ? '' : hotel.stars === null ? kind : `${kind} ${String(hotel.stars)}★`;
+
+  return [rated, hotel.city].filter((part) => part !== '').join(', ');
+}
+
 export function contentMeta(
   site: Site,
-  content: { name: string; summary?: string | null | undefined },
+  content: {
+    name: string;
+    summary?: string | null | undefined;
+    /** A short phrase naming what the row is and where — see `hotelQualifier`. */
+    qualifier?: string | null | undefined;
+  },
 ): RouteMeta {
   const summary = content.summary ?? '';
+  const qualifier = content.qualifier ?? '';
+  const named = qualifier === '' ? content.name : `${content.name} — ${qualifier}`;
   return {
-    title: `${content.name} — ${SITE_BRAND[site]}`,
+    // The brand stays the *last* segment whatever else is in front of it: `anchorText` strips
+    // exactly that suffix to build a link's text, and a title that ends any other way would put
+    // «Charva Travel» into every anchor on the fallback body.
+    title: `${named} — ${SITE_BRAND[site]}`,
     // Long descriptions are cut by every consumer of them anyway, and cut mid-word. 160
     // characters is where Google stops and where a Telegram card stops looking deliberate.
     description: summary.length > 160 ? `${summary.slice(0, 157).trimEnd()}…` : summary,
