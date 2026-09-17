@@ -1,5 +1,5 @@
 import { bcp47, SCRIM_RGB, SITE_LANGS } from '@charva/contracts';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { API_PREFIX } from '../../app';
@@ -367,11 +367,21 @@ describe('the picture a shared link shows', () => {
 
     await context.app.db.update(t.heroSlides).set({ mediaId });
     await context.app.db.update(t.tours).set({ coverMediaId: mediaId });
+    // The chooser's two halves, which the head now starts early. Without a photograph on them
+    // the assertion below would pass against a page that simply has nothing to preload.
+    await context.app.db
+      .update(t.contentSlots)
+      .set({ mediaId })
+      .where(inArray(t.contentSlots.slotKey, ['choice-global', 'choice-umrah']));
   });
 
   afterAll(async () => {
     await context.app.db.update(t.tours).set({ coverMediaId: null });
     await context.app.db.update(t.heroSlides).set({ mediaId: null });
+    await context.app.db
+      .update(t.contentSlots)
+      .set({ mediaId: null })
+      .where(inArray(t.contentSlots.slotKey, ['choice-global', 'choice-umrah']));
     await context.app.db.delete(t.media).where(eq(t.media.id, mediaId));
   });
 
@@ -440,13 +450,40 @@ describe('the picture a shared link shows', () => {
     expect(preload?.['imagesrcset']).not.toContain('http');
     expect(preload?.['imagesrcset']?.split(', ').length).toBeGreaterThan(4);
 
-    // And nowhere else: on a detail page the largest image is a cover whose width depends on
-    // the layout, and a hint that guesses wrong is the fault above. No hint beats a wrong one.
+    // And not on a detail page: there the largest image is a cover whose width depends on the
+    // layout, and a hint that guesses wrong is the fault above. No hint beats a wrong one.
     const detail = await render('global', '/ru/tours/klassicheskiy-turkmenistan');
     expect(head(detail.tags).links('preload')).toHaveLength(0);
+  });
 
-    const chooser = await render('choice', '/ru');
-    expect(head(chooser.tags).links('preload')).toHaveLength(0);
+  it('starts both halves of the chooser, and does not outrank the script to do it', async () => {
+    /*
+     * The front door had the slowest largest paint of the three sites. Measured on a throttled
+     * phone: 289 KB of photograph, discovered only once React had rendered, running from 1830ms
+     * to 3595 — while the two homepages had been starting theirs from the head since phase 8.
+     *
+     * It was excluded on the rule that only a full-bleed hero can be hinted safely, and each
+     * half is exactly as full-bleed as a hero: half the window above the tablet breakpoint and
+     * all of it below, which is what `imageSizes.splitHalf` says.
+     */
+    const { tags } = await render('choice', '/ru');
+    const preloads = head(tags).links('preload');
+
+    expect(preloads).toHaveLength(2);
+    for (const link of preloads) {
+      expect(link.attributes?.['as']).toBe('image');
+      expect(link.attributes?.['imagesizes']).toBe('(max-width: 1023px) 100vw, 59vw');
+      /*
+       * No `fetchpriority`, deliberately. A hero is the one thing on its page and deserves to
+       * outrank the script; here the script is what draws the halves these go behind, so hinting
+       * them high would move the pictures ahead of the thing that gives them somewhere to be.
+       */
+      expect(link.attributes?.['fetchpriority']).toBeUndefined();
+    }
+
+    // Global first, which is the order `ChoicePage` draws them in: a hint list is a queue, and
+    // on a narrow connection the first one wins.
+    expect(preloads[0]?.attributes?.['href']).toBeDefined();
   });
 
   it('shows that same file behind the spinner, instead of holding it back', async () => {

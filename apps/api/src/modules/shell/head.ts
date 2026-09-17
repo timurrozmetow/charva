@@ -49,22 +49,6 @@ export interface ShareImage {
 }
 
 /**
- * The hint that tells the browser to start the hero before the bundle has parsed — and the
- * reason it has to carry the whole candidate list rather than one URL.
- *
- * It used to preload `og:image`, which is a single fixed width. The hero renders through `Img`
- * with a seven-candidate `srcSet` and `sizes="100vw"`, so on a 1600-pixel window the browser
- * preloaded `?w=1280` (255 KB), then read the markup, picked `?w=1600` (353 KB) and fetched
- * that too. A quarter of a megabyte wasted at the most expensive moment of the load, on the
- * element LCP is measured against — the preload was making the number it exists to improve
- * worse. Handing it `imagesrcset` and `imagesizes` makes it run the same selection the `<img>`
- * will run, so both land on one file.
- *
- * Only the two homepages get one. Their hero is full-bleed, so `100vw` is known to be right.
- * Everywhere else the largest image is a cover whose displayed width depends on the layout, and
- * a preload that guesses wrong is exactly the fault above; no hint beats a wrong hint.
- */
-/**
  * The photograph a homepage opens with, or null everywhere else.
  *
  * One predicate for two readers — the `preload` hint below and the splash image the shell puts
@@ -76,32 +60,72 @@ export function heroImage(context: ShellContext): ShareImage | null {
   return context.content?.image ?? context.defaultImage ?? null;
 }
 
-function preloadTags(context: ShellContext): HeadTag[] {
-  const image = heroImage(context);
-  if (image === null) return [];
+/**
+ * What to start before the bundle has parsed, and the `sizes` each one will be chosen by.
+ *
+ * A hint carries the whole candidate list rather than one URL, and that is not decoration. It
+ * used to preload `og:image`, which is a single fixed width, while the hero renders through
+ * `Img` with a seven-candidate `srcSet` — so on a 1600-pixel window the browser preloaded
+ * `?w=1280` (255 KB), then read the markup, picked `?w=1600` (353 KB) and fetched that too. A
+ * quarter of a megabyte wasted at the most expensive moment of the load, on the element LCP is
+ * measured against: the hint was making the number it exists to improve worse. With
+ * `imagesrcset` and `imagesizes` it runs the same selection the `<img>` will, so both land on
+ * one file — and that is why the `sizes` string below has to be the one the component passes.
+ *
+ * Two shapes, and the second was missing for a long time. A homepage has one full-bleed hero, so
+ * `100vw` is known to be right. The chooser has *two* photographs, one per half, and it was
+ * excluded here on the reasoning that only a full-bleed hero can be hinted safely — but each
+ * half is exactly as full-bleed as a hero, it is simply half of the window above the tablet
+ * breakpoint and all of it below. `imageSizes.splitHalf` already says so, in the one place that
+ * decides it.
+ *
+ * Leaving it out cost the front door. Measured on a throttled phone: the chooser's two
+ * photographs are 289 KB, they were discovered only once React had rendered, and they ran from
+ * 1830ms to 3595 — so the first page anybody sees on this domain had the slowest largest paint
+ * of the three sites.
+ *
+ * Note the absence of `fetchpriority` on those two. A hero is the one thing on its page and
+ * deserves to outrank the script; here the script is what draws the halves the photographs go
+ * behind, so hinting them as high would move the pictures ahead of the thing that gives them
+ * somewhere to be.
+ */
+function preloadImages(
+  context: ShellContext,
+): { image: ShareImage; sizes: string; lead: boolean }[] {
+  const hero = heroImage(context);
+  if (hero !== null) return [{ image: hero, sizes: '100vw', lead: true }];
 
-  return [
-    {
-      tag: 'link',
-      attributes: {
-        rel: 'preload',
-        as: 'image',
-        href: image.url,
-        /*
-         * Without this the preload is an ordinary-priority fetch, and the `<img>` it is meant to
-         * be feeding carries `fetchpriority="high"`.
-         *
-         * A preload starts a picture earlier and then hands it to the element at the priority
-         * the *link* asked for: high on the tag and default here means the hint arrives first
-         * and is then overtaken by every script on the page. Lighthouse names this exactly —
-         * «для запроса предварительной загрузки изображения требуется fetchpriority=high» — and
-         * it is the one line of the LCP insight that was our own doing.
-         */
-        fetchpriority: 'high',
-        ...(image.srcSet === null ? {} : { imagesrcset: image.srcSet, imagesizes: '100vw' }),
-      },
+  return context.splitImages.map((image) => ({
+    image,
+    // The same string `ChoiceHalf` passes to `ImageSlot`; a hint that guesses a different width
+    // asks for a second copy of the same photograph, which is the fault this file warns about.
+    sizes: '(max-width: 1023px) 100vw, 59vw',
+    lead: false,
+  }));
+}
+
+function preloadTags(context: ShellContext): HeadTag[] {
+  return preloadImages(context).map(({ image, sizes, lead }) => ({
+    tag: 'link' as const,
+    attributes: {
+      rel: 'preload',
+      as: 'image',
+      href: image.url,
+      /*
+       * `fetchpriority` on the hero, and only on the hero.
+       *
+       * Without it a preload is an ordinary-priority fetch while the `<img>` it feeds carries
+       * `fetchpriority="high"`: the hint arrives first and is then overtaken by every script on
+       * the page. Lighthouse names this exactly — «для запроса предварительной загрузки
+       * изображения требуется fetchpriority=high» — and it was the one line of the LCP insight
+       * that was our own doing.
+       *
+       * The chooser's two halves deliberately go without it; see `preloadImages`.
+       */
+      ...(lead ? { fetchpriority: 'high' } : {}),
+      ...(image.srcSet === null ? {} : { imagesrcset: image.srcSet, imagesizes: sizes }),
     },
-  ];
+  }));
 }
 
 /**
@@ -154,6 +178,14 @@ export interface ShellContext {
     | undefined;
   /** What this page shows when it has no row of its own — the section's own first photograph. */
   defaultImage?: ShareImage | null | undefined;
+  /**
+   * The chooser's two half photographs, in the order they are drawn. Empty everywhere else.
+   *
+   * Separate from `defaultImage` because they are not a share card and not a hero: they are two
+   * pictures on one page, each half the window wide above the tablet breakpoint, and the only
+   * thing the head does with them is start them early.
+   */
+  splitImages: readonly ShareImage[];
   /** Structured data for this page, already shaped. */
   jsonLd?: unknown[] | undefined;
   /** Counter ids from `settings`. Absent or empty means no script is emitted at all. */

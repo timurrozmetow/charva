@@ -11,7 +11,7 @@ import {
   SITE_ORIGINS,
   type Site,
 } from '@charva/contracts';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 import { type Database } from '../../db/client';
 import * as t from '../../db/schema';
@@ -146,6 +146,7 @@ export async function renderShellHead(request: ShellRequest): Promise<ShellResul
     // Resolved even when a row was found, because a row without a cover still shares better
     // with its section's photograph than with nothing.
     defaultImage: await defaultImageFor(request, route, lang),
+    splitImages: await splitImagesFor(request, lang),
     analytics: await analyticsFor(db, settingsSite),
   };
 
@@ -404,6 +405,37 @@ function shareWidth(intrinsic: number | null): ImageWidth {
     (width) => width <= 1280 && (intrinsic === null || width <= intrinsic),
   );
   return usable.at(-1) ?? IMAGE_WIDTHS[0];
+}
+
+/**
+ * The chooser's two half photographs, so the head can start them before the bundle parses.
+ *
+ * It is the front door of the domain and it had the slowest largest paint of the three sites.
+ * Measured on a throttled phone: 289 KB of photograph, discovered only once React had rendered,
+ * running from 1830ms to 3595 — while the two homepages had been starting theirs from the head
+ * since phase 8. The rule that excluded it said only a full-bleed hero can be hinted safely, and
+ * each half is exactly as full-bleed as a hero; it is simply half the window above the tablet
+ * breakpoint and all of it below, which `imageSizes.splitHalf` already states.
+ *
+ * Ordered `global` then `umrah`, which is the order `ChoicePage` draws them in — a hint list is
+ * a queue, and on a narrow connection the first one wins.
+ */
+async function splitImagesFor(request: ShellRequest, lang: Lang): Promise<ShareImage[]> {
+  if (request.site !== 'choice') return [];
+
+  const rows = await request.db
+    .select({ slotKey: t.contentSlots.slotKey, mediaId: t.contentSlots.mediaId })
+    .from(t.contentSlots)
+    .where(inArray(t.contentSlots.slotKey, ['choice-global', 'choice-umrah']));
+
+  const found: ShareImage[] = [];
+  for (const key of ['choice-global', 'choice-umrah'] as const) {
+    const row = rows.find((candidate) => candidate.slotKey === key);
+    // A slot with no photograph yet draws its brief instead (D-21); there is nothing to start.
+    const image = row?.mediaId == null ? null : await imageFor(request, row.mediaId, lang);
+    if (image !== null) found.push(image);
+  }
+  return found;
 }
 
 /** Absolute, because an `og:image` is read by a server on the other side of the world. */
