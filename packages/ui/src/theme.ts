@@ -47,6 +47,21 @@ interface ThemeRoles {
    * page background, so it cannot just be `--c-bg`.
    */
   field: string;
+  /**
+   * The native `<select>` list — a platform surface, not one of ours.
+   *
+   * Two roles rather than reusing `surface` and `ink` for one reason: these are the only colours
+   * in the file that must *not* follow the surface the control stands on. The browser paints the
+   * option list from the select's own `color` and `background-color`, so inside a dark section —
+   * where `--c-ink` is the cream and the field is transparent — it drew cream options on its own
+   * white canvas. Measured on the live homepage: `rgb(253, 249, 243)` on white, 1.05:1. Every
+   * destination in the hero search bar was invisible but the one under the cursor, which the
+   * system repaints in its highlight colours.
+   *
+   * `darkSurface` below therefore leaves both alone, and `theme.test.ts` holds it to that.
+   */
+  optionBg: string;
+  optionInk: string;
   /** Headings and primary text on light. */
   ink: string;
   /** Body text on light. */
@@ -160,6 +175,8 @@ const globalTheme: ThemeRoles = {
   surface: globalPalette.surface,
   islandBg: 'rgba(255, 253, 250, 0.88)',
   field: globalPalette.bg,
+  optionBg: globalPalette.surface,
+  optionInk: globalPalette.brown900,
   ink: globalPalette.brown900,
   body: globalPalette.brown500,
   muted: globalPalette.brown400,
@@ -193,6 +210,8 @@ const umrahTheme: ThemeRoles = {
   surface: umrahPalette.surface,
   islandBg: 'rgba(255, 253, 250, 0.88)',
   field: umrahPalette.bg,
+  optionBg: umrahPalette.surface,
+  optionInk: umrahPalette.ink,
   ink: umrahPalette.ink,
   body: umrahPalette.green500,
   muted: umrahPalette.green400,
@@ -232,6 +251,11 @@ const choiceTheme: ThemeRoles = {
   // Choice's navigation is dark glass over a photograph rather than a light card.
   islandBg: `rgba(${alphaBase.choiceGlass}, 0.6)`,
   field: `rgba(${alphaBase.globalCream}, 0.07)`,
+  // The one place Choice cannot map a light role onto a dark equivalent: the option list is the
+  // operating system's window, and it is light whatever this page is. Global's values, because
+  // Choice's palette has no light surface to offer and the chooser carries no form today.
+  optionBg: globalPalette.surface,
+  optionInk: globalPalette.brown900,
   ink: choicePalette.cream,
   body: choicePalette.cream,
   muted: choicePalette.creamWarm,

@@ -679,6 +679,9 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   { fg: globalPalette.brown400, bg: globalPalette.bg, size: 12, where: 'meta and captions' },
   { fg: globalPalette.brown400, bg: globalPalette.surface, size: 12, where: 'meta on cards' },
   { fg: globalPalette.brown300, bg: globalPalette.bg, size: 15, where: 'empty estimate values' },
+  // The native option list, which the hero search bar opens from inside a dark section. Listed
+  // because it occurs, not because it is close: it was cream on white until D-175.
+  { fg: globalPalette.brown900, bg: globalPalette.surface, size: 15, where: 'the option list' },
   { fg: sand.dark, bg: globalPalette.bg, size: 11, bold: true, where: 'links and eyebrows' },
   { fg: sand.deep, bg: globalPalette.bg, size: 14, where: 'active nav item' },
   { fg: sand.deep, bg: globalPalette.bg, size: 14, nonText: true, where: 'focus ring on cream' },
@@ -713,6 +716,7 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   { fg: umrahPalette.green500, bg: umrahPalette.surface, size: 15, where: 'body on cards' },
   { fg: umrahPalette.green400, bg: umrahPalette.bg, size: 12, where: 'meta and captions' },
   { fg: umrahPalette.green400, bg: umrahPalette.surface, size: 12, where: 'meta on cards' },
+  { fg: umrahPalette.ink, bg: umrahPalette.surface, size: 15, where: 'the option list' },
   { fg: umrahPalette.link, bg: umrahPalette.bg, size: 12, bold: true, where: 'links, durations' },
   { fg: sand.deep, bg: umrahPalette.bg, size: 14, where: 'active nav item' },
 

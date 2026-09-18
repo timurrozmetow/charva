@@ -136,6 +136,35 @@ textarea {
   color: inherit;
 }
 
+/*
+ * The option list belongs to the platform, so it does not follow our surface.
+ *
+ * The browser paints the list from the control's own `color` and `background-color`. The search
+ * bar over the Global hero sits inside `data-surface="dark"`, where `--c-ink` is the cream and
+ * the field is transparent — so Chrome drew cream `#FDF9F3` options on its own white canvas.
+ * Measured on the live page: 1.05:1. Every destination was invisible except the one under the
+ * cursor, which the system repaints in its highlight colours.
+ *
+ * Unconditional rather than scoped to dark sections: the values equal what a light surface
+ * already resolves to, so the rule changes nothing there and cannot be forgotten by the fifth
+ * call site. `--c-option-*` are the two roles the dark block deliberately leaves alone.
+ *
+ * `color-scheme` on the control and not on `:root`. It tells the browser which popup to paint,
+ * which is what makes the pair above the right pair; declaring it at the root would also repaint
+ * the scrollbar, and the chooser is drawn on near-black.
+ *
+ * Styling an option does not touch the closed control — checked in a browser, because a fix that
+ * turned the hero's cream text brown would have broken the thing it was fixing.
+ */
+select {
+  color-scheme: light;
+}
+
+option {
+  color: var(--c-option-ink);
+  background-color: var(--c-option-bg);
+}
+
 /* ======================================================================================
  * Focus
  *

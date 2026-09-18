@@ -54,6 +54,14 @@ describe('the dark-surface block', () => {
     expect(darkSurface['--c-ink-rgb']).toBeUndefined();
   });
 
+  it('leaves the option list alone, because it is the platform’s surface and not ours', () => {
+    // The whole point of the two roles. The browser paints the native `<select>` list from the
+    // control's own colours, so a value that followed the dark section put cream options on the
+    // system's white canvas — 1.05:1, measured on the live homepage.
+    expect(darkSurface['--c-option-bg']).toBeUndefined();
+    expect(darkSurface['--c-option-ink']).toBeUndefined();
+  });
+
   it('does not touch the accent fill or the text on it', () => {
     // The sand button looks the same on both surfaces; only the *text* accent changes.
     expect(darkSurface['--c-accent']).toBeUndefined();
