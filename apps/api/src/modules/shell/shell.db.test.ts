@@ -181,6 +181,21 @@ describe('a detail page', () => {
     expect((trip?.['offers'] as Record<string, unknown>)['priceCurrency']).toBe('USD');
   });
 
+  it('lists the days of a tour rather than only counting them', async () => {
+    /*
+     * `{ "@type": "ItemList", "numberOfItems": 5 }` is a list nobody can read. The headings are
+     * the one part of a tour that is specific to it and short enough for structured data.
+     */
+    const { tags } = await render('global', '/ru/tours/turkmenistan-5-days');
+    const trip = head(tags).jsonLd.find((entry) => entry['@type'] === 'TouristTrip');
+    const itinerary = trip?.['itinerary'] as Record<string, unknown>;
+    const items = itinerary['itemListElement'] as { position: number; name: string }[];
+
+    expect(items).toHaveLength(itinerary['numberOfItems'] as number);
+    expect(items.map((item) => item.position)).toEqual([1, 2, 3, 4, 5]);
+    expect(items[0]?.name).toContain('Дарваза');
+  });
+
   it('reports a slug that names no row as not found', async () => {
     const { found, tags } = await render('global', '/ru/tours/no-such-tour');
 

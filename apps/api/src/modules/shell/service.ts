@@ -301,6 +301,13 @@ async function loadContent(
       lang,
       text(row.body, lang),
     );
+    // One more query on a cached route, for the only list on the page that is specific to it.
+    const days = await db
+      .select({ title: t.tourDays.title })
+      .from(t.tourDays)
+      .where(eq(t.tourDays.tourId, row.id))
+      .orderBy(t.tourDays.dayNumber);
+
     jsonLd.push(
       ld.touristTrip({
         name: content.name,
@@ -308,6 +315,7 @@ async function loadContent(
         url,
         imageUrl: content.image?.url ?? null,
         days: row.days,
+        itinerary: days.map((day) => text(day.title, lang)).filter((title) => title !== ''),
         priceMinor: row.priceFromMinor,
         currency: row.priceCurrency,
       }),

@@ -81,6 +81,14 @@ export interface TourInput {
   url: string;
   imageUrl: string | null;
   days: number;
+  /**
+   * The heading of each day, in order — «Ашхабад — Дарваза — Куняургенч (Хива)».
+   *
+   * A list that says only how many items it has is a list nobody can read. The day headings are
+   * the one part of a tour that is specific to it and short enough to belong in structured data;
+   * the descriptions under them are the page's, and stay there.
+   */
+  itinerary: readonly string[];
   priceMinor: number;
   currency: string;
 }
@@ -94,7 +102,19 @@ export function touristTrip(input: TourInput): Record<string, unknown> {
     description: input.description === '' ? null : input.description,
     url: input.url,
     image: input.imageUrl,
-    itinerary: { '@type': 'ItemList', numberOfItems: input.days },
+    itinerary: {
+      '@type': 'ItemList',
+      numberOfItems: input.days,
+      ...(input.itinerary.length === 0
+        ? {}
+        : {
+            itemListElement: input.itinerary.map((name, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              name,
+            })),
+          }),
+    },
     offers: {
       '@type': 'Offer',
       // Minor units are an implementation detail of the database, never of the wire.
