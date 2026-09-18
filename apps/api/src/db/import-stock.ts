@@ -8,6 +8,7 @@ import { storeUpload, uploadsRootOf } from '../modules/admin/media/service';
 
 import { withDb } from './client';
 import * as t from './schema';
+import { attachOwnerTourMedia } from './seed/owner-content';
 
 /**
  * Fills the empty picture slots with freely licensed photographs, as a stand-in.
@@ -795,6 +796,18 @@ async function main(): Promise<void> {
  * photograph nobody has taken yet.
  */
 async function assign(db: Db, stored: Stored[]): Promise<void> {
+  /*
+   * The owner's own tours pick their photographs by subject before anything is dealt.
+   *
+   * They are the rows where an arbitrary picture is least acceptable — a real itinerary that a
+   * real traveller is deciding on — and the matching below has nothing to match on for them:
+   * «Туркменистан за 2 дня» names no place, so a crater tour would be handed whichever frame the
+   * cursor happened to land on. What it leaves alone still falls through to the round-robin, so
+   * this narrows the deal rather than replacing it.
+   */
+  const chosen = await attachOwnerTourMedia(db);
+  if (chosen > 0) process.stdout.write(`gave ${String(chosen)} owner tours their photographs\n`);
+
   const landscape = stored.filter((photo) => photo.landscape);
   const pool = landscape.length > 0 ? landscape : stored;
   let cursor = 0;

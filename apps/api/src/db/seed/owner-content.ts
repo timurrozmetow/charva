@@ -201,6 +201,68 @@ const TURKMENISTAN_DAYS: DaySource[] = [
   },
 ];
 
+/**
+ * The short tour: Ashgabat, the Karakum and the crater, leaving towards Khiva.
+ *
+ * The same journey as the long one seen from the other end — that one enters at the Khiva border
+ * and crosses the country; this one starts at the airport and leaves the way the other came in.
+ * The day headings are the sheet's own, including the first, which names Koneurgench although
+ * the day ends at Darvaza: the long tour's headings overreach in exactly the same way and are
+ * published like that, so they are left alone rather than half-corrected.
+ */
+const SHORT_DAYS: DaySource[] = [
+  {
+    title: {
+      ru: 'Ашхабад — Дарваза — Куняургенч (Хива)',
+      en: 'Ashgabat – Darvaza – Koneurgench (Khiva)',
+      tr: 'Aşkabat – Darvaza – Köneürgenç (Hive)',
+    },
+    city: { ru: 'Дарваза', en: 'Darvaza', tr: 'Darvaza' },
+    lines: {
+      ru: [
+        'Встреча с англоговорящим гидом в аэропорту.',
+        'Завтрак в местном кафе.',
+        'Обзорная экскурсия по Ашхабаду: столица, её характерная архитектура и городская атмосфера.',
+        'Обед в местном кафе с блюдами туркменской кухни.',
+        'Переезд через пустыню Каракумы к газовому кратеру Дарваза.',
+        'Прибытие в Дарвазу: «Врата ада» и традиционный ужин «газанлама» у светящегося кратера.',
+        'Ночь в юртовом лагере под звёздами пустыни.',
+      ],
+      en: [
+        'Meet our English-speaking guide at the airport.',
+        'Have breakfast in a local cafe.',
+        'City tour of Ashgabat. Explore the capital city and enjoy its distinctive architecture and city atmosphere.',
+        'Have lunch in a local cafe with Turkmen national food.',
+        'Continue your journey through the Karakum Desert to the Darvaza gas crater.',
+        'Arrive at Darvaza, admire the “Gates of Hell” and enjoy a traditional “gazanlama” dinner near the glowing crater.',
+        'Overnight stay in a yurt camp under the desert stars.',
+      ],
+      tr: [
+        'Havalimanında İngilizce konuşan rehberimizle buluşma.',
+        'Yerel bir kafede kahvaltı.',
+        'Aşkabat şehir turu: başkent, kendine özgü mimarisi ve şehir atmosferi.',
+        'Yerel bir kafede Türkmen mutfağından öğle yemeği.',
+        'Karakum Çölü üzerinden Darvaza gaz kraterine geçiş.',
+        'Darvaza’ya varış: “Cehennem Kapısı” ve kor hâlindeki kraterin yanında geleneksel “gazanlama” akşam yemeği.',
+        'Çöl yıldızlarının altında çadır kampında gece konaklaması.',
+      ],
+    },
+  },
+  {
+    title: {
+      ru: 'Дарваза — Хива',
+      en: 'Darvaza – Khiva',
+      tr: 'Darvaza – Hive',
+    },
+    city: { ru: 'Хива', en: 'Khiva', tr: 'Hive' },
+    lines: {
+      ru: ['Завтрак у кратера, встреча рассвета.', 'Переезд в Хиву.'],
+      en: ['Have breakfast near the crater. Enjoy the sunrise at the crater.', 'Drive to Khiva.'],
+      tr: ['Kraterin yanında kahvaltı ve gün doğumu.', 'Hive’ye hareket.'],
+    },
+  },
+];
+
 const INCLUDED: Text[] = [
   {
     ru: 'Профессиональный англоговорящий гид',
@@ -248,84 +310,328 @@ const EXCLUDED: Text[] = [
  * per-person figure drops rather than the total. `price_from_minor` on the tour is the last of
  * these and not something smaller: «от 830 $» has to be a price somebody can actually pay.
  */
-const PRICES: [pax: number, minor: number][] = [
+type PriceRow = [pax: number, minor: number];
+
+const FIVE_DAY_PRICES: PriceRow[] = [
   [1, 100_000],
   [2, 93_000],
   [3, 87_000],
   [4, 83_000],
 ];
 
+const TWO_DAY_PRICES: PriceRow[] = [
+  [1, 60_000],
+  [2, 57_000],
+  [3, 54_000],
+  [4, 50_000],
+];
+
+/**
+ * A photograph named by what it shows, rather than by the id it happened to get.
+ *
+ * The stock import writes one English `alt` per subject — every crater photograph says «The
+ * Darvaza gas crater in the Karakum Desert» — so the subject is recoverable from the row without
+ * a column for it. Ids are not: they depend on how many files each Commons category returned on
+ * the day the import ran, which is not the same number twice. Picking the nth landscape
+ * photograph of a subject, by id, is stable on any database that has been imported at all, and
+ * silently does nothing on one that has not.
+ */
+const SUBJECT_ALT = {
+  darvaza: 'The Darvaza gas crater',
+  ashgabat: 'Ashgabat, the white marble capital',
+  nisa: 'Old Nisa',
+  konyeUrgench: 'Konye-Urgench',
+  yangiKala: 'The Yangi Kala canyons',
+  caspian: 'The Caspian coast',
+  karakum: 'The dunes of the Karakum Desert',
+  akhalTeke: 'An Akhal-Teke horse',
+  cuisine: 'Turkmen cuisine',
+} as const;
+
+type Subject = keyof typeof SUBJECT_ALT;
+type Photo = [subject: Subject, nth: number];
+
+interface OwnerTour {
+  slug: string;
+  /** Everything the `tours` row says, minus the slug. */
+  values: Omit<typeof t.tours.$inferInsert, 'slug'>;
+  days: DaySource[];
+  prices: PriceRow[];
+  /** The one picture the card shows. Chosen, not dealt round-robin like the demo catalogue. */
+  cover: Photo;
+  /** The detail page's strip, in the order the itinerary meets them. */
+  gallery: Photo[];
+}
+
 export const TURKMENISTAN_SLUG = 'turkmenistan-5-days';
+export const TURKMENISTAN_SHORT_SLUG = 'turkmenistan-2-days';
 
-export async function seedOwnerTours(db: Database): Promise<number> {
-  await db.insert(t.tours).values({
+const TOURS: OwnerTour[] = [
+  {
     slug: TURKMENISTAN_SLUG,
-    title: {
-      ru: 'Туркменистан за 5 дней',
-      en: 'Turkmenistan in 5 days',
-      tr: '5 günde Türkmenistan',
+    values: {
+      title: {
+        ru: 'Туркменистан за 5 дней',
+        en: 'Turkmenistan in 5 days',
+        tr: '5 günde Türkmenistan',
+      },
+      summary: {
+        ru: 'Продуманный маршрут по Туркменистану: пустынные пейзажи, древнее наследие, архитектура Ашхабада и берег Каспия.',
+        en: 'A curated journey through Turkmenistan, combining desert landscapes, ancient heritage, Ashgabat architecture and the Caspian coast.',
+        tr: 'Türkmenistan boyunca özenle hazırlanmış bir rota: çöl manzaraları, kadim miras, Aşkabat mimarisi ve Hazar kıyısı.',
+      },
+      body: {
+        ru: 'Хива • Дарваза • Ашхабад • Янги-Кала • Туркменбаши\n\n5 дней и 4 ночи — от границы с Узбекистаном до границы с Казахстаном. Ночь в юртовом лагере у газового кратера Дарваза, две ночи в Ашхабаде и ночь в Туркменбаши на Каспии.',
+        en: 'Khiva • Darvaza • Ashgabat • Yangi Kala • Turkmenbashi\n\nFive days and four nights, from the Uzbek border to the Kazakh one. A night in a yurt camp beside the Darvaza gas crater, two nights in Ashgabat and a night in Turkmenbashi on the Caspian.',
+        tr: 'Hive • Darvaza • Aşkabat • Yangi Kala • Türkmenbaşı\n\nBeş gün, dört gece: Özbekistan sınırından Kazakistan sınırına. Darvaza gaz kraterinin yanında çadır kampında bir gece, Aşkabat’ta iki gece ve Hazar kıyısındaki Türkmenbaşı’nda bir gece.',
+      },
+      category: 'classic',
+      days: 5,
+      // The five the sheet names in its own subtitle, not every place the coach passes through.
+      cities: 5,
+      // The sheet says «Hotel, camp» and no class. Guessing four stars here would put a number on
+      // the page that nobody has promised.
+      hotelStars: null,
+      priceFromMinor: 83_000,
+      priceCurrency: 'USD',
+      isFeatured: true,
+      isPublished: true,
+      // Ahead of the nine demo rows, which start at one.
+      sortOrder: 0,
     },
-    summary: {
-      ru: 'Продуманный маршрут по Туркменистану: пустынные пейзажи, древнее наследие, архитектура Ашхабада и берег Каспия.',
-      en: 'A curated journey through Turkmenistan, combining desert landscapes, ancient heritage, Ashgabat architecture and the Caspian coast.',
-      tr: 'Türkmenistan boyunca özenle hazırlanmış bir rota: çöl manzaraları, kadim miras, Aşkabat mimarisi ve Hazar kıyısı.',
+    days: TURKMENISTAN_DAYS,
+    prices: FIVE_DAY_PRICES,
+    /*
+     * The cover is the horse the round-robin dealt it when the photographs were imported, and it
+     * is left where it is: it is not wrong, and it is the owner's to change in one click. Only
+     * the strip below is added here, which is purely additive.
+     */
+    cover: ['akhalTeke', 0],
+    gallery: [
+      ['konyeUrgench', 0],
+      ['darvaza', 0],
+      ['karakum', 0],
+      ['ashgabat', 0],
+      ['nisa', 0],
+      ['akhalTeke', 1],
+      ['yangiKala', 0],
+      ['caspian', 0],
+    ],
+  },
+  {
+    slug: TURKMENISTAN_SHORT_SLUG,
+    values: {
+      title: {
+        ru: 'Туркменистан за 2 дня',
+        en: 'Turkmenistan in 2 days',
+        tr: '2 günde Türkmenistan',
+      },
+      /*
+       * Not the sheet's own subtitle.
+       *
+       * Both sheets carry the same one — «desert landscapes, ancient heritage, Ashgabat
+       * architecture and the Caspian coast» — which is true of the five-day tour and false of
+       * this one: it goes nowhere near the Caspian. A summary is what a card promises, so it
+       * says what these two days actually contain.
+       */
+      summary: {
+        ru: 'Ашхабад, пустыня Каракумы и газовый кратер Дарваза: два дня с ночёвкой в юртовом лагере у огня.',
+        en: 'Ashgabat, the Karakum Desert and the Darvaza gas crater: two days with a night in a yurt camp beside the fire.',
+        tr: 'Aşkabat, Karakum Çölü ve Darvaza gaz krateri: ateşin yanındaki çadır kampında bir geceyle iki gün.',
+      },
+      body: {
+        ru: 'Ашхабад • Дарваза • Куняургенч (Хива)\n\n2 дня и 1 ночь: обзорная экскурсия по Ашхабаду, переезд через пустыню Каракумы к газовому кратеру Дарваза, ночь в юртовом лагере и рассвет у кратера. Дальше — дорога на Хиву.',
+        en: 'Ashgabat • Darvaza • Koneurgench (Khiva)\n\nTwo days and one night: a city tour of Ashgabat, the drive across the Karakum Desert to the Darvaza gas crater, a night in a yurt camp and sunrise at the crater. Then the road to Khiva.',
+        tr: 'Aşkabat • Darvaza • Köneürgenç (Hive)\n\nİki gün, bir gece: Aşkabat şehir turu, Karakum Çölü üzerinden Darvaza gaz kraterine geçiş, çadır kampında bir gece ve kraterin yanında gün doğumu. Ardından Hive yolu.',
+      },
+      category: 'classic',
+      days: 2,
+      // Ashgabat, Darvaza and Koneurgench — the three the sheet's own subtitle names.
+      cities: 3,
+      hotelStars: null,
+      priceFromMinor: 50_000,
+      priceCurrency: 'USD',
+      isFeatured: true,
+      isPublished: true,
+      sortOrder: 1,
     },
-    body: {
-      ru: 'Хива • Дарваза • Ашхабад • Янги-Кала • Туркменбаши\n\n5 дней и 4 ночи — от границы с Узбекистаном до границы с Казахстаном. Ночь в юртовом лагере у газового кратера Дарваза, две ночи в Ашхабаде и ночь в Туркменбаши на Каспии.',
-      en: 'Khiva • Darvaza • Ashgabat • Yangi Kala • Turkmenbashi\n\nFive days and four nights, from the Uzbek border to the Kazakh one. A night in a yurt camp beside the Darvaza gas crater, two nights in Ashgabat and a night in Turkmenbashi on the Caspian.',
-      tr: 'Hive • Darvaza • Aşkabat • Yangi Kala • Türkmenbaşı\n\nBeş gün, dört gece: Özbekistan sınırından Kazakistan sınırına. Darvaza gaz kraterinin yanında çadır kampında bir gece, Aşkabat’ta iki gece ve Hazar kıyısındaki Türkmenbaşı’nda bir gece.',
-    },
-    category: 'classic',
-    days: 5,
-    // The five the sheet names in its own subtitle, not every place the coach passes through.
-    cities: 5,
-    // The sheet says «Hotel, camp» and no class. Guessing four stars here would put a number on
-    // the page that nobody has promised.
-    hotelStars: null,
-    priceFromMinor: 83_000,
-    priceCurrency: 'USD',
-    isFeatured: true,
-    isPublished: true,
-    // Ahead of the nine demo rows, which start at one.
-    sortOrder: 0,
-  });
+    days: SHORT_DAYS,
+    prices: TWO_DAY_PRICES,
+    /*
+     * Chosen rather than dealt: the crater is what this tour is for, and a card showing it says
+     * so before the title is read. The gallery then follows the itinerary — the capital, the
+     * desert crossing, the crater by day and by night, the dinner it is eaten at, and the road
+     * out through Khorezm.
+     */
+    cover: ['darvaza', 1],
+    gallery: [
+      ['ashgabat', 1],
+      ['karakum', 1],
+      ['darvaza', 2],
+      ['darvaza', 3],
+      ['cuisine', 0],
+      ['konyeUrgench', 1],
+    ],
+  },
+];
 
-  const [tour] = await db
-    .select({ id: t.tours.id })
-    .from(t.tours)
-    .where(eq(t.tours.slug, TURKMENISTAN_SLUG))
-    .limit(1);
+/**
+ * Which slugs this file owns — everything else in `tours` is the demo catalogue.
+ *
+ * Exported so the tests can tell the two apart without keeping their own copy of the list, which
+ * is the copy that goes stale the day a third sheet arrives.
+ */
+export const OWNER_TOUR_SLUGS: readonly string[] = TOURS.map((tour) => tour.slug);
 
-  if (tour === undefined) throw new Error(`the ${TURKMENISTAN_SLUG} tour did not insert`);
-
-  await db.insert(t.tourDays).values(
-    TURKMENISTAN_DAYS.map((day, index) => ({
-      tourId: tour.id,
-      dayNumber: index + 1,
-      title: day.title,
-      description: lines(day.lines),
-      city: day.city,
-    })),
+/**
+ * Adds any owner tour the database does not have yet.
+ *
+ * Idempotent by slug, so it is safe from both `db:seed` on an empty database and `db:content` on
+ * the live one (D-43 — the seeder refuses a non-empty database, and the live one is never empty).
+ * A tour that is already there is left alone entirely: its text belongs to whoever last edited it
+ * in the admin panel.
+ */
+export async function seedOwnerTours(db: Database): Promise<number> {
+  const existing = new Set(
+    (await db.select({ slug: t.tours.slug }).from(t.tours)).map((row) => row.slug),
   );
 
-  await db.insert(t.tourInclusions).values([
-    ...INCLUDED.map((text, index) => ({
-      tourId: tour.id,
-      kind: 'included' as const,
-      text,
-      sortOrder: (index + 1) * 10,
-    })),
-    ...EXCLUDED.map((text, index) => ({
-      tourId: tour.id,
-      kind: 'excluded' as const,
-      text,
-      sortOrder: (index + 1) * 10,
-    })),
-  ]);
+  let written = 0;
 
-  await db
-    .insert(t.tourPrices)
-    .values(PRICES.map(([pax, minor]) => ({ tourId: tour.id, pax, priceMinor: minor })));
+  for (const tour of TOURS) {
+    if (existing.has(tour.slug)) continue;
 
-  return 1;
+    await db.insert(t.tours).values({ slug: tour.slug, ...tour.values });
+
+    const [row] = await db
+      .select({ id: t.tours.id })
+      .from(t.tours)
+      .where(eq(t.tours.slug, tour.slug))
+      .limit(1);
+
+    if (row === undefined) throw new Error(`the ${tour.slug} tour did not insert`);
+
+    await db.insert(t.tourDays).values(
+      tour.days.map((day, index) => ({
+        tourId: row.id,
+        dayNumber: index + 1,
+        title: day.title,
+        description: lines(day.lines),
+        city: day.city,
+      })),
+    );
+
+    await db.insert(t.tourInclusions).values([
+      ...INCLUDED.map((text, index) => ({
+        tourId: row.id,
+        kind: 'included' as const,
+        text,
+        sortOrder: (index + 1) * 10,
+      })),
+      ...EXCLUDED.map((text, index) => ({
+        tourId: row.id,
+        kind: 'excluded' as const,
+        text,
+        sortOrder: (index + 1) * 10,
+      })),
+    ]);
+
+    await db
+      .insert(t.tourPrices)
+      .values(tour.prices.map(([pax, minor]) => ({ tourId: row.id, pax, priceMinor: minor })));
+
+    written += 1;
+  }
+
+  return written;
+}
+
+/**
+ * Gives the owner's tours their photographs, once there are photographs to give.
+ *
+ * Separate from the insert above because a fresh database has the tours before it has a single
+ * picture: the seeder runs first and the Commons import second. So this is called from the end of
+ * the import, where the rows have just appeared, and from `db:content`, where they appeared
+ * months ago — and it does nothing at all on a database that has neither.
+ *
+ * Idempotent on both halves, and in the direction that matters: a cover somebody has since
+ * chosen is never replaced, and a tour that already has a strip is never added to. Editing a
+ * gallery is what the admin panel is for (D-117), and a script that re-asserts its own opinion
+ * every time it runs would quietly undo that work.
+ */
+export async function attachOwnerTourMedia(db: Database): Promise<number> {
+  const photos = await db
+    .select({
+      id: t.media.id,
+      alt: t.media.alt,
+      width: t.media.width,
+      height: t.media.height,
+    })
+    .from(t.media);
+
+  if (photos.length === 0) return 0;
+
+  const resolve = ([subject, nth]: Photo): number | undefined => {
+    const phrase = SUBJECT_ALT[subject];
+    const matching = photos
+      // Landscape only: every frame a tour uses is wider than it is tall, and a portrait
+      // photograph in one is a vertical strip of its own middle.
+      .filter(
+        (photo) =>
+          (photo.alt?.en ?? '').includes(phrase) && (photo.width ?? 0) > (photo.height ?? 0),
+      )
+      .sort((a, b) => a.id - b.id);
+
+    return matching[nth % matching.length]?.id;
+  };
+
+  let touched = 0;
+
+  for (const tour of TOURS) {
+    const [row] = await db
+      .select({ id: t.tours.id, coverMediaId: t.tours.coverMediaId })
+      .from(t.tours)
+      .where(eq(t.tours.slug, tour.slug))
+      .limit(1);
+
+    if (row === undefined) continue;
+
+    let changed = false;
+
+    if (row.coverMediaId === null) {
+      const cover = resolve(tour.cover);
+      if (cover !== undefined) {
+        await db.update(t.tours).set({ coverMediaId: cover }).where(eq(t.tours.id, row.id));
+        changed = true;
+      }
+    }
+
+    const strip = await db
+      .select({ id: t.tourMedia.id })
+      .from(t.tourMedia)
+      .where(eq(t.tourMedia.tourId, row.id));
+
+    if (strip.length === 0) {
+      const values = tour.gallery
+        .map((photo, index) => ({ mediaId: resolve(photo), sortOrder: (index + 1) * 10 }))
+        .filter(
+          (entry): entry is { mediaId: number; sortOrder: number } => entry.mediaId !== undefined,
+        )
+        // The same photograph twice in one strip is one photograph, and the unique index on
+        // (tour, media) would reject the whole insert rather than the repeat.
+        .filter(
+          (entry, index, all) =>
+            all.findIndex((other) => other.mediaId === entry.mediaId) === index,
+        );
+
+      if (values.length > 0) {
+        await db.insert(t.tourMedia).values(values.map((entry) => ({ tourId: row.id, ...entry })));
+        changed = true;
+      }
+    }
+
+    if (changed) touched += 1;
+  }
+
+  return touched;
 }

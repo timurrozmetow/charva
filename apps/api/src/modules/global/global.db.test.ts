@@ -28,13 +28,30 @@ async function get<T>(path: string): Promise<T> {
   return response.json<T>();
 }
 
+async function countPublished(table: string): Promise<number> {
+  const [rows] = await context.pool.query(
+    `SELECT COUNT(*) AS n FROM \`${table}\` WHERE is_published = 1`,
+  );
+  return (rows as { n: number }[])[0]?.n ?? 0;
+}
+
 describe('the tour catalogue', () => {
   it('counts what it has rather than claiming thirty-two', async () => {
-    const body = await get<{ items: unknown[]; meta: { total: number } }>('/global/tours');
+    const body = await get<{ items: unknown[]; meta: { total: number } }>(
+      '/global/tours?perPage=50',
+    );
 
-    // Nine from the prototype's demo catalogue and one the owner actually sells.
-    expect(body.meta.total).toBe(10);
-    expect(body.items).toHaveLength(10);
+    /*
+     * Counted on both sides.
+     *
+     * A literal here would be the very thing D-6 rejects, one layer up: it would pass while the
+     * endpoint returned a stale number, and it would have to be edited every time the owner
+     * publishes a tour — which is exactly the edit somebody makes without thinking.
+     */
+    const published = await countPublished('tours');
+    expect(published).toBeGreaterThan(0);
+    expect(body.meta.total).toBe(published);
+    expect(body.items).toHaveLength(published);
   });
 
   it('builds its chips from the categories that actually have tours', async () => {
@@ -399,12 +416,16 @@ describe('pagination', () => {
       meta: { page: number; perPage: number; total: number; totalPages: number; hasMore: boolean };
     }>('/global/tours?page=1&perPage=4');
 
+    const total = await countPublished('tours');
+
     expect(body.items).toHaveLength(4);
     expect(body.meta).toEqual({
       page: 1,
       perPage: 4,
-      total: 10,
-      totalPages: 3,
+      total,
+      // The arithmetic is what this asserts — «показано N из M» is wrong in a different way if
+      // the page count is rounded down, and that stays true whatever M happens to be today.
+      totalPages: Math.ceil(total / 4),
       hasMore: true,
     });
   });

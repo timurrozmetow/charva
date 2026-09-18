@@ -1,5 +1,6 @@
 import { withDb } from './client';
 import { seedJournal } from './seed/journal';
+import { attachOwnerTourMedia, seedOwnerTours } from './seed/owner-content';
 import { countUmrahFaq, seedUmrahFaq } from './seed/umrah-faq';
 
 /**
@@ -25,6 +26,12 @@ async function main(): Promise<void> {
     process.stdout.write(
       `${String(faq)} Umrah questions added, ${String(await countUmrahFaq(db))} published\n`,
     );
+
+    const tours = await seedOwnerTours(db);
+    process.stdout.write(`${String(tours)} owner tours added\n`);
+
+    const photographed = await attachOwnerTourMedia(db);
+    process.stdout.write(`${String(photographed)} owner tours given photographs\n`);
   });
 }
 

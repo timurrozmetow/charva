@@ -7,6 +7,7 @@ import { createDb } from '../client';
 import * as t from '../schema';
 import { TEST_DATABASE_URL } from '../test-setup';
 
+import { OWNER_TOUR_SLUGS } from './owner-content';
 import { isEmpty, seedAll, SEEDED_TABLES } from './seed';
 
 /**
@@ -39,11 +40,20 @@ afterAll(async () => {
 });
 
 describe('the catalogue', () => {
-  it('holds the nine tours the design describes, and the one that is real', async () => {
+  it('holds the nine tours the design describes, and the ones that are real', async () => {
     const tours = await db.select().from(t.tours);
-    // Nine invented to fill a layout, plus the operator's own tour sheet. The demo rows are
-    // meant to be deleted the week the site goes live; the tenth is not — see `owner-content.ts`.
-    expect(tours).toHaveLength(10);
+
+    /*
+     * Nine invented to fill a layout, plus the operator's own tour sheets.
+     *
+     * Split rather than counted as one number, because the two halves have opposite futures: the
+     * demo rows are meant to be deleted the week the site goes live, and the owner's are meant to
+     * grow. One literal for both would have to be edited for either event and would stop saying
+     * which one happened.
+     */
+    const owner = tours.filter((tour) => OWNER_TOUR_SLUGS.includes(tour.slug));
+    expect(owner.map((tour) => tour.slug).sort()).toEqual([...OWNER_TOUR_SLUGS].sort());
+    expect(tours).toHaveLength(9 + OWNER_TOUR_SLUGS.length);
 
     const classic = tours.find((tour) => tour.slug === 'klassicheskiy-turkmenistan');
     // Three languages since the dictionary was written; it used to be `{ ru }` alone.
@@ -100,6 +110,45 @@ describe('the catalogue', () => {
     // Matched rather than compared: the separator `formatMoney` puts before the sign is a
     // non-breaking space, and pinning an invisible character here would test the wrong thing.
     expect(formatMoney({ minor: tour?.priceFromMinor ?? 0, currency: 'USD' })).toMatch(/^830\s\$$/);
+  });
+
+  it('carries the two-day sheet too, with its own prices and its own promise', async () => {
+    const [tour] = await db.select().from(t.tours).where(eq(t.tours.slug, 'turkmenistan-2-days'));
+    expect(tour).toBeDefined();
+    expect(tour?.days).toBe(2);
+    expect(tour?.cities).toBe(3);
+    expect(tour?.hotelStars).toBeNull();
+
+    const days = await db.select().from(t.tourDays).where(eq(t.tourDays.tourId, tour!.id));
+    expect(days).toHaveLength(2);
+    expect(days.find((day) => day.dayNumber === 1)?.description?.ru?.split('\n')).toHaveLength(7);
+    expect(days.find((day) => day.dayNumber === 2)?.description?.ru?.split('\n')).toHaveLength(2);
+
+    const prices = await db.select().from(t.tourPrices).where(eq(t.tourPrices.tourId, tour!.id));
+    expect(prices.map((tier) => [tier.pax, tier.priceMinor])).toEqual([
+      [1, 60_000],
+      [2, 57_000],
+      [3, 54_000],
+      [4, 50_000],
+    ]);
+    expect(tour?.priceFromMinor).toBe(Math.min(...prices.map((tier) => tier.priceMinor)));
+
+    /*
+     * Both sheets carry the same subtitle, and on this one it is not true.
+     *
+     * «the Caspian coast» belongs to the five-day tour; these two days go Ashgabat, Karakum,
+     * crater, and out towards Khiva. A summary is what the card promises, so it promises what
+     * the itinerary contains — and that is worth pinning, because the obvious way to write this
+     * row is to copy the neighbouring one.
+     */
+    for (const text of Object.values(tour?.summary ?? {})) {
+      expect(text.toLowerCase()).not.toMatch(/каспи|caspian|hazar/);
+    }
+
+    // Three languages, like the tour beside it — the owner asked for all three (D-126).
+    for (const column of [tour?.title, tour?.summary, tour?.body]) {
+      expect(Object.keys(column ?? {}).sort()).toEqual(['en', 'ru', 'tr']);
+    }
   });
 
   it('keeps the camp and the boutique out of the star ratings', async () => {
