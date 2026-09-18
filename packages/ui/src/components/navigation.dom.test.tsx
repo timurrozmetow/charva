@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
@@ -254,6 +254,27 @@ describe('LangSwitcher', () => {
 
     await user.click(screen.getByRole('button', { name: /Язык/ }));
     await user.click(screen.getByRole('button', { name: 'Снаружи' }));
+    expect(screen.queryByRole('link', { name: /Türkçe/ })).not.toBeInTheDocument();
+  });
+
+  it('closes when focus leaves it, for somebody who never touches a pointer', async () => {
+    /*
+     * A click dismisses this list because a click begins with `mousedown` elsewhere. Tabbing to
+     * the next control and pressing Enter does not, so on the live site the list stayed open —
+     * behind the burger panel, invisible, still announced as expanded and still tabbable.
+     */
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    const trigger = screen.getByRole('button', { name: /Язык/ });
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    // `fireEvent` rather than `.focus()`: the event has to reach React inside `act`, and what
+    // the listener watches is `focusin` reaching the document, which is what this dispatches.
+    fireEvent.focusIn(screen.getByRole('button', { name: 'Снаружи' }));
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('link', { name: /Türkçe/ })).not.toBeInTheDocument();
   });
 

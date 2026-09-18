@@ -145,22 +145,10 @@ export const Footer: Story = {
             ],
           },
         ]}
-        crossLinks={
-          <span className="flex gap-6">
-            <a
-              href="https://charva-travel.com"
-              className="text-muted no-underline hover:text-accent"
-            >
-              Выбор сайта
-            </a>
-            <a
-              href="https://umra.charva-travel.com"
-              className="text-muted no-underline hover:text-accent"
-            >
-              Charva Umrah →
-            </a>
-          </span>
-        }
+        crossLinks={[
+          { key: 'choice', href: 'https://charva-travel.com', label: 'Выбор сайта' },
+          { key: 'umrah', href: 'https://umra.charva-travel.com', label: 'Charva Umrah' },
+        ]}
         renderLink={(link, { children, ...props }) => (
           <a href={link.href} {...props}>
             {children}

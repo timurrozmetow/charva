@@ -84,6 +84,19 @@ export function LangSwitcher({ options, value, renderLink, label, className }: L
       setOpen(false);
     };
 
+    /**
+     * The same dismissal for somebody who never touches a pointer.
+     *
+     * A click closes this list because a click begins with `mousedown` somewhere else. Tabbing
+     * to the burger button and pressing Enter does not: `click` fires with no pointer event in
+     * front of it, so the list stayed open — and open behind the menu panel, which covers the
+     * screen. The list was invisible, still `aria-expanded="true"`, and still in the tab order.
+     */
+    const onFocusIn = (event: FocusEvent) => {
+      if (rootRef.current?.contains(event.target as Node) === true) return;
+      setOpen(false);
+    };
+
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -108,9 +121,11 @@ export function LangSwitcher({ options, value, renderLink, label, className }: L
 
     document.addEventListener('mousedown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('focusin', onFocusIn);
     return () => {
       document.removeEventListener('mousedown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('focusin', onFocusIn);
     };
   }, [open]);
 

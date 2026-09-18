@@ -84,7 +84,14 @@ export function GlobalNav({ lang, overlay = false }: GlobalNavProps) {
         menu: copy.nav.menu,
       }}
       logo={
-        <Link to={path.home(lang)} aria-label={copy.nav.home} className="inline-flex items-center">
+        <Link
+          to={path.home(lang)}
+          aria-label={copy.nav.home}
+          // `min-h-tap` on the link, not on the mark: the logo is 57×36 by design and stays so,
+          // but a 36px-tall target in the navigation island is the smallest thing on the page
+          // that somebody taps. The row is already taller than 44, so nothing moves.
+          className="inline-flex min-h-tap items-center"
+        >
           <img src={logoMark} alt={copy.brand} width={57} height={36} className="h-9 w-auto" />
         </Link>
       }

@@ -112,12 +112,10 @@ export function UmrahFooter({ lang, settings }: UmrahFooterProps) {
       })}
       socials={socials}
       columns={columns}
-      crossLinks={
-        <>
-          <a href={SITE_URLS.choice}>{copy.footer.cross.choice}</a>
-          <a href={SITE_URLS.global}>{copy.footer.cross.global}</a>
-        </>
-      }
+      crossLinks={[
+        { key: 'choice', href: SITE_URLS.choice, label: copy.footer.cross.choice },
+        { key: 'global', href: SITE_URLS.global, label: copy.footer.cross.global },
+      ]}
       renderLink={(link, props) =>
         // A line with no destination — opening hours, the street address — is text, not a link.
         link.href === '' ? (

@@ -130,12 +130,10 @@ export function GlobalFooter({ lang, settings }: GlobalFooterProps) {
       })}
       socials={socials}
       columns={columns}
-      crossLinks={
-        <>
-          <a href={SITE_URLS.choice}>{copy.footer.cross.choice}</a>
-          <a href={SITE_URLS.umrah}>{copy.footer.cross.umrah}</a>
-        </>
-      }
+      crossLinks={[
+        { key: 'choice', href: SITE_URLS.choice, label: copy.footer.cross.choice },
+        { key: 'umrah', href: SITE_URLS.umrah, label: copy.footer.cross.umrah },
+      ]}
       renderLink={(link, props) =>
         // A line with no destination — opening hours, the street address — is text, not a link.
         link.href === '' ? (

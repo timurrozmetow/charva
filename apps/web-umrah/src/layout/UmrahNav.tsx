@@ -49,7 +49,12 @@ export function UmrahNav({ lang, overlay = false }: UmrahNavProps) {
         menu: copy.nav.menu,
       }}
       logo={
-        <Link to={path.home(lang)} aria-label={copy.nav.home} className="inline-flex items-center">
+        <Link
+          to={path.home(lang)}
+          aria-label={copy.nav.home}
+          // The hit area, not the mark — see the note on Global's navigation.
+          className="inline-flex min-h-tap items-center"
+        >
           <img src={logoMark} alt={copy.brand} width={57} height={36} className="h-9 w-auto" />
         </Link>
       }

@@ -61,8 +61,16 @@ export interface SiteFooterProps {
   socials: readonly FooterSocial[];
   columns: readonly FooterColumn[];
   copyright: ReactNode;
-  /** Links to the chooser page and the other site. */
-  crossLinks?: ReactNode;
+  /**
+   * The chooser page and the other brand's site.
+   *
+   * Links rather than markup, like `columns` above, and for the reason the markup version made
+   * visible: both apps handed in bare `<a>` elements, so the two links in the bottom row were
+   * the only ones in the footer that missed its styling entirely — eighteen pixels tall, against
+   * the forty-four every column link gets from `min-h-tap` here. A component that is handed
+   * finished markup cannot dress it, and two callers wrote the same undressed pair.
+   */
+  crossLinks?: readonly FooterLink[];
   renderLink: (link: FooterLink, props: FooterLinkProps) => ReactNode;
   /** Names the landmark — «Подвал сайта». */
   label: string;
@@ -172,7 +180,19 @@ export function SiteFooter({
 
         <div className="flex items-center justify-between gap-6 py-[26px] pb-[30px] text-[12px] text-muted mob:flex-col mob:items-start mob:gap-3">
           <p className="m-0">{copyright}</p>
-          {crossLinks}
+          {crossLinks !== undefined && crossLinks.length > 0 && (
+            <ul className="m-0 flex list-none items-center gap-6 p-0 mob:gap-4">
+              {crossLinks.map((link) => (
+                <li key={link.key}>
+                  {renderLink(link, {
+                    className:
+                      'inline-flex min-h-tap items-center text-[12px] text-muted no-underline transition-colors duration-colour hover:text-accent',
+                    children: link.label,
+                  })}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </Container>
     </footer>
