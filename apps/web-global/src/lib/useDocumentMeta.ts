@@ -1,4 +1,5 @@
 import {
+  applyDocumentHead,
   bcp47,
   contentMeta,
   hreflangSet,
@@ -44,8 +45,8 @@ export interface DocumentMeta {
  * Two copies of one title is how those two come to disagree, silently, for whichever half of
  * the audience nobody happens to be testing as.
  *
- * The `hreflang` set is rewritten on every navigation rather than patched, because it is three
- * links and a default and reconciling them one at a time is more code than replacing them.
+ * Which tags are rewritten, which are replaced wholesale and which belong to the server is the
+ * subject of `applyDocumentHead` — this hook only decides what they should say.
  */
 export function useDocumentMeta({ route, pathAfterLang, content }: DocumentMeta, lang: Lang): void {
   const section = routeMeta(SITE, route, lang);
@@ -53,37 +54,24 @@ export function useDocumentMeta({ route, pathAfterLang, content }: DocumentMeta,
     content === undefined ? section : withFallback(contentMeta(SITE, content), section.description);
 
   useEffect(() => {
-    // BCP 47, not the internal key: Turkmen is `tk` to a parser and to a screen reader.
-    document.documentElement.lang = bcp47(lang);
-    document.title = title;
-    setMeta('description', description);
+    const href = (target: Lang) =>
+      new URL(`/${target}${pathAfterLang}`, location.origin).toString();
 
-    for (const stale of document.querySelectorAll('link[data-charva]')) stale.remove();
-
-    const canonical = document.createElement('link');
-    canonical.rel = 'canonical';
-    canonical.href = new URL(`/${lang}${pathAfterLang}`, location.origin).toString();
-    canonical.dataset['charva'] = '';
-    document.head.append(canonical);
-
-    for (const { hreflang, lang: target } of hreflangSet(SITE)) {
-      const link = document.createElement('link');
-      link.rel = 'alternate';
-      link.hreflang = hreflang;
-      link.href = new URL(`/${target}${pathAfterLang}`, location.origin).toString();
-      link.dataset['charva'] = '';
-      document.head.append(link);
-    }
+    applyDocumentHead({
+      // BCP 47, not the internal key: Turkmen is `tk` to a parser and to a screen reader.
+      lang: bcp47(lang),
+      title,
+      description,
+      canonical: href(lang),
+      alternates: hreflangSet(SITE).map(({ hreflang, lang: target }) => ({
+        hreflang,
+        href: href(target),
+      })),
+    });
   }, [lang, title, description, pathAfterLang]);
 }
 
 /** A row with no summary of its own still needs a description; the section's is a true one. */
 function withFallback(meta: { title: string; description: string }, fallback: string) {
   return meta.description === '' ? { ...meta, description: fallback } : meta;
-}
-
-function setMeta(name: string, content: string): void {
-  let tag = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
-  tag ??= document.head.appendChild(Object.assign(document.createElement('meta'), { name }));
-  tag.content = content;
 }

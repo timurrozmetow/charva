@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@charva/config": "workspace:*",
+    "jsdom": "^26.1.0",
     "rimraf": "^6.0.1",
     "tsup": "^8.3.5",
     "typescript": "^5.7.3",

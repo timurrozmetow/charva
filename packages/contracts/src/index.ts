@@ -3,6 +3,7 @@ export * from './builder';
 export * from './client';
 export * from './constants';
 export * from './errors';
+export * from './head';
 export * from './i18n';
 export * from './money';
 export * from './pagination';
