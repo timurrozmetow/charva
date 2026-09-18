@@ -25,6 +25,8 @@ import { seedAll, SEEDED_TABLES } from './seed';
 let pool: mysql.Pool;
 let db: ReturnType<typeof createDb>;
 
+const HORSE = 'An Akhal-Teke horse, the pride of Turkmenistan';
+
 /** One photograph, described the way the stock importer describes them. */
 async function photograph(subject: string, index: number): Promise<void> {
   await db.insert(t.media).values({
@@ -127,6 +129,36 @@ describe('attachOwnerTourMedia', () => {
     // Two frames of the crater, but never the same file twice — the unique index on
     // (tour, media) would reject the whole insert rather than the repeat.
     expect(new Set(strip.map((row) => row.mediaId)).size).toBe(strip.length);
+  });
+
+  /*
+   * The page draws the cover large and the strip beneath it, so one photograph in both is one
+   * photograph shown twice — which reads as a fault rather than as a choice.
+   *
+   * Not hypothetical, and this is the arrangement that produces it: the five-day tour already has
+   * a cover, dealt to it round-robin when the photographs were imported, and it happens to be the
+   * very frame its strip would ask for. So the cover is pinned to that frame here rather than
+   * left to the code that is being tested.
+   */
+  it('never repeats the cover inside the strip', async () => {
+    const tour = await tourBySlug(TURKMENISTAN_SLUG);
+    // Filtered here rather than in SQL: comparing a JSON column to an object compares the
+    // serialised text, and a key order away from matching is a test that silently finds nothing.
+    const horses = (await db.select({ id: t.media.id, alt: t.media.alt }).from(t.media))
+      .filter((photo) => photo.alt?.en === HORSE)
+      .sort((a, b) => a.id - b.id);
+
+    const collides = horses[1]?.id;
+    expect(collides, 'the fixture must hold a second horse').toBeDefined();
+
+    await db.update(t.tours).set({ coverMediaId: collides }).where(eq(t.tours.id, tour!.id));
+    await db.delete(t.tourMedia).where(eq(t.tourMedia.tourId, tour!.id));
+
+    await attachOwnerTourMedia(db);
+
+    const strip = await galleryOf(tour!.id);
+    expect(strip.length).toBeGreaterThan(0);
+    expect(strip.map((row) => row.mediaId)).not.toContain(collides);
   });
 
   /*

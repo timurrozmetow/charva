@@ -597,11 +597,13 @@ export async function attachOwnerTourMedia(db: Database): Promise<number> {
     if (row === undefined) continue;
 
     let changed = false;
+    let cover = row.coverMediaId;
 
-    if (row.coverMediaId === null) {
-      const cover = resolve(tour.cover);
-      if (cover !== undefined) {
-        await db.update(t.tours).set({ coverMediaId: cover }).where(eq(t.tours.id, row.id));
+    if (cover === null) {
+      const chosen = resolve(tour.cover);
+      if (chosen !== undefined) {
+        await db.update(t.tours).set({ coverMediaId: chosen }).where(eq(t.tours.id, row.id));
+        cover = chosen;
         changed = true;
       }
     }
@@ -617,8 +619,17 @@ export async function attachOwnerTourMedia(db: Database): Promise<number> {
         .filter(
           (entry): entry is { mediaId: number; sortOrder: number } => entry.mediaId !== undefined,
         )
-        // The same photograph twice in one strip is one photograph, and the unique index on
-        // (tour, media) would reject the whole insert rather than the repeat.
+        /*
+         * Never the cover.
+         *
+         * The tour page draws the cover large and the strip beneath it, so the same photograph in
+         * both is one photograph shown twice — which reads as a mistake rather than as a choice.
+         * It is not hypothetical: the five-day tour's cover is the horse the round-robin dealt it,
+         * and the second Akhal-Teke frame by id is that very row.
+         */
+        .filter((entry) => entry.mediaId !== cover)
+        // And never the same file twice within the strip: the unique index on (tour, media)
+        // would reject the whole insert rather than the repeat.
         .filter(
           (entry, index, all) =>
             all.findIndex((other) => other.mediaId === entry.mediaId) === index,
