@@ -303,13 +303,6 @@
     "goToSlide": "{index}. slayda git",
     "pause": "Gösterimi durdur",
     "play": "Gösterimi sürdür",
-    "search": {
-      "destination": "Yön",
-      "duration": "Süre",
-      "guests": "Kişi",
-      "any": "Farketmez",
-      "submit": "Tur bul"
-    },
     "tours": {
       "eyebrow": "Rotalar",
       "title": "Popüler turlar",

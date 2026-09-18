@@ -303,13 +303,6 @@
     "goToSlide": "Go to slide {index}",
     "pause": "Pause the slideshow",
     "play": "Resume the slideshow",
-    "search": {
-      "destination": "Destination",
-      "duration": "Length",
-      "guests": "Guests",
-      "any": "Any",
-      "submit": "Find a tour"
-    },
     "tours": {
       "eyebrow": "Routes",
       "title": "Popular tours",

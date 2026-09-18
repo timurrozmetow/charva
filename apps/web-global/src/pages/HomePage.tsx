@@ -25,7 +25,6 @@ import { QueryState } from '../components/QueryState';
 import { ReviewCard } from '../components/ReviewCard';
 import { TourCard } from '../components/TourCard';
 import { VideoPlayer } from '../components/VideoPlayer';
-import { HeroSearchBar } from '../home/HeroSearchBar';
 import { copyFor, fill } from '../i18n';
 import { beyondPhonePreview, cardGridClass } from '../lib/cardGrid';
 import { useLang } from '../lib/routeParams';
@@ -119,7 +118,7 @@ export function HomePage({ lang }: HomePageProps) {
           taller than that the photograph became a letterbox strip with cream below it, and on a
           21:9 monitor it was a fifth of the height. `dvh` rather than `vh` because mobile
           browsers shrink the viewport as their chrome retracts, and `vh` there is the tall
-          value — the search bar would start below the fold and rise into it as the user
+          value — the bottom of the hero would start below the fold and rise into it as the user
           scrolled. Umrah's hero has been `min-h-dvh` since it was written; this is the one that
           was left behind.
         */}
@@ -173,7 +172,6 @@ export function HomePage({ lang }: HomePageProps) {
               <p className="mt-6 max-w-[560px] text-lead font-light text-body">
                 {copy.home.heroLead}
               </p>
-              <HeroSearchBar lang={lang} className="mt-11 max-w-[1000px]" />
             </div>
           </Container>
         </section>
