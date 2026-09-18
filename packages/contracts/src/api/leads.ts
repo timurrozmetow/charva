@@ -69,7 +69,26 @@ const honeypot = z.string().max(200).optional();
 /** The signed timestamp from `GET /forms/token`. Anti-spam layer three. */
 const formToken = z.string().min(8).max(200);
 
-const phone = z.string().min(4).max(32);
+/**
+ * Enough digits to be a telephone number, checked on both sides of the wire.
+ *
+ * The authority is still `parsePhone` on the server, which knows what a dialable Turkmen number
+ * looks like and stores it in E.164. This is deliberately weaker, and deliberately a subset of
+ * it: everything it rejects, libphonenumber rejects too, so the two can disagree only in the
+ * safe direction — the form lets something through and the server explains why it will not.
+ *
+ * It exists because the alternative is a round trip. `type="tel"` has no native validation by
+ * design, so «abcd» in that field was accepted by the browser, accepted by the schema, sent over
+ * a mobile connection from Ashgabat and refused on arrival. Six digits, not eight: eight is the
+ * length of a Turkmen number and the form is also for visitors dialling from elsewhere.
+ */
+const phone = z
+  .string()
+  .min(4)
+  .max(32)
+  .refine((value) => (value.match(/\d/g) ?? []).length >= 6, {
+    message: 'Expected a dialable number, for example +993 65 123456',
+  });
 
 export const formTokenResponse = z.object({
   token: z.string(),

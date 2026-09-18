@@ -32,8 +32,22 @@ export interface BuilderPanelProps {
  *
  * The breakpoint is the outer grid's, because that is what actually moves: the cards are fine
  * at any width the panel has three columns' worth of room for.
+ *
+ * And `auto-rows-[1fr]` rather than `auto-rows-min`, with the `flex-1` moved to a wrapper.
+ *
+ * With `auto-rows-min` each row hugs its own content, so a row whose longest card wraps to three
+ * lines stood 118px tall next to a row of 96 — «Мары / Мерв» and «Древний Шёлковый путь» against
+ * «Аваза». Six equal chips in two ragged rows read as a layout that did not finish loading.
+ *
+ * `1fr` rows in a grid whose height is *not* fixed all take the tallest row's content, which is
+ * the equality wanted — but only while the grid is content-sized. `flex-1` made it fill the panel
+ * instead, and then `1fr` shared that space out: 196px chips. So the stretch moved one level up,
+ * where it still pins the Back/Next row to the bottom of the panel — which is what it was for.
+ *
+ * Measured at 1440: panel 672px and «Дальше» at 586px, both unchanged, and every card 118.
  */
-const OPTIONS_GRID = 'grid flex-1 auto-rows-min grid-cols-3 gap-3 lap:grid-cols-2 mob:grid-cols-1';
+const OPTIONS_GRID =
+  'grid auto-rows-[1fr] content-start grid-cols-3 gap-3 lap:grid-cols-2 mob:grid-cols-1';
 
 /**
  * The panel: one step's question and its answers.
@@ -92,49 +106,51 @@ export function BuilderPanel({
       {isForm ? (
         <div className="flex-1">{form}</div>
       ) : (
-        <div
-          role={multi ? 'group' : 'radiogroup'}
-          aria-labelledby={`${groupId}-title`}
-          className={OPTIONS_GRID}
-        >
-          {step.options.map((option) => {
-            const on = isChosen(option.code);
-            return (
-              <button
-                key={option.code}
-                type="button"
-                role={multi ? 'checkbox' : 'radio'}
-                aria-checked={on}
-                onClick={() => {
-                  onPick(option.code);
-                }}
-                className={[
-                  'flex flex-col gap-1.5 rounded-media border p-5 text-left',
-                  // The named three are all that ever change here; `transition-all` also put
-                  // the panel's own layout on the transition list for nothing. And this is a
-                  // chip in everything but name — the press belongs on it for the same reason.
-                  'transition-[color,background-color,border-color,transform] duration-press ease-press',
-                  'active:scale-[0.98]',
-                  on
-                    ? 'border-accent bg-tint-strong text-accent'
-                    : 'border-line bg-cream-fill text-dark-on hover:border-tint-line',
-                ].join(' ')}
-              >
-                <span className="text-body font-bold">{option.name}</span>
-                {option.note !== '' && (
-                  <span
-                    className={
-                      on
-                        ? 'text-bodySm font-light text-accent'
-                        : 'text-bodySm font-light text-cream-muted'
-                    }
-                  >
-                    {option.note}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        <div className="flex flex-1 flex-col">
+          <div
+            role={multi ? 'group' : 'radiogroup'}
+            aria-labelledby={`${groupId}-title`}
+            className={OPTIONS_GRID}
+          >
+            {step.options.map((option) => {
+              const on = isChosen(option.code);
+              return (
+                <button
+                  key={option.code}
+                  type="button"
+                  role={multi ? 'checkbox' : 'radio'}
+                  aria-checked={on}
+                  onClick={() => {
+                    onPick(option.code);
+                  }}
+                  className={[
+                    'flex flex-col gap-1.5 rounded-media border p-5 text-left',
+                    // The named three are all that ever change here; `transition-all` also put
+                    // the panel's own layout on the transition list for nothing. And this is a
+                    // chip in everything but name — the press belongs on it for the same reason.
+                    'transition-[color,background-color,border-color,transform] duration-press ease-press',
+                    'active:scale-[0.98]',
+                    on
+                      ? 'border-accent bg-tint-strong text-accent'
+                      : 'border-line bg-cream-fill text-dark-on hover:border-tint-line',
+                  ].join(' ')}
+                >
+                  <span className="text-body font-bold">{option.name}</span>
+                  {option.note !== '' && (
+                    <span
+                      className={
+                        on
+                          ? 'text-bodySm font-light text-accent'
+                          : 'text-bodySm font-light text-cream-muted'
+                      }
+                    >
+                      {option.note}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 

@@ -291,6 +291,9 @@ export function SignupForm({ lang, open, className }: SignupFormProps) {
 
       <Checkbox
         className="mt-6"
+        // `required` for the screen reader, not for the browser: the form is `noValidate` and
+        // the schema is what refuses an unticked box. See the note on Global's lead form.
+        required
         {...(form.formState.errors.consent === undefined
           ? {}
           : { error: copy.form.errors.consent })}

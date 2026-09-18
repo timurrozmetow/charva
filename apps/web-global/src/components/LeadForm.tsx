@@ -421,6 +421,16 @@ export function LeadForm({
 
       <Checkbox
         className="mt-6"
+        /*
+         * `required` on the node, although the form is `noValidate` and the schema is what
+         * actually refuses an unticked box.
+         *
+         * It changes no behaviour and it is not decoration: `required` is what a screen reader
+         * announces, and every other mandatory control in this form carries it — `Field` puts it
+         * there through context. The consent box sits outside a `Field`, so it was the one
+         * required control on the site that announced itself as optional.
+         */
+        required
         {...(form.formState.errors.consent === undefined
           ? {}
           : { error: copy.form.errors.consent })}

@@ -284,6 +284,29 @@ describe('layer five — the phone', () => {
     expect(body.error.details?.[0]?.path).toBe('phone');
     expect(await countLeads()).toBe(0);
   });
+
+  /*
+   * The same verdict from the schema, which is the half the browser can reach.
+   *
+   * `type="tel"` has no native validation, so the form used to accept four letters and let the
+   * visitor find out after a round trip. The schema now wants six digits — weaker than
+   * libphonenumber and a subset of it, so the two can only disagree in the direction where the
+   * server explains itself.
+   */
+  it('refuses it before the parser does, on digits alone', async () => {
+    const response = await postLead(lead({ phone: 'abcd' }));
+
+    expect(response.statusCode).toBe(400);
+    expect(problem(response).error.details?.[0]?.path).toBe('phone');
+    expect(await countLeads()).toBe(0);
+  });
+
+  it('still takes a number written the way a person writes one', async () => {
+    for (const written of ['+993 65 123456', '65 12 34 56', '(65) 123-456']) {
+      const response = await postLead(lead({ phone: written }), freshAddress());
+      expect(response.statusCode, written).toBe(201);
+    }
+  });
 });
 
 // ----------------------------------------------------------------------------------------
