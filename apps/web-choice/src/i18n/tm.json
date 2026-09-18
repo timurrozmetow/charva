@@ -39,6 +39,10 @@
     "departed": "Topar ýolda",
     "none": "Indiki topar tiz wagtda"
   },
+  "notFound": {
+    "title": "Sahypa tapylmady",
+    "hint": "Salgy könelen bolmagy — ýa-da biziň iki saýtymyzyň birine degişli bolmagy mümkin. Ikisi-de şu ýerde."
+  },
   "footer": {
     "license": "Ygtyýarnama {license}",
     "hint": "Ugry saýlaň"

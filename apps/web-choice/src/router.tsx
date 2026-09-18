@@ -6,11 +6,13 @@ import {
   createRouter,
   Outlet,
   redirect,
+  useRouterState,
 } from '@tanstack/react-router';
 
 import { choiceQuery } from './api/choice';
 import { ChoicePage } from './ChoicePage';
 import { bestLang, isChoiceLang } from './lib/best-lang';
+import { NotFoundPage } from './NotFoundPage';
 
 /**
  * Two routes: the bare root, which only redirects, and the page itself under its language.
@@ -23,7 +25,29 @@ import { bestLang, isChoiceLang } from './lib/best-lang';
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: Outlet,
+  /*
+   * On the root, and only there: `/$lang` has no children, so nothing below it can fail to
+   * match. Everything that is not `/` or `/<lang>` arrives here — which until now meant
+   * TanStack's own fallback, a bare «Not Found» on the near-black page.
+   */
+  notFoundComponent: NotFound,
 });
+
+/**
+ * The language of a page that does not exist.
+ *
+ * From the path when it carries one, because `/ru/gallery` was typed by somebody reading
+ * Russian and that is a fact about this visit. When it carries none — `/nonsense` — the header
+ * decides, exactly as it does on the bare `/`. That is not a departure from D-54: the rule
+ * there is that a *real address* must not vary by reader, because a URL has to be worth
+ * sharing. Nobody shares a 404, and there is no other signal.
+ */
+function NotFound() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const [, first = ''] = pathname.split('/');
+
+  return <NotFoundPage lang={isChoiceLang(first) ? first : bestLang(navigator.languages)} />;
+}
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,

@@ -101,10 +101,16 @@ describe('matching a path to a page', () => {
     expect(resolveRoute('global', '/ru/').pathAfterLang).toBe('');
   });
 
-  it('sends an unknown path on the chooser to the chooser', () => {
-    // It has one page and its router redirects everything to it; there is no missing page.
-    expect(resolveRoute('choice', '/ru/nonsense').route).toBe('home');
-    expect(resolveRoute('choice', '/ru/nonsense').matched).toBe(false);
+  it('gives the chooser a 404 of its own, keeping the language from the path', () => {
+    // It used to answer `home` — on the reasoning that its router redirects everything to its
+    // one page. The router redirects an unknown *language*; an unknown path it did not, so
+    // `charva-travel.com/ru/gallery` was a 404 titled «Charva Travel — туры по Туркменистану».
+    expect(resolveRoute('choice', '/ru/gallery')).toMatchObject({
+      lang: 'ru',
+      route: 'notFound',
+      matched: false,
+    });
+    expect(resolveRoute('choice', '/nonsense').route).toBe('notFound');
   });
 
   it('answers 200 for the chooser itself, in every language it speaks', async () => {

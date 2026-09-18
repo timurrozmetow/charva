@@ -39,6 +39,10 @@
     "departed": "Group is travelling",
     "none": "Next group announced soon"
   },
+  "notFound": {
+    "title": "Page not found",
+    "hint": "The link may be out of date — or it may belong to one of our two sites. Both are here."
+  },
   "footer": {
     "license": "Licence {license}",
     "hint": "Choose a direction"

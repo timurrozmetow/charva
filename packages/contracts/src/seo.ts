@@ -21,7 +21,7 @@ export interface RouteMeta {
 
 /** Route ids per site. The same keys the copy files used, so nothing was renamed in the move. */
 export const SITE_ROUTES = {
-  choice: ['home'],
+  choice: ['home', 'notFound'],
   global: [
     'home',
     'tours',
@@ -76,6 +76,36 @@ const ROUTE_META = {
         title: 'Charva Travel — Türkmenistana syýahat we umra',
         description:
           'Türkmenistan boýunça taýýar turlar we syýahat gurnaýjy, şeýle hem türkmen topary bilen umra ziýarady.',
+      },
+    },
+    /*
+     * The chooser has a 404 of its own, and the address in the description is the point.
+     *
+     * Every path but `/` and `/<lang>` lands here, and the one that actually arrives is a page
+     * of one of the other two sites typed against the apex — `charva-travel.com/ru/gallery` is
+     * how the owner found this. So the answer is not «go home», it is «this is the door, the
+     * rooms are through there», which is what the chooser already is.
+     */
+    notFound: {
+      ru: {
+        title: 'Страница не найдена — Charva Travel',
+        description:
+          'Такого адреса на charva-travel.com нет. Отсюда два пути: туры по Туркменистану и умра с туркменской группой.',
+      },
+      en: {
+        title: 'Page not found — Charva Travel',
+        description:
+          'There is no such address on charva-travel.com. Two ways on from here: tours of Turkmenistan, and Umrah with a Turkmen-speaking group.',
+      },
+      tm: {
+        title: 'Sahypa tapylmady — Charva Travel',
+        description:
+          'charva-travel.com-da beýle salgy ýok. Bu ýerden iki ýol bar: Türkmenistana syýahat we türkmen topary bilen umra.',
+      },
+      tr: {
+        title: 'Sayfa bulunamadı — Charva Travel',
+        description:
+          'charva-travel.com adresinde böyle bir sayfa yok. Buradan iki yol var: Türkmenistan turları ve Türkmence konuşan grupla umre.',
       },
     },
   },

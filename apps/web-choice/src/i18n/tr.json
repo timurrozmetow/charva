@@ -39,6 +39,10 @@
     "departed": "Grup yolda",
     "none": "Sonraki grup yakında"
   },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "hint": "Bağlantı eski olabilir — ya da iki sitemizden birine ait olabilir. İkisi de burada."
+  },
   "footer": {
     "license": "Lisans {license}",
     "hint": "Bir yön seçin"

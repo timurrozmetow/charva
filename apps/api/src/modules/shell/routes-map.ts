@@ -22,11 +22,13 @@ export interface ResolvedRoute<S extends Site = Site> {
   /**
    * Did a pattern actually match, or is this the fallback?
    *
-   * Stated rather than inferred, because inferring it by comparing the route id against
-   * `unmatchedRoute(site)` is wrong on the chooser: its fallback IS `home`, its only page, so
-   * the comparison called every single chooser URL — including the homepage — a 404. The HTML
-   * was right and browsers rendered it, so the only readers who ever saw the status were the
-   * ones the shell exists for: Google and the Telegram card.
+   * Stated rather than inferred. Inferring it by comparing the route id against
+   * `unmatchedRoute(site)` was wrong on the chooser, whose fallback used to be `home`, its only
+   * page: the comparison called every single chooser URL — including the homepage — a 404. The
+   * HTML was right and browsers rendered it, so the only readers who ever saw the status were
+   * the ones the shell exists for, Google and the Telegram card. The chooser has a real 404 now
+   * and that particular collision is gone, but the field stays: a site whose fallback route is
+   * also a real page is a shape this table is allowed to have again.
    */
   matched: boolean;
 }
@@ -112,14 +114,17 @@ export function resolveRoute<S extends Site>(site: S, rawPath: string): Resolved
 }
 
 /**
- * What an unrecognised path is, per site.
+ * What an unrecognised path is, per site. All three answer with a 404 of their own.
  *
- * The chooser has exactly one page and its router redirects everything to it, so there is no
- * such thing as a missing page there — answering with the chooser's own head is what actually
- * happens next. The two content sites have a real 404, and it has a title of its own.
+ * The chooser said `home` here, on the reasoning that its router redirects everything to its one
+ * page so there is no such thing as a missing page. The premise was false: the router redirects
+ * an unknown **language**, and nothing else. `charva-travel.com/ru/gallery` — a Global path typed
+ * against the apex, which is how the owner found it — matched no pattern, so the status was
+ * already 404 while the head announced the chooser's own title. A page that does not exist,
+ * described as the homepage.
  */
 const UNMATCHED: Record<Site, string> = {
-  choice: 'home',
+  choice: 'notFound',
   global: 'notFound',
   umrah: 'notFound',
 };
