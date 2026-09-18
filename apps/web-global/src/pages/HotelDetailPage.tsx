@@ -158,10 +158,18 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                 <HotelEquipment hotel={hotel} lang={lang} />
 
                 {/*
-                  No `items-start`: the aside below is `sticky`, and a sticky element can only
-                  travel inside its own grid cell. `items-start` sized that cell to the panel
-                  itself, so it had nowhere to go — the price and «Оставить заявку» scrolled away
-                  with the cover and the next call to action was three thousand pixels down.
+                  Two things keep the aside below moving, and it needed both.
+
+                  A sticky element travels inside its containing block, which for a grid child is
+                  its grid area. `items-start` made that area content-height, so there was nowhere
+                  to go — removed. But the aside *is* the grid item, and a grid item stretches to
+                  the row: it then became 1693px tall inside a 1693px area and stayed just as
+                  inert, which is how an external audit found it still not moving. `self-start` on
+                  the aside is the other half.
+
+                  The symptom was always reported as something else: «the first call to action is
+                  three thousand pixels down». The price panel is at the top — it simply scrolled
+                  away, and nothing followed the reader down fourteen days of itinerary.
                 */}
                 <div className="mt-12 grid grid-cols-[1fr_360px] gap-16 lap:gap-10 tab:grid-cols-1">
                   <div>
@@ -243,7 +251,7 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                     )}
                   </div>
 
-                  <aside className="sticky top-28 rounded-block border border-line bg-surface p-8 tab:static mob:p-6">
+                  <aside className="sticky top-28 self-start rounded-block border border-line bg-surface p-8 tab:static mob:p-6">
                     {/*
                       The aside is the two ways to act, and nothing above them.
 

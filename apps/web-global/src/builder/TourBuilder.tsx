@@ -67,13 +67,17 @@ export function TourBuilder({ lang, basePath, renderForm }: TourBuilderProps) {
   };
 
   /*
-   * No `items-start` on the grid below, and that one word is what made the summary scroll away.
+   * No `items-start` on the grid below, and that is only half of what the summary needed.
    *
-   * The panel is `position: sticky`, which can only travel inside its containing block — here,
-   * its grid cell. `items-start` sizes every cell to its own content, so the cell was exactly as
-   * tall as the panel and there was nowhere to stick to. The column stretches now, the panel
-   * stays in view beside nine steps of questions, and the property that was written on it all
-   * along finally does something.
+   * `position: sticky` travels inside its containing block, which for a grid child is its grid
+   * area. `items-start` made the area content-height, so there was nowhere to travel — that much
+   * was right. Removing it did not fix the panel though, and an external audit caught it: the
+   * panel *is* the grid item, and a grid item stretches to the row, so it became exactly as tall
+   * as its area and stayed inert. Measured, not argued: 890px tall in an 890px row.
+   *
+   * The half that was missing is `self-start` on the panel itself (see `BuilderEstimate`), which
+   * stops the stretch while leaving the area full height. Same shape on the tour and hotel pages,
+   * where the price panel had the same two-line story.
    *
    * A comment, not a JSX comment: `{/* … *\/}` as the first thing inside `return (` is a parse
    * error, because there is no element yet for it to belong to.

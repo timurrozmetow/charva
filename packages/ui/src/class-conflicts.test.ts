@@ -181,4 +181,46 @@ describe('no sticky panel sits in a grid cell that cannot move', () => {
 
     expect(offenders, offenders.join('\n')).toEqual([]);
   });
+
+  /**
+   * The other half, and the one that survived the first fix.
+   *
+   * Removing `items-start` gives the grid area its height back — and changes nothing, because
+   * the sticky panel *is* the grid item and a grid item stretches to its row. It ends up exactly
+   * as tall as the area it was meant to travel inside. Measured on the live tour page: a 1693px
+   * panel in a 1693px area, `position: sticky` written and spelled correctly, moving nowhere.
+   * All three panels read as fixed for a month.
+   *
+   * `self-start` is the fix and it belongs on the sticky element rather than on the grid: the
+   * builder's panel is placed by a different file from the one that declares it, so a rule about
+   * the parent cannot be checked here at all. On a block parent the class does nothing, which is
+   * what makes «always carry it» a rule rather than a judgement.
+   *
+   * Only `sticky top-…`. A bar pinned to the bottom of a form — the admin's save bar — is a
+   * different pattern with a different parent, and shrinking it to its content is wrong.
+   */
+  it('pairs every `sticky top-…` with `self-start`, so the panel can move', () => {
+    const offenders: string[] = [];
+
+    for (const file of files) {
+      const lines = stripComments(readFileSync(file, 'utf8')).split(/\r?\n/);
+
+      lines.forEach((line, at) => {
+        const attribute = /className=(?:"([^"]*)"|\{`([^`]*)`\})/.exec(line);
+        const classes = attribute?.[1] ?? attribute?.[2] ?? '';
+        if (!/(^|\s)sticky(\s|$)/.test(classes)) return;
+        if (!/(^|\s)top-/.test(classes)) return;
+        if (/(^|\s)self-(start|end|center)(\s|$)/.test(classes)) return;
+
+        const where = file.split(/[\\/]/).slice(-2).join('/');
+        offenders.push(`${where}:${String(at + 1)} — ${classes.slice(0, 70)}`);
+      });
+    }
+
+    expect(
+      offenders,
+      `sticky panels that will stretch to their row and never move:\n${offenders.join('\n')}\n` +
+        'Add `self-start`.',
+    ).toEqual([]);
+  });
 });

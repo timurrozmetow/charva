@@ -68,7 +68,16 @@ export function BuilderEstimate({ lang, config, selection }: BuilderEstimateProp
   return (
     <aside
       aria-label={copy.builder.estimate.title}
-      className="sticky top-[110px] rounded-panel bg-bg p-[30px_28px] text-ink tab:static"
+      /*
+       * `self-start` is not decoration: without it this panel cannot move.
+       *
+       * It is a grid item, and a grid item stretches to its row — so the panel was exactly as
+       * tall as the area it was supposed to travel inside, and `sticky` did nothing at all.
+       * `align-self: start` shrinks the box to its content and leaves the area full height,
+       * which is the space sticky needs. It is inert outside a grid, so it costs nothing to
+       * carry it here rather than trusting whoever places the component.
+       */
+      className="sticky top-[110px] self-start rounded-panel bg-bg p-[30px_28px] text-ink tab:static"
     >
       <h3 className="text-cardTitle font-medium">{copy.builder.estimate.title}</h3>
 
