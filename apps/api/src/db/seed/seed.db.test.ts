@@ -198,7 +198,8 @@ describe('the catalogue', () => {
         slug,
       ).toHaveLength(4);
 
-      const stay = rows.find((row) => row.text.ru.startsWith('Проживание'));
+      // `text` is always there; the language inside it is the optional half.
+      const stay = rows.find((row) => row.text.ru?.startsWith('Проживание') === true);
       expect(stay?.text.ru, slug).toBe(
         slug === 'turkmenistan-transit-4-days'
           ? 'Проживание: отель'
