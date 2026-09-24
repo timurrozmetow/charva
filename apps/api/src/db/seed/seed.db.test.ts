@@ -112,6 +112,101 @@ describe('the catalogue', () => {
     expect(formatMoney({ minor: tour?.priceFromMinor ?? 0, currency: 'USD' })).toMatch(/^830\s\$$/);
   });
 
+  /*
+   * The three transit sheets, checked as a set rather than one test each.
+   *
+   * They are near enough identical — four days, in at Shavat and out at Farap — so the things
+   * worth pinning are the things that differ, and the one thing that must not: every tour's
+   * «from» price has to be a tier somebody can actually pay (D-122), and three ladders twenty
+   * dollars apart are exactly where that goes wrong unnoticed.
+   */
+  it('carries the three transit sheets, each with its own ladder and its own promise', async () => {
+    const expected = [
+      { slug: 'turkmenistan-overland-4-days', from: 80_000, cities: 4, lines: [4, 5, 3, 3] },
+      { slug: 'turkmenistan-transit-4-days', from: 78_000, cities: 3, lines: [4, 3, 4, 1] },
+      { slug: 'turkmenistan-merv-4-days', from: 90_000, cities: 4, lines: [5, 5, 3, 3] },
+    ];
+
+    for (const want of expected) {
+      const [tour] = await db.select().from(t.tours).where(eq(t.tours.slug, want.slug));
+      expect(tour, want.slug).toBeDefined();
+      expect(tour?.days, want.slug).toBe(4);
+      expect(tour?.cities, want.slug).toBe(want.cities);
+      // No sheet names a hotel or a class, so no row claims one.
+      expect(tour?.hotelStars, want.slug).toBeNull();
+      expect(tour?.isPublished, want.slug).toBe(true);
+
+      const prices = await db.select().from(t.tourPrices).where(eq(t.tourPrices.tourId, tour!.id));
+      expect(prices.map((tier) => tier.pax).sort(), want.slug).toEqual([1, 2, 3, 4]);
+      expect(tour?.priceFromMinor, want.slug).toBe(want.from);
+      expect(tour?.priceFromMinor, want.slug).toBe(
+        Math.min(...prices.map((tier) => tier.priceMinor)),
+      );
+
+      const days = await db
+        .select()
+        .from(t.tourDays)
+        .where(eq(t.tourDays.tourId, tour!.id))
+        .orderBy(t.tourDays.dayNumber);
+      // The newlines are the list. Losing them turns a day into one run-on sentence, which is
+      // what a naive join produces and what nobody notices until the page is open.
+      expect(
+        days.map((day) => day.description?.ru?.split('\n').length),
+        want.slug,
+      ).toEqual(want.lines);
+
+      // All three languages, and the same number of lines in each: a day that lost a line in
+      // translation is a day that promises less to a Turkish reader than to a Russian one.
+      for (const day of days) {
+        for (const lang of ['ru', 'en', 'tr'] as const) {
+          expect(day.description?.[lang]?.split('\n').length, `${want.slug} ${lang}`).toBe(
+            day.description?.ru?.split('\n').length,
+          );
+        }
+      }
+
+      for (const column of [tour?.title, tour?.summary, tour?.body]) {
+        for (const lang of ['ru', 'en', 'tr'] as const) {
+          expect(column?.[lang], `${want.slug} ${lang}`).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  it('prints the same price breakdown on every tour the operator sells', async () => {
+    /*
+     * The owner's answer, written down where it can be checked.
+     *
+     * Two of the five sheets print these lists; the other three print none, and leaving them
+     * blank was the wrong guess — «the same on all of them, and the yurt camp is in the price».
+     * The one line that still follows the itinerary is the accommodation: the transit express
+     * sleeps in no camp, and naming one would contradict its own day list on the same page.
+     */
+    for (const slug of OWNER_TOUR_SLUGS) {
+      const [tour] = await db.select().from(t.tours).where(eq(t.tours.slug, slug));
+      const rows = await db
+        .select()
+        .from(t.tourInclusions)
+        .where(eq(t.tourInclusions.tourId, tour!.id));
+
+      expect(
+        rows.filter((row) => row.kind === 'included'),
+        slug,
+      ).toHaveLength(6);
+      expect(
+        rows.filter((row) => row.kind === 'excluded'),
+        slug,
+      ).toHaveLength(4);
+
+      const stay = rows.find((row) => row.text.ru.startsWith('Проживание'));
+      expect(stay?.text.ru, slug).toBe(
+        slug === 'turkmenistan-transit-4-days'
+          ? 'Проживание: отель'
+          : 'Проживание: отель и юртовый лагерь',
+      );
+    }
+  });
+
   it('carries the two-day sheet too, with its own prices and its own promise', async () => {
     const [tour] = await db.select().from(t.tours).where(eq(t.tours.slug, 'turkmenistan-2-days'));
     expect(tour).toBeDefined();

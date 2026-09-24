@@ -6,7 +6,12 @@ import { createDb } from '../client';
 import * as t from '../schema';
 import { TEST_DATABASE_URL } from '../test-setup';
 
-import { attachOwnerTourMedia, TURKMENISTAN_SHORT_SLUG, TURKMENISTAN_SLUG } from './owner-content';
+import {
+  attachOwnerTourMedia,
+  OWNER_TOUR_SLUGS,
+  TURKMENISTAN_SHORT_SLUG,
+  TURKMENISTAN_SLUG,
+} from './owner-content';
 import { seedAll, SEEDED_TABLES } from './seed';
 
 /**
@@ -27,15 +32,24 @@ let db: ReturnType<typeof createDb>;
 
 const HORSE = 'An Akhal-Teke horse, the pride of Turkmenistan';
 
-/** One photograph, described the way the stock importer describes them. */
+/**
+ * One photograph, described the way the stock importer describes them.
+ *
+ * The index is zero-padded to three digits before the checksum is padded out to sixty-four with
+ * zeros, and that is not decoration: «…-1» and «…-10» pad to the same sixty-four characters, so
+ * the unique index on `checksum` rejected the eleventh photograph of a subject. It never came up
+ * while the fixture held four of everything.
+ */
 async function photograph(subject: string, index: number): Promise<void> {
+  const ordinal = String(index).padStart(3, '0');
+
   await db.insert(t.media).values({
-    storageKey: `2026/09/test-${subject}-${String(index)}.webp`,
+    storageKey: `2026/09/test-${subject}-${ordinal}.webp`,
     mime: 'image/webp',
     width: 2000,
     height: 1400,
     sizeBytes: 100_000,
-    checksum: `test-${subject}-${String(index)}`.padEnd(64, '0'),
+    checksum: `test-${subject}-${ordinal}`.padEnd(64, '0'),
     alt: { ru: subject, en: subject, tr: subject },
     source: 'stock',
     attribution: 'Test',
@@ -52,21 +66,31 @@ beforeAll(async () => {
 
   await seedAll(db);
 
-  // The subjects the two sheets between them ask for, three of each so an `nth` past the first
-  // has somewhere to land.
-  const subjects = [
-    'The Darvaza gas crater in the Karakum Desert',
-    'Ashgabat, the white marble capital of Turkmenistan',
-    'Old Nisa, the Parthian fortress outside Ashgabat',
-    'Konye-Urgench, the minarets and mausoleums of Khorezm',
-    'The Yangi Kala canyons in western Turkmenistan',
-    'The Caspian coast at Turkmenbashi',
-    'The dunes of the Karakum Desert',
-    'An Akhal-Teke horse, the pride of Turkmenistan',
-    'Turkmen cuisine',
+  /*
+   * The subjects the five sheets between them ask for, in the numbers the live library holds.
+   *
+   * The counts are not decoration. `resolve()` takes the nth landscape photograph of a subject and
+   * wraps with `%`, so a fixture with four of everything would silently fold the fifth tour's
+   * choices back onto the first tour's — the strips would come out short, every assertion here
+   * would still pass, and the arrangement the site actually ships would go untested. These are the
+   * landscape counts measured on production, so a plan that fits here fits there.
+   */
+  const subjects: [alt: string, count: number][] = [
+    ['The Darvaza gas crater in the Karakum Desert', 10],
+    ['Ashgabat, the white marble capital of Turkmenistan', 16],
+    ['Old Nisa, the Parthian fortress outside Ashgabat', 6],
+    ['Ancient Merv, a city of the Silk Road', 8],
+    ['Konye-Urgench, the minarets and mausoleums of Khorezm', 6],
+    ['The Yangi Kala canyons in western Turkmenistan', 8],
+    ['The Caspian coast at Turkmenbashi', 8],
+    ['The dunes of the Karakum Desert', 8],
+    ['An Akhal-Teke horse, the pride of Turkmenistan', 6],
+    ['A hand-woven Turkmen carpet', 6],
+    ['People of Turkmenistan', 8],
+    ['Turkmen cuisine', 6],
   ];
-  for (const subject of subjects) {
-    for (let index = 0; index < 4; index += 1) await photograph(subject, index);
+  for (const [subject, count] of subjects) {
+    for (let index = 0; index < count; index += 1) await photograph(subject, index);
   }
 }, 60_000);
 
@@ -91,15 +115,48 @@ async function galleryOf(tourId: number) {
 }
 
 describe('attachOwnerTourMedia', () => {
-  it('gives both owner tours a cover and a strip', async () => {
+  it('gives every owner tour a cover and a strip', async () => {
     const touched = await attachOwnerTourMedia(db);
-    expect(touched).toBe(2);
+    expect(touched).toBe(OWNER_TOUR_SLUGS.length);
 
-    for (const slug of [TURKMENISTAN_SLUG, TURKMENISTAN_SHORT_SLUG]) {
+    for (const slug of OWNER_TOUR_SLUGS) {
       const tour = await tourBySlug(slug);
       expect(tour?.coverMediaId, slug).not.toBeNull();
       expect((await galleryOf(tour!.id)).length, slug).toBeGreaterThan(0);
     }
+  });
+
+  /*
+   * No photograph on two cards.
+   *
+   * The five tours between them ask for 32 frames out of a library of about a hundred, and they
+   * ask by subject and ordinal — «the fifth landscape crater» — not by id. Nothing in the data
+   * stops two tours naming the same one: `resolve` wraps with `%`, so an ordinal past the end of
+   * a subject's pool silently folds back onto a frame an earlier tour already took, and the only
+   * symptom is the same picture on two cards in one catalogue row. The three transit tours step
+   * their ordinals past what the two published ones use precisely to avoid it, and that is an
+   * arrangement a sixth sheet can break without touching a line of this file.
+   */
+  it('never shows one photograph on two tours', async () => {
+    const seen = new Map<number, string>();
+
+    for (const slug of OWNER_TOUR_SLUGS) {
+      const tour = await tourBySlug(slug);
+      const frames = [tour!.coverMediaId, ...(await galleryOf(tour!.id)).map((row) => row.mediaId)];
+
+      for (const id of frames) {
+        if (id === null) continue;
+        expect(
+          seen.get(id),
+          `media ${String(id)} is on ${seen.get(id) ?? ''} and on ${slug}`,
+        ).toBeUndefined();
+        seen.set(id, slug);
+      }
+    }
+
+    // Five covers and their strips: the number is derived so a sixth sheet reports its own total
+    // rather than failing a literal somebody has to update.
+    expect(seen.size).toBeGreaterThanOrEqual(OWNER_TOUR_SLUGS.length * 2);
   });
 
   it('puts the short tour’s crater on the card, not whatever came first', async () => {
