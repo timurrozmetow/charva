@@ -793,6 +793,24 @@ export const SILK_ROAD_SLUG = 'turkmenistan-overland-4-days';
 export const TRANSIT_SLUG = 'turkmenistan-transit-4-days';
 export const MERV_SLUG = 'turkmenistan-merv-4-days';
 
+/*
+ * The ordinals in `cover` and `gallery` below were chosen by looking at the photographs.
+ *
+ * They read like arithmetic — «the fifth landscape crater» — and the first version of the three
+ * transit tours was exactly that: ordinals stepped past what the published tours already used, so
+ * that nothing collided. That is necessary and it is not sufficient. Rendered as a contact sheet,
+ * the frames those ordinals landed on included a Koneurgench mausoleum with «14/09/2011» burnt
+ * into the corner — as a **cover** — a close-up of twigs filed under «dunes of the Karakum», a
+ * museum dish filed under «Ancient Merv» standing in for the city, two covers of the crater so
+ * dark it is a thin orange line, and a fifteenth-century miniature of a siege standing in for a
+ * photograph of Koneurgench.
+ *
+ * None of that is a defect in the importer: it collects what a Commons category holds, and a
+ * category holds annotated diagrams and manuscript scans alongside scenery. It is a defect in
+ * choosing by ordinal. So every ordinal here has been looked at, and the ones that are skipped
+ * are skipped for a reason a reader can check — `scratchpad/sheet.mjs` renders any set of ids as
+ * a sheet, and the argument for each cover is written beside it.
+ */
 const TOURS: OwnerTour[] = [
   {
     slug: TURKMENISTAN_SLUG,
@@ -942,19 +960,22 @@ const TOURS: OwnerTour[] = [
     /*
      * Koneurgench on the card, because it is what separates this tour from its two siblings: the
      * only one of the five that sleeps there, and the crater is already the two-day tour's cover.
-     * The strip then follows the itinerary — the desert crossing, the crater, the dinner beside
-     * it, the capital, and the day-four bazaar, which the library has no photograph of as such.
+     * The strip then follows the itinerary — the desert crossing, the crater at night, the dinner
+     * beside it, the capital, the day-four flight, and the bazaar, which the library has no
+     * photograph of as such and which the carpet hall and the tea trays stand in for.
+     *
+     * Every ordinal below was chosen by looking at the frame. See the note above `TOURS`.
      */
-    cover: ['konyeUrgench', 2],
+    cover: ['konyeUrgench', 3],
     gallery: [
-      ['konyeUrgench', 3],
-      ['karakum', 2],
+      ['karakum', 4],
       ['darvaza', 4],
       ['cuisine', 1],
-      ['ashgabat', 2],
-      ['ashgabat', 3],
+      ['ashgabat', 7],
+      ['ashgabat', 5],
+      ['ashgabat', 9],
       ['carpet', 0],
-      ['people', 0],
+      ['people', 2],
     ],
   },
   {
@@ -992,15 +1013,20 @@ const TOURS: OwnerTour[] = [
     // Three hotel nights and no camp — the one tour of the five where the accommodation line
     // would otherwise promise a tent the itinerary on the same page shows is not there.
     stay: 'hotel',
-    cover: ['merv', 0],
+    /*
+     * The white marble capital on the card: two of this tour's three nights are there and its one
+     * full day is there, and it is the only one of the five whose card can say so. Merv is the
+     * afternoon of day three, and it gets the card of the tour named after it instead.
+     */
+    cover: ['ashgabat', 14],
     gallery: [
       ['konyeUrgench', 4],
-      ['ashgabat', 4],
-      ['ashgabat', 5],
-      ['nisa', 1],
+      ['ashgabat', 11],
+      ['ashgabat', 8],
+      ['nisa', 3],
       ['carpet', 1],
-      ['merv', 1],
-      ['merv', 2],
+      ['merv', 6],
+      ['merv', 5],
       ['cuisine', 2],
     ],
   },
@@ -1036,20 +1062,25 @@ const TOURS: OwnerTour[] = [
     prices: MERV_PRICES,
     stay: 'hotelAndCamp',
     /*
-     * The crater on the card. It is the dearest of the five and the only one that has both the
-     * crater and Merv, and the crater is what a card sells before the title is read — a different
-     * frame from the two-day tour's, which is the other cover that shows it.
+     * The Great Kyz Kala on the card — the corrugated walls are the one image in the library that
+     * says «Merv» without a caption, and this is the tour that gives Merv a whole day and is named
+     * for it. The crater goes in the strip, at night, which is when this itinerary is there.
+     *
+     * No Koneurgench frame, and that is deliberate rather than an oversight: the subject has six
+     * photographs, two are already on the published tours, one carries a burnt-in date, one is a
+     * medieval miniature rather than a photograph, and the two that are left are on the other two
+     * transit tours, where Koneurgench is a longer part of the day. A day with no picture is
+     * better than a page showing a manuscript painting of a siege as though it were scenery.
      */
-    cover: ['darvaza', 5],
+    cover: ['merv', 3],
     gallery: [
-      ['konyeUrgench', 5],
-      ['karakum', 3],
-      ['darvaza', 6],
+      ['karakum', 5],
+      ['darvaza', 5],
       ['cuisine', 3],
-      ['ashgabat', 6],
-      ['ashgabat', 7],
-      ['merv', 3],
+      ['ashgabat', 10],
+      ['ashgabat', 12],
       ['merv', 4],
+      ['merv', 2],
     ],
   },
 ];
