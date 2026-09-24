@@ -70,3 +70,5 @@ tmp/
 .agents/
 .claude/
 skills-lock.json
+tours/new/
+new-tour/
