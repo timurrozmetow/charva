@@ -38,6 +38,35 @@ describe('the copy files', () => {
     expect(copyFor('ru')).toBe(COPY.ru);
   });
 
+  /*
+   * The heading over the seats bar is not one of the states, and it is a different sentence.
+   *
+   * It stands above «{taken} / {total} adam» in every state the panel can be in, so it has to
+   * describe the bar rather than announce a verdict. The Turkmen said «Topar doldy» — the group
+   * is full — which is word for word `states.full.title`, and so the Umrah homepage told a
+   * Turkmen reader that a group with thirty free seats had none. It said it in the site's own
+   * default language, on its most important page, and it also went to screen readers, because
+   * `TripPanel` passes the same string as the progress bar's label.
+   *
+   * Both languages are checked, not just the one that was wrong: this is the shape of mistake a
+   * translator makes by reaching for the nearest neighbouring line, and it reads perfectly well
+   * in isolation.
+   */
+  it('does not let the seats heading be one of the trip states', () => {
+    for (const [lang, copy] of Object.entries(COPY)) {
+      // `states` holds four `{title, text}` blocks and one bare string, `nextIs`. Narrowed
+      // rather than cast, so a sixth state added as another shape is a type error here before
+      // it is a silently unchecked one.
+      const verdicts = Object.values(copy.trip.states)
+        .filter((state): state is { title: string; text: string } => typeof state === 'object')
+        .map((state) => state.title);
+      expect(verdicts.length, lang).toBeGreaterThan(0);
+      expect(verdicts, `${lang}: trip.seatsTitle announces a state`).not.toContain(
+        copy.trip.seatsTitle,
+      );
+    }
+  });
+
   it('fills all four plural forms in Russian', () => {
     const missing: string[] = [];
 

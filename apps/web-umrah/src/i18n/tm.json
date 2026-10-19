@@ -92,7 +92,7 @@
       "seconds": "sekunt"
     },
     "announce": "Ugramaga {days} gün {hours} sagat galdy",
-    "seatsTitle": "Topar doldy",
+    "seatsTitle": "Topara ýazylyş",
     "seatsOf": "{taken} / {total} adam",
     "seatsLeftLabel": "Boş ýer",
     "seatsLeft": "Boş ýer: {left}",
