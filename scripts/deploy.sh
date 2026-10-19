@@ -166,6 +166,18 @@ ship_stdin "$TARGET/ecosystem.config.cjs" < deploy/ecosystem.config.cjs
 say "install production dependencies"
 "${SSH[@]}" "cd $TARGET/apps/api && pnpm install --prod --ignore-workspace --no-frozen-lockfile"
 
+# The nightly backup's own script lives in `shared/`, where cron can find it across releases,
+# and is refreshed from the repository on every deploy.
+#
+# Copied rather than linked, because cron must still find it when `current` is mid-swap. It is
+# here at all because the prune above deleted it on 24 September and nothing said so: `cron`
+# wrote «backup.sh: not found» into a log nobody reads, and the site went twenty-five days
+# without a backup. The deploy that broke it is the deploy that now repairs it.
+"${SSH[@]}" "mkdir -p $ROOT/shared"
+scp -q -P "$PORT" -i "$KEY" -o StrictHostKeyChecking=accept-new \
+  scripts/backup.sh "$USER@$HOST:$ROOT/shared/backup.sh"
+"${SSH[@]}" "chmod +x $ROOT/shared/backup.sh"
+
 # The shared files are linked, never copied. A copy would drift, and the one that drifts is
 # always `.env`.
 "${SSH[@]}" "ln -sfn $ROOT/shared/.env $TARGET/.env"
