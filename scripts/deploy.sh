@@ -199,12 +199,44 @@ fi
 #
 # The prune is the same idea read backwards: a file with one link is one no release references
 # any more, and thirty days is longer than any HTML can survive anywhere.
+#
+# IT PRUNES THE FOUR ASSET DIRECTORIES AND NOTHING ELSE, and that is written in capitals because
+# the first version pointed `find` at `$ROOT/shared` and deleted the site.
+#
+# «One hard link means nothing references it» is true of an archived asset and false of every
+# other thing in `shared/`. A release references `.env` by **symlink**, which does not raise the
+# link count at all; `uploads/` is referenced by rows in a database, which `find` cannot see and
+# D-8 says is the only copy of every photograph. Both are regular files with one link, and both
+# cross thirty days by simply existing. On 19 October the rule finally came of age and removed
+# `shared/.env` — every secret, including the passport encryption key, and the database password,
+# none of which the nightly backup contains — together with all 221 original photographs. The API
+# then refused to start, the rollback refused for the same reason, and all four sites answered
+# 502 until the owner could supply the database password from his own records.
+#
+# So: four explicit paths, never a parent. If a fifth app appears it is added here by name, and
+# the cost of forgetting is an asset directory that grows — which is the failure that leaves the
+# site up.
 say "archive assets"
 for app in web-choice web-global web-umrah admin; do
   "${SSH[@]}" "mkdir -p $ROOT/shared/$app/assets && \
     cp -rln $TARGET/apps/$app/assets/. $ROOT/shared/$app/assets/ 2>/dev/null || true"
 done
-"${SSH[@]}" "find $ROOT/shared -type f -links 1 -mtime +30 -delete 2>/dev/null || true"
+for app in web-choice web-global web-umrah admin; do
+  "${SSH[@]}" "[ -d $ROOT/shared/$app/assets ] && \
+    find $ROOT/shared/$app/assets -type f -links 1 -mtime +30 -delete 2>/dev/null || true"
+done
+
+# The two things in `shared/` that cannot be rebuilt, checked after anything that deletes.
+#
+# A tripwire rather than a fix: the prune above is scoped now and should never reach either of
+# them. It is here because the cost of being wrong a second time is measured in a lost
+# encryption key, and the check costs one SSH round trip. It runs before the symlink moves, so a
+# failure here leaves the live release untouched.
+say "shared files intact"
+"${SSH[@]}" "test -s $ROOT/shared/.env" \
+  || { echo "$ROOT/shared/.env is missing or empty — refusing to continue" >&2; exit 1; }
+"${SSH[@]}" "test \"\$(find $ROOT/shared/uploads -type f -name '*.webp' -not -path '*/.cache/*' | head -1)\"" \
+  || { echo "$ROOT/shared/uploads holds no original images — refusing to continue" >&2; exit 1; }
 
 # --------------------------------------------------------------------------------------
 # 5. Switch, restart, check
