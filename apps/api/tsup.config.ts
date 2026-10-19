@@ -35,6 +35,10 @@ export default defineConfig({
     // non-empty one, and the live one is never empty; this entry is how the journal and the
     // Umrah questions get in, idempotently.
     'apply-content': 'src/db/apply-content.ts',
+    // The announced departures. Ships for the same reason as the backfills: it is run against
+    // the live database, which is on the server, and the dates are worth being able to re-read
+    // there rather than retyped into a shell.
+    'umrah-schedule': 'src/db/umrah-schedule.ts',
   },
   format: ['esm'],
   target: 'node20',
