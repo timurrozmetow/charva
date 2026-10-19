@@ -239,13 +239,51 @@ export async function refreshStatuses(db: Database, now: Date = new Date()): Pro
   return moved;
 }
 
+/**
+ * The seeded departure that is not his, hidden rather than deleted.
+ *
+ * `10.11.2026`, forty-five seats, the prototype's 8 575 TMT and hotel names that are placeholder
+ * text — a demo row from the seeds, and it is not among the five groups he announced. Somebody
+ * signed up to it on 9 October and the signup is `confirmed`. He has asked for it to go.
+ *
+ * `draft`, not `DELETE`, and the difference matters. `draft` is outside `visibleStatuses`, so the
+ * site stops offering it the moment this runs — which is what «убери» asks for. The row and the
+ * signup survive, so the person's name, telephone and message stay in Входящие where he can ring
+ * them and move them onto a real group. Deleting the trip would take a stranger's booking with
+ * it, and that is not a thing to do on an inference about what «it» meant.
+ */
+const RETIRED_DEMO_DEPART = '2026-11-10';
+
+export async function retireDemoTrip(db: Database): Promise<boolean> {
+  // Never a date he announced. If a real group is ever scheduled for this day, this does nothing.
+  if (DEPARTURES.some((trip) => trip.depart === RETIRED_DEMO_DEPART)) return false;
+
+  const rows = await db
+    .select({ id: t.umrahTrips.id, departAt: t.umrahTrips.departAt, status: t.umrahTrips.status })
+    .from(t.umrahTrips);
+
+  const demo = rows.find(
+    (row) => row.departAt.startsWith(RETIRED_DEMO_DEPART) && row.status !== 'draft',
+  );
+  if (demo === undefined) return false;
+
+  await db.update(t.umrahTrips).set({ status: 'draft' }).where(eq(t.umrahTrips.id, demo.id));
+  process.stdout.write(
+    `  #${String(demo.id)} ${RETIRED_DEMO_DEPART}: ${demo.status} → draft (off the site; ` +
+      `its signup stays in Входящие)\n`,
+  );
+  return true;
+}
+
 async function main(): Promise<void> {
   await withDb(async (db) => {
     process.stdout.write('departures\n');
     const added = await applySchedule(db);
     process.stdout.write(`${String(added)} added\n\nstatuses\n`);
     const moved = await refreshStatuses(db);
-    process.stdout.write(`${String(moved)} moved\n`);
+    process.stdout.write(`${String(moved)} moved\n\nthe seeded departure\n`);
+    const retired = await retireDemoTrip(db);
+    if (!retired) process.stdout.write('  nothing to retire\n');
   });
 }
 
