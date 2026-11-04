@@ -59,6 +59,30 @@ const SOURCE_DIR = process.env['UMRAH_PHOTOS_DIR'] ?? 'C:/Users/1293/Desktop/cha
 /** Above every width the site ever serves (1440, D-150), so nothing visible is lost. */
 const MAX_EDGE = 2560;
 
+/**
+ * The trip these photographs are from: 25 August to 9 September, by the owner's word.
+ *
+ * It has no row. The six groups in the database run April 2025 to June 2026 at roughly three
+ * months apart, and a departure on 25 August sits after the June one and is the most recent —
+ * which is also why the photographs are still on his phone. The year is therefore 2026, and
+ * that is an inference, not something he said: if it is wrong, the slug and the two dates below
+ * are the whole correction.
+ *
+ * `pilgrimsCount` is left null. The other groups carry a number; this one has none, because
+ * nobody told me how many travelled and the site would print whatever I made up (D-137).
+ *
+ * Naming follows the rows that exist — slug `<month><yy>`, «<Month> aýyndaky toparymyz», and a
+ * short label of «<Month> <year>» — rather than inventing a seventh convention.
+ */
+const OWNER_TRIP = {
+  slug: 'awgust26',
+  departedOn: '2026-08-25',
+  label: { tm: 'Awgust aýyndaky toparymyz', ru: 'Наша группа в августе' },
+  shortLabel: { tm: 'Awgust 2026', ru: 'Август 2026' },
+  /* The two dates are what the owner gave, and nothing beyond them is claimed. */
+  description: { tm: '25.08.2026 — 09.09.2026', ru: '25.08.2026 — 09.09.2026' },
+} as const;
+
 /** Where a photograph may go. Resolved against the rows that exist, never against ids. */
 type Target =
   | { kind: 'heroSlide'; order: number }
@@ -471,7 +495,15 @@ async function inspect(db: Database): Promise<void> {
   }
 
   const groups = await db
-    .select({ id: t.umrahGroups.id, slug: t.umrahGroups.slug, cover: t.umrahGroups.coverMediaId })
+    .select({
+      id: t.umrahGroups.id,
+      slug: t.umrahGroups.slug,
+      cover: t.umrahGroups.coverMediaId,
+      departed: t.umrahGroups.departedOn,
+      pilgrims: t.umrahGroups.pilgrimsCount,
+      label: t.umrahGroups.label,
+      shortLabel: t.umrahGroups.shortLabel,
+    })
     .from(t.umrahGroups)
     .orderBy(asc(t.umrahGroups.sortOrder));
   process.stdout.write(`\numrah groups: ${String(groups.length)}\n`);
@@ -481,7 +513,9 @@ async function inspect(db: Database): Promise<void> {
       .from(t.umrahGroupMedia)
       .where(eq(t.umrahGroupMedia.groupId, group.id));
     process.stdout.write(
-      `  #${String(group.id)} cover=${String(group.cover)} media=${String(media.length)}  ${group.slug}\n`,
+      `  #${String(group.id)} ${group.slug.padEnd(12)} departed=${String(group.departed)} ` +
+        `pilgrims=${String(group.pilgrims)} media=${String(media.length)}  ` +
+        `«${group.label.tm ?? '—'}» / «${group.shortLabel?.tm ?? '—'}»\n`,
     );
   }
 
@@ -599,21 +633,55 @@ async function main(): Promise<void> {
        * filled — those are claims the pictures support on their own — and everything else is
        * converted into the media library for the owner to place, or to re-run this with:
        *
-       *   pnpm --filter @charva/api db:umrah-photos -- --group=iyun26
+       *   pnpm --filter @charva/api db:umrah-photos -- --group=awgust26
+       *
+       * The owner named the trip after the fact: 25 August to 9 September. That group had no
+       * row, so `--group=awgust26` creates it — see OWNER_TRIP above for what is asserted and
+       * what is inferred.
        */
       const wanted = process.argv.find((arg) => arg.startsWith('--group='))?.slice(8);
-      const [group] =
-        wanted === undefined
-          ? []
-          : await db
-              .select({ id: t.umrahGroups.id, slug: t.umrahGroups.slug })
-              .from(t.umrahGroups)
-              .where(eq(t.umrahGroups.slug, wanted))
-              .limit(1);
+
+      const findGroup = async (slug: string): Promise<{ id: number; slug: string } | undefined> => {
+        const [row] = await db
+          .select({ id: t.umrahGroups.id, slug: t.umrahGroups.slug })
+          .from(t.umrahGroups)
+          .where(eq(t.umrahGroups.slug, slug))
+          .limit(1);
+        return row;
+      };
+
+      let group = wanted === undefined ? undefined : await findGroup(wanted);
+
+      /*
+       * Create the trip if it is the one these photographs are from.
+       *
+       * The script is what reaches production, not this machine's database — content is not in
+       * git. So it has to be able to make the row it needs, or running it on the live site would
+       * stop with «no group awgust26» and the photographs would have nowhere to go. Only this
+       * one slug is ever created: any other name is a typo, and a group invented from a typo is
+       * worse than a refusal.
+       */
+      if (wanted === OWNER_TRIP.slug && group === undefined) {
+        await db.insert(t.umrahGroups).values({
+          slug: OWNER_TRIP.slug,
+          departedOn: OWNER_TRIP.departedOn,
+          label: OWNER_TRIP.label,
+          shortLabel: OWNER_TRIP.shortLabel,
+          description: OWNER_TRIP.description,
+          isPublished: true,
+        });
+        group = await findGroup(OWNER_TRIP.slug);
+        process.stdout.write(
+          `created group «${OWNER_TRIP.slug}», departed ${OWNER_TRIP.departedOn}\n`,
+        );
+      }
 
       if (wanted !== undefined && group === undefined) {
         const all = await db.select({ slug: t.umrahGroups.slug }).from(t.umrahGroups);
-        throw new Error(`no group «${wanted}». Known: ${all.map((row) => row.slug).join(', ')}`);
+        throw new Error(
+          `no group «${wanted}». Known: ${all.map((row) => row.slug).join(', ')}. ` +
+            `Only «${OWNER_TRIP.slug}» is created automatically.`,
+        );
       }
       if (wanted === undefined) {
         process.stdout.write(

@@ -334,8 +334,18 @@ export async function listGroups(context: Context, query: { page: number; perPag
     mediaCounts(db, ids),
     db
       .select({
-        photos: sql<number>`SUM(CASE WHEN ${t.umrahGroupMedia.kind} = 'photo' THEN 1 ELSE 0 END)`,
-        videos: sql<number>`SUM(CASE WHEN ${t.umrahGroupMedia.kind} = 'video' THEN 1 ELSE 0 END)`,
+        /*
+         * `string`, because that is what arrives.
+         *
+         * `sql<T>` is an assertion, not a conversion: it tells the compiler what to believe and
+         * changes nothing about the bytes. MySQL returns SUM() as DECIMAL and mysql2 hands that
+         * back as a string, so `sql<number>` here was a lie the type system then defended — it
+         * made `Number()` look redundant to both a reader and to
+         * `no-unnecessary-type-conversion`, which is how the conversion came to be missing.
+         * Declaring the truth makes the `Number()` below obviously necessary.
+         */
+        photos: sql<string>`SUM(CASE WHEN ${t.umrahGroupMedia.kind} = 'photo' THEN 1 ELSE 0 END)`,
+        videos: sql<string>`SUM(CASE WHEN ${t.umrahGroupMedia.kind} = 'video' THEN 1 ELSE 0 END)`,
       })
       .from(t.umrahGroupMedia),
   ]);
@@ -348,8 +358,20 @@ export async function listGroups(context: Context, query: { page: number; perPag
     stats: {
       groups: total?.value ?? 0,
       pilgrims: Number(totals?.pilgrims ?? 0),
-      photos: mediaTotals?.photos ?? 0,
-      videos: mediaTotals?.videos ?? 0,
+      /*
+       * `Number`, because `sql<number>` is an assertion and not a conversion.
+       *
+       * MySQL returns SUM() as a DECIMAL, which mysql2 hands back as a string, so these two
+       * were strings wearing a number's type — and the response schema, which is also the
+       * serializer (D-12), rejected them with a 500. `pilgrims` above is the same aggregate and
+       * was already wrapped; these were not.
+       *
+       * It could not fail until a group had a photograph, and no group ever did. The gallery
+       * was unreachable the moment one was added, which is the first thing the owner's
+       * photographs did.
+       */
+      photos: Number(mediaTotals?.photos ?? 0),
+      videos: Number(mediaTotals?.videos ?? 0),
     },
   };
 }

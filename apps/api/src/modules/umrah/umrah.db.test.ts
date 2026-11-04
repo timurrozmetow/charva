@@ -235,6 +235,54 @@ describe('groups that have travelled', () => {
     expect(body.stats.groups).toBe(Number(actual?.group_count));
     expect(body.stats.pilgrims).toBe(Number(actual?.pilgrims));
   });
+
+  /*
+   * The archive counts must survive a group actually having a photograph.
+   *
+   * `stats.photos` and `stats.videos` come from `SUM(CASE WHEN …)`, which MySQL returns as a
+   * DECIMAL and mysql2 hands back as a string. They were typed `sql<number>` — an assertion,
+   * not a conversion — so they were strings wearing a number's type, and the response schema,
+   * which is also the serializer (D-12), answered 500.
+   *
+   * Nothing caught it, including the test above, because with no rows in `umrah_group_media`
+   * SUM returns NULL, `?? 0` supplies a real number and everything passes. The endpoint broke
+   * the moment the first photograph was attached, which is what importing the owner's own
+   * pictures did. So this test inserts one, which is the only state that can fail.
+   */
+  it('still totals the archive once a group has a photograph', async () => {
+    const [groups] = await context.pool.query(
+      'SELECT id FROM umrah_groups WHERE is_published = 1 ORDER BY id LIMIT 1',
+    );
+    const groupId = (groups as { id: number }[])[0]?.id;
+    expect(groupId, 'the seed has no published group').toBeDefined();
+
+    // The seed carries no photographs at all (D-45), so the row has to be made here. A
+    // checksum is unique and not null, which is what makes this safe to run repeatedly.
+    const [inserted] = await context.pool.query(
+      'INSERT INTO media (storage_key, mime, size_bytes, checksum, width, height) ' +
+        'VALUES (?, ?, ?, ?, ?, ?)',
+      ['test/archive-total.webp', 'image/webp', 1024, `archive-total-${String(Date.now())}`, 8, 6],
+    );
+    const mediaId = (inserted as { insertId: number }).insertId;
+
+    await context.pool.query(
+      'INSERT INTO umrah_group_media (group_id, kind, media_id, sort_order) VALUES (?, ?, ?, ?)',
+      [groupId, 'photo', mediaId, 999],
+    );
+    try {
+      const body = await get<{ stats: { photos: number; videos: number } }>('/umrah/groups');
+      // `toBe` rather than `toEqual`: the failure was a string that compares equal loosely.
+      expect(typeof body.stats.photos).toBe('number');
+      expect(typeof body.stats.videos).toBe('number');
+      expect(body.stats.photos).toBeGreaterThanOrEqual(1);
+    } finally {
+      await context.pool.query(
+        'DELETE FROM umrah_group_media WHERE group_id = ? AND sort_order = 999',
+        [groupId],
+      );
+      await context.pool.query('DELETE FROM media WHERE id = ?', [mediaId]);
+    }
+  });
 });
 
 describe('the package', () => {
