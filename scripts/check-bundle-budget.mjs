@@ -33,11 +33,12 @@ import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
  * growth exactly as before; the gzip figure is printed underneath so the older numbers in
  * STATE.md remain comparable to something.
  *
- * **Why fonts are outside it.** The three Stolzl weights are a fixed ~69 KB decided once (D-14)
- * and possibly replaced wholesale if question Q-2 comes back badly; folding them in would spend
- * 35% of every site's budget on a constant and turn a regression guard into a font-licence
- * tracker. They are measured and printed on every run regardless, because the number a visitor
- * actually waits for is the total, and it should never be a surprise.
+ * **Why fonts are outside it.** The typeface is a fixed cost decided once — ~69 KB as three
+ * Stolzl cuts (D-14), 59.9 KB as one variable Golos Text file since the rebrand (D-183) — and
+ * replaceable wholesale, as that swap proved. Folding it in would spend a third of every site's
+ * budget on a constant and turn a regression guard into a font-licence tracker. It is measured
+ * and printed on every run regardless, because the number a visitor actually waits for is the
+ * total, and it should never be a surprise.
  */
 
 const BOOT_BUDGET_BYTES = 200 * 1024;

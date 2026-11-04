@@ -12,9 +12,11 @@ import { describe, expect, it } from 'vitest';
  * and nobody testing in Russian would ever see it. So this is checked on every build rather
  * than assumed.
  *
- * It has already earned its keep. Stolzl as delivered covers Turkmen and Cyrillic completely,
- * but is missing three Turkish letters and every symbol the design uses as content. Both gaps
- * are recorded below and neither was mentioned in the handoff.
+ * It has already earned its keep twice. Stolzl as delivered covered Turkmen and Cyrillic
+ * completely but was missing three Turkish letters and every symbol the design uses as
+ * content; neither gap was mentioned in the handoff, and the first is what retired Turkish
+ * (Q-17). Golos Text, which replaced it in the rebrand (D-183), closes the Turkish gap and not
+ * the symbol one — so Turkish moved up into REQUIRED below and the symbols stayed put.
  */
 
 const fontsDir = fileURLToPath(new URL('../assets/fonts/', import.meta.url));
@@ -26,8 +28,16 @@ const REQUIRED = {
   cyrillic: 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя',
   /** Turkmen Latin. `ň` and `ý` appear in almost every heading on the Umrah site. */
   turkmen: 'ÄŇÖŞÜÝŽäňöşüýž',
-  /** The Turkish letters Stolzl does have. */
-  turkishPartial: 'ÇIÖŞÜçıöşü',
+  /**
+   * Turkish, in full.
+   *
+   * This was split in two while Stolzl was the face: the letters it had were required and
+   * `Ğ ğ İ` were asserted as a gap. They are not rare — Ağustos, doğa, değil, İpek Yolu — and
+   * the browser substituted some other face for exactly those glyphs, so every second Turkish
+   * word was set in two typefaces at once. Golos Text has all of them, which is why the two
+   * halves are one entry again, and why Q-17 is no longer a question about the font.
+   */
+  turkish: 'ÇĞIİÖŞÜçğıiöşü',
   /**
    * The two symbols that are typed as text rather than drawn as icons.
    *
@@ -50,12 +60,6 @@ const REQUIRED = {
  * and tells us to delete the workarounds rather than leaving them in place for years.
  */
 const KNOWN_GAPS = {
-  /**
-   * Turkish G-breve and dotted capital I. Question Q-17: Turkish cannot be typeset in Stolzl
-   * until the foundry supplies a cut with Latin Extended-A, or `:lang(tr)` falls back.
-   * `ğ` is not rare — it is in Ağustos, doğa, değil, and it is in most Turkish paragraphs.
-   */
-  turkish: 'Ğğİ',
   /**
    * Symbols the prototypes use as literal text: star ratings, the dropdown checkmark, the
    * package bullet, the language caret, the play triangle. In the browser they silently fall
@@ -98,13 +102,26 @@ function describeMissing(file: string, missing: string[]): string {
   return `${file} is missing ${listed}`;
 }
 
-describe('the Stolzl web fonts are present', () => {
-  it('ships all three weights', () => {
-    expect(files.sort()).toEqual([
-      'stolzl-bold.woff2',
-      'stolzl-medium.woff2',
-      'stolzl-regular.woff2',
-    ]);
+describe('the Golos Text web font is present', () => {
+  it('ships one variable file and nothing else', () => {
+    // Three static cuts became one variable file (D-183). A second file appearing here means
+    // somebody added a static weight beside it, and the page would then download both.
+    expect(files.sort()).toEqual(['golos-text-variable.woff2']);
+  });
+
+  it('carries a weight axis spanning 400 to 700', () => {
+    /*
+     * The file has to stay variable, and over the whole declared range.
+     *
+     * `@font-face` claims `font-weight: 400 700`. Rebuild the subset pinned to one weight — a
+     * single wrong argument to the subsetter — and the file still loads, still covers every
+     * glyph, and every bold heading on all three sites silently renders at regular. Nothing
+     * else in the suite would notice, because coverage is unaffected.
+     */
+    const axis = load('golos-text-variable.woff2').variationAxes['wght'];
+    expect(axis, 'the file is no longer variable').toBeDefined();
+    expect(axis!.min).toBeLessThanOrEqual(400);
+    expect(axis!.max).toBeGreaterThanOrEqual(700);
   });
 });
 

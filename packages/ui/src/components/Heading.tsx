@@ -41,7 +41,7 @@ export function Heading({ level = 2, size = 'h2', as, className, ...rest }: Head
   return (
     <Tag
       className={cn(
-        // Weight 500 throughout — every heading in the handoff is Stolzl Medium.
+        // Weight 500 throughout — every heading in the handoff is drawn at Medium.
         'm-0 font-medium text-ink text-pretty',
         SIZE[size],
         className,

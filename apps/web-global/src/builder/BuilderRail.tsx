@@ -22,7 +22,7 @@ export interface BuilderRailProps {
  * none of the nine is reachable by keyboard at all — on the page the design calls its key
  * feature.
  *
- * The tick is an icon rather than the literal `✓` the prototype types: Stolzl has no such glyph
+ * The tick is an icon rather than the literal `✓` the prototype types: Golos has no such glyph
  * and the browser substitutes a system font, so the mark looks different on every platform
  * (D-26).
  */

@@ -22,53 +22,26 @@
 @tailwind components;
 
 /* ======================================================================================
- * Stolzl
+ * Golos Text
  *
- * Three files, five CSS weights: 500 and 600 both resolve to Medium, 700 and 800 both to
- * Bold. That is how the prototypes declare it, and it is why a heading asking for 600 does
- * not get a synthesised weight.
+ * One variable file for every weight, replacing three static cuts of Stolzl — decision D-183.
+ * 59.9 kB against 67.9, so the rebrand made the first load lighter rather than heavier.
  *
- * The fonts cover Latin, Cyrillic and Turkmen completely. They are missing the Turkish
- * G-breve and dotted capital I — see fonts.test.ts and QUESTIONS.md Q-17 — so Turkish text
- * falls back for those three letters until the foundry supplies a fuller cut.
+ * The range is 400–700 because that is what the design asks for. Two consequences worth
+ * knowing. Weight 600 is now a real SemiBold: Stolzl shipped three files for five CSS weights,
+ * so 600 silently resolved to Medium, and the twenty-six places that write `font-semibold`
+ * finally get the weight they ask for. And 800 clamps to 700, exactly as it did before, when
+ * the 800 face was the Bold file under another number.
+ *
+ * It covers Latin, Cyrillic and Turkmen, and — unlike Stolzl — the Turkish `Ğ ğ İ`. Q-17 is
+ * therefore no longer blocked by the typeface; whether Turkish comes back is a separate call.
+ * It still lacks the star, tick, caret and play triangle, so D-26 stands and those stay SVG.
  * ====================================================================================== */
 
 @font-face {
-  font-family: 'Stolzl';
-  src: url('../assets/fonts/stolzl-regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Stolzl';
-  src: url('../assets/fonts/stolzl-medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Stolzl';
-  src: url('../assets/fonts/stolzl-medium.woff2') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Stolzl';
-  src: url('../assets/fonts/stolzl-bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Stolzl';
-  src: url('../assets/fonts/stolzl-bold.woff2') format('woff2');
-  font-weight: 800;
+  font-family: 'Golos Text';
+  src: url('../assets/fonts/golos-text-variable.woff2') format('woff2-variations');
+  font-weight: 400 700;
   font-style: normal;
   font-display: swap;
 }
@@ -96,8 +69,13 @@ body {
 body {
   background: var(--c-bg);
   color: var(--c-body);
-  font-family: 'Stolzl', 'Manrope', sans-serif;
-  font-weight: 300;
+  font-family: 'Golos Text', system-ui, sans-serif;
+  /*
+   * 400, not the 300 this said before. The variable file starts at 400 and Stolzl's lightest
+   * cut was also 400, so 300 resolved to 400 in both — there is no synthetic lightening in any
+   * browser. The number now says what is actually drawn.
+   */
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

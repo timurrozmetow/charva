@@ -249,7 +249,7 @@ function MediaDetails({ media, onClose }: { media: AdminMedia; onClose: () => vo
           <dt>{copy.media.path}</dt>
           {/* Where the file actually is, for anybody who has to find it on disk or in a
               backup. `break-all` because it has no spaces to wrap at. */}
-          {/* No `font-mono`: the preset defines Stolzl and nothing else, so the class produces
+          {/* No `font-mono`: the preset defines Golos Text and nothing else, so the class produces
               no rule at all — which the class audit said the moment it was written. */}
           <dd className="break-all text-[12px] text-ink">{media.storageKey}</dd>
           <dt>{copy.media.size}</dt>

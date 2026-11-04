@@ -111,7 +111,7 @@ const ICONS: IconName[] = [
  * The hand-drawn set.
  *
  * Every one of these replaces a literal character the prototypes typed into the markup —
- * `★ ☆ ✓ ✦ ▾ ▶` — none of which exists in Stolzl. Decision D-26.
+ * `★ ☆ ✓ ✦ ▾ ▶` — none of which exists in Golos Text. Decision D-26.
  */
 export const Icons: Story = {
   render: () => (

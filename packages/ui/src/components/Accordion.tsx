@@ -41,7 +41,7 @@ export interface AccordionProps {
  *
  * The plus and minus are drawn from two bars rather than typed. `–` is an en-dash and `+` sits
  * on a different baseline in most faces, so the two states jump by a pixel or two — and this
- * package has already been caught once assuming a character exists in Stolzl.
+ * package has already been caught once assuming a character exists in the site's typeface.
  */
 export function Accordion({
   items,

@@ -75,7 +75,7 @@ export function VideoPlayer({ video, lang, className }: VideoPlayerProps) {
         aria-hidden="true"
         className="absolute left-1/2 top-1/2 flex size-[88px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-accent transition-transform duration-lift group-hover:scale-105"
       >
-        {/* An icon, not the literal `▶` the prototype types: Stolzl has no such glyph and the
+        {/* An icon, not the literal `▶` the prototype types: Golos Text has no such glyph and the
             browser substitutes a system font, so the triangle differs per platform (D-26). The
             optical centring the design does with `padding-left:6px` is in the icon itself. */}
         <Icon name="play" size={26} className="text-accent-on" />

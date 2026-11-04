@@ -22,13 +22,18 @@ export type Lang = (typeof LANGS)[number];
  * Languages offered per site, in the order the switcher lists them.
  * The first entry of each tuple is that site's default.
  *
- * **Turkish is retired, not deleted.** Stolzl has no `Ğ ğ İ` (Q-17), and those are not rare
- * letters — İpek Yolu, Doğa, mutfağı; one live API response for the Turkish homepage carries
- * twenty-eight of them, and the interface copy another forty-six. The browser substitutes some
- * other face for exactly those glyphs, so every second Turkish word was set in two typefaces at
- * once. That is the thing D-26 refuses to ship for a star and a checkmark, and a page of prose
- * is not a better place for it. The owner chose to take the language down until the foundry
- * supplies a cut with Latin Extended-A.
+ * **Turkish is retired, not deleted, and the reason it was retired is gone.** Stolzl had no
+ * `Ğ ğ İ` (Q-17), and those are not rare letters — İpek Yolu, Doğa, mutfağı; one live API
+ * response for the Turkish homepage carries twenty-eight of them, and the interface copy
+ * another forty-six. The browser substituted some other face for exactly those glyphs, so every
+ * second Turkish word was set in two typefaces at once. That is the thing D-26 refuses to ship
+ * for a star and a checkmark, and a page of prose is not a better place for it. The owner chose
+ * to take the language down until a face with Latin Extended-A arrived.
+ *
+ * It arrived: Golos Text covers all three letters, and `fonts.test.ts` now requires them rather
+ * than asserting them as a gap (D-183). So the typographic blocker is lifted and only the
+ * owner's call remains — whether the Turkish content is worth serving, which is a question
+ * about translation coverage (D-89 puts the bar at 90%), not about the font.
  *
  * It comes off the chooser as well as Global, because the chooser's Turkish existed to hand a
  * Turkish speaker to Global's Turkish: Umrah is `tm`/`ru` and always was, so a Turkish chooser

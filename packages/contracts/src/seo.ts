@@ -437,10 +437,13 @@ const ROUTE_META = {
    *
    * The intersection with `Partial<Record<Lang, …>>` is what lets a language be *retired*
    * without its strings being thrown away. Turkish came off Global and the chooser in
-   * September because Stolzl has no `Ğ ğ İ` (Q-17), and its heads are still written below,
+   * September because Stolzl had no `Ğ ğ İ` (Q-17), and its heads are still written below,
    * costing nothing and answering the only question that matters on the day the font is
    * sorted out: does the copy still exist. Without this the type would have demanded they be
    * deleted, and «one edit to bring the language back» would have meant rewriting them.
+   *
+   * The font was sorted out in the rebrand — Golos Text has all three letters (D-183) — so the
+   * answer that kept costing nothing is now the one being read. The heads are here.
    */
   [S in Site]: Record<
     SiteRoute<S>,

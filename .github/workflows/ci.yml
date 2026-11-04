@@ -63,5 +63,5 @@ jobs:
       - run: pnpm build
 
       # 200 KB gzip of script and style per site. Fonts are printed beside it and counted
-      # separately — three weights of Stolzl are 67.9 KB before the first line of code.
+      # separately — one variable Golos Text file is 59.9 KB before the first line of code.
       - run: pnpm budget

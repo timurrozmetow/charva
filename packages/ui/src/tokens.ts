@@ -277,12 +277,16 @@ export const mosaic = {
 // ======================================================================================
 
 export const fontFamily = {
-  sans: "'Stolzl', 'Manrope', sans-serif",
+  sans: "'Golos Text', system-ui, sans-serif",
 } as const;
 
 /**
- * Five CSS weights from three font files — 500 and 600 both map to Medium, 700 and 800 both
- * map to Bold. That is how the prototypes declare it and how the Bakar project already ships it.
+ * Six named weights over one variable file covering 400–700 (D-183).
+ *
+ * The prototypes declare all six, and under Stolzl's three static cuts four of them were
+ * aliases: 300 fell back to Regular, 600 to Medium, 800 to Bold. Only 600 changes under the
+ * variable file — it is now the SemiBold it always claimed to be. `light` and `black` are kept
+ * because the prototypes name them, and both still clamp to the ends of the range.
  */
 export const fontWeight = {
   light: 300,

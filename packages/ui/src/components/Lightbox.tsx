@@ -142,7 +142,7 @@ function ArrowButton({ side, label, onClick }: ArrowButtonProps) {
         side === 'left' ? 'left-4' : 'right-4',
       )}
     >
-      {/* The arrows do exist in Stolzl — unlike the stars and ticks — so they stay as text. */}
+      {/* The arrows do exist in Golos Text — unlike the stars and ticks — so they stay text. */}
       <span aria-hidden="true" className="text-lead">
         {side === 'left' ? '←' : '→'}
       </span>

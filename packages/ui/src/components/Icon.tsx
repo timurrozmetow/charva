@@ -7,7 +7,7 @@ import { cn } from '../cn';
  *
  * Deliberately tiny and hand-drawn rather than a dependency. Every one of these replaces a
  * literal character the prototypes typed into the markup — `★ ☆ ✓ ✦ ▾ ▶` — none of which
- * exists in Stolzl. In a browser they silently fall back to whatever the operating system
+ * exists in Golos Text. In a browser they silently fall back to whatever the operating system
  * supplies, so the rating stars on the reviews page look like Segoe on Windows, Apple Color
  * Emoji on macOS and Noto on Android. Drawing them makes them ours. Decision D-26.
  *

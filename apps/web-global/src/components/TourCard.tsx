@@ -98,7 +98,7 @@ export function TourCard({ tour, lang, priority = false }: TourCardProps) {
               {plural(copy.common.cities, tour.cities, lang)}
             </span>
             {tour.hotelStars !== null && (
-              /* Drawn as icons, not typed: Stolzl has no `★`, so the prototype's literal
+              /* Drawn as icons, not typed: Golos Text has no `★`, so the prototype's literal
                  character falls back to a system font and looks different per platform. */
               <StarRating
                 value={tour.hotelStars}
