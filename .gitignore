@@ -72,3 +72,7 @@ tmp/
 skills-lock.json
 tours/new/
 new-tour/
+# Photographs the owner drops in for import: 70 MB of iPhone HEIC and one DNG raw. Originals
+# belong in `uploads/` through the admin upload, which strips EXIF and builds the derivatives
+# (D-82, D-150) — never in the repository.
+1293/
