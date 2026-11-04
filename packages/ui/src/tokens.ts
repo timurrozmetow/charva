@@ -452,6 +452,19 @@ export const duration = {
   colour: 260,
   option: 220,
   lift: 320,
+  /**
+   * A section arriving as the reader scrolls to it.
+   *
+   * Longer than the 300ms ceiling the interaction tokens above keep to, and deliberately: this
+   * answers a scroll rather than a tap, so nobody is waiting on it to find out whether the
+   * interface heard them. It is the one piece of pacing on a long brochure page, and at 200ms it
+   * reads as a flicker rather than as something arriving.
+   *
+   * Not longer than this either. Past about half a second a reader scrolling at speed outruns
+   * the animation and meets a page that is still assembling itself, which is worse than no
+   * animation at all.
+   */
+  reveal: 360,
   drop: 260,
   caret: 300,
   indicator: 500,

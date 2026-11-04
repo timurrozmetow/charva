@@ -10,6 +10,7 @@ import {
   ImageSlot,
   MosaicGrid,
   mosaicTileSizes,
+  Reveal,
   Section,
   SectionHead,
 } from '@charva/ui';
@@ -180,22 +181,24 @@ export function HomePage({ lang }: HomePageProps) {
       {/* ---- Популярные туры ------------------------------------------------------------ */}
       <Section space="md" id="tours">
         <Container>
-          <SectionHead
-            eyebrow={copy.home.tours.eyebrow}
-            title={copy.home.tours.title}
-            action={
-              <Link to={path.tours(lang)} className={buttonClass({ variant: 'outline' })}>
-                {/* The count is counted. «32 маршрута» is a literal in the handoff standing
-                    above nine rows — decision D-6, question Q-5. */}
-                {copy.home.tours.all} · {String(data?.stats.tours ?? 0)}
-              </Link>
-            }
-          />
+          <Reveal>
+            <SectionHead
+              eyebrow={copy.home.tours.eyebrow}
+              title={copy.home.tours.title}
+              action={
+                <Link to={path.tours(lang)} className={buttonClass({ variant: 'outline' })}>
+                  {/* The count is counted. «32 маршрута» is a literal in the handoff standing
+                      above nine rows — decision D-6, question Q-5. */}
+                  {copy.home.tours.all} · {String(data?.stats.tours ?? 0)}
+                </Link>
+              }
+            />
+          </Reveal>
           <ul className={`mt-10 ${cardGridClass((data?.featuredTours ?? []).length)}`}>
             {(data?.featuredTours ?? []).map((tour, index) => (
               // Three on a phone, six on anything wider: two rows of three become six
               // full-width cards below 768, and «Все туры» is directly above them.
-              <li key={tour.id} className={beyondPhonePreview(index, 3)}>
+              <Reveal as="li" index={index} key={tour.id} className={beyondPhonePreview(index, 3)}>
                 {/*
                   No priority here, unlike `/tours`, and the difference is the hero above.
 
@@ -208,7 +211,7 @@ export function HomePage({ lang }: HomePageProps) {
                   priority; here they wait their turn like everything else below the fold.
                 */}
                 <TourCard tour={tour} lang={lang} />
-              </li>
+              </Reveal>
             ))}
           </ul>
         </Container>
@@ -217,12 +220,14 @@ export function HomePage({ lang }: HomePageProps) {
       {/* ---- Сборщик ------------------------------------------------------------------- */}
       <Section tone="dark" space="md" id="builder">
         <Container>
-          <SectionHead
-            eyebrow={copy.home.builder.eyebrow}
-            title={copy.home.builder.title}
-            lead={copy.home.builder.lead}
-            className="mb-12"
-          />
+          <Reveal>
+            <SectionHead
+              eyebrow={copy.home.builder.eyebrow}
+              title={copy.home.builder.title}
+              lead={copy.home.builder.lead}
+              className="mb-12"
+            />
+          </Reveal>
           {/*
             The same machine as `/builder`, writing its state into this page's URL.
 
@@ -248,22 +253,24 @@ export function HomePage({ lang }: HomePageProps) {
       {/* ---- Отели --------------------------------------------------------------------- */}
       <Section space="md" id="hotels">
         <Container>
-          <SectionHead
-            eyebrow={copy.home.hotels.eyebrow}
-            title={copy.home.hotels.title}
-            action={
-              <Link to={path.hotels(lang)} className={buttonClass({ variant: 'outline' })}>
-                {copy.home.hotels.all} · {String(data?.stats.hotels ?? 0)}
-              </Link>
-            }
-          />
+          <Reveal>
+            <SectionHead
+              eyebrow={copy.home.hotels.eyebrow}
+              title={copy.home.hotels.title}
+              action={
+                <Link to={path.hotels(lang)} className={buttonClass({ variant: 'outline' })}>
+                  {copy.home.hotels.all} · {String(data?.stats.hotels ?? 0)}
+                </Link>
+              }
+            />
+          </Reveal>
           <ul className="mt-10 grid list-none grid-cols-4 gap-[22px] p-0 lap:grid-cols-2 mob:grid-cols-1">
             {(data?.hotels ?? []).map((hotel, index) => (
               // Two on a phone: the row of four is already two rows at `lap:`, and one column
               // of four is most of a screen each.
-              <li key={hotel.id} className={beyondPhonePreview(index, 2)}>
+              <Reveal as="li" index={index} key={hotel.id} className={beyondPhonePreview(index, 2)}>
                 <HotelCard hotel={hotel} lang={lang} sizes={imageSizes.cardGrid4} />
-              </li>
+              </Reveal>
             ))}
           </ul>
         </Container>
@@ -273,15 +280,17 @@ export function HomePage({ lang }: HomePageProps) {
       {(data?.articles.length ?? 0) > 0 && (
         <Section space="md" id="journal">
           <Container>
-            <SectionHead
-              eyebrow={copy.home.journal.eyebrow}
-              title={copy.home.journal.title}
-              action={
-                <Link to={path.articles(lang)} className={buttonClass({ variant: 'outline' })}>
-                  {copy.article.backToList}
-                </Link>
-              }
-            />
+            <Reveal>
+              <SectionHead
+                eyebrow={copy.home.journal.eyebrow}
+                title={copy.home.journal.title}
+                action={
+                  <Link to={path.articles(lang)} className={buttonClass({ variant: 'outline' })}>
+                    {copy.article.backToList}
+                  </Link>
+                }
+              />
+            </Reveal>
 
             <div className="mt-10 grid grid-cols-[1.35fr_1fr] gap-[26px] tab:grid-cols-1">
               {/* The same card `/articles` is built from — it was written out twice the day the
@@ -321,16 +330,18 @@ export function HomePage({ lang }: HomePageProps) {
       {(data?.gallery.length ?? 0) > 0 && (
         <Section space="md" id="gallery">
           <Container>
-            <SectionHead
-              eyebrow={copy.home.gallery.eyebrow}
-              title={copy.home.gallery.title}
-              action={
-                <Link to={path.gallery(lang)} className={buttonClass({ variant: 'outline' })}>
-                  {copy.home.gallery.all}
-                </Link>
-              }
-              className="mb-10"
-            />
+            <Reveal>
+              <SectionHead
+                eyebrow={copy.home.gallery.eyebrow}
+                title={copy.home.gallery.title}
+                action={
+                  <Link to={path.gallery(lang)} className={buttonClass({ variant: 'outline' })}>
+                    {copy.home.gallery.all}
+                  </Link>
+                }
+                className="mb-10"
+              />
+            </Reveal>
             {/*
               Packed rather than placed.
 
@@ -379,16 +390,18 @@ export function HomePage({ lang }: HomePageProps) {
       {(data?.videos.length ?? 0) > 0 && (
         <Section tone="dark" space="md" id="video">
           <Container>
-            <SectionHead
-              eyebrow={copy.home.video.eyebrow}
-              title={copy.home.video.title}
-              action={
-                <Link to={path.video(lang)} className={buttonClass({ variant: 'outline' })}>
-                  {copy.home.video.all}
-                </Link>
-              }
-              className="mb-10"
-            />
+            <Reveal>
+              <SectionHead
+                eyebrow={copy.home.video.eyebrow}
+                title={copy.home.video.title}
+                action={
+                  <Link to={path.video(lang)} className={buttonClass({ variant: 'outline' })}>
+                    {copy.home.video.all}
+                  </Link>
+                }
+                className="mb-10"
+              />
+            </Reveal>
 
             <div className="grid grid-cols-[1.6fr_1fr] gap-[26px] tab:grid-cols-1">
               {(data?.videos ?? []).slice(0, 1).map((featured) => (
@@ -492,20 +505,22 @@ export function HomePage({ lang }: HomePageProps) {
       {(data?.reviews.length ?? 0) > 0 && (
         <Section space="md" id="reviews">
           <Container>
-            <SectionHead
-              eyebrow={copy.home.reviews.eyebrow}
-              title={copy.home.reviews.title}
-              action={
-                <Link to={path.reviews(lang)} className={buttonClass({ variant: 'outline' })}>
-                  {copy.home.reviews.all} · {String(data?.reviewSummary.total ?? 0)}
-                </Link>
-              }
-            />
+            <Reveal>
+              <SectionHead
+                eyebrow={copy.home.reviews.eyebrow}
+                title={copy.home.reviews.title}
+                action={
+                  <Link to={path.reviews(lang)} className={buttonClass({ variant: 'outline' })}>
+                    {copy.home.reviews.all} · {String(data?.reviewSummary.total ?? 0)}
+                  </Link>
+                }
+              />
+            </Reveal>
             <ul className="mt-10 grid list-none grid-cols-3 gap-6 p-0 lap:grid-cols-2 mob:grid-cols-1">
-              {(data?.reviews ?? []).slice(0, 3).map((review) => (
-                <li key={review.id}>
+              {(data?.reviews ?? []).slice(0, 3).map((review, index) => (
+                <Reveal as="li" index={index} key={review.id}>
                   <ReviewCard review={review} lang={lang} />
-                </li>
+                </Reveal>
               ))}
             </ul>
           </Container>

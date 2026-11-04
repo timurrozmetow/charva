@@ -15,6 +15,7 @@ export * from './components/Checkbox';
 export * from './components/Chip';
 export * from './components/Container';
 export * from './components/Deferred';
+export * from './components/Reveal';
 export * from './components/CountdownTimer';
 export * from './components/Divider';
 export * from './components/EmptyState';
