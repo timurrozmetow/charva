@@ -1,11 +1,11 @@
 import {
+  accent,
   alphaBase,
   choicePalette,
   danger,
   globalPalette,
   heroScale,
   onDarkAlpha,
-  sand,
   umrahPalette,
 } from './tokens';
 
@@ -82,8 +82,8 @@ interface ThemeRoles {
    * The keyboard focus ring.
    *
    * Its own role rather than the accent, because WCAG 1.4.11 wants 3:1 against what is behind
-   * it and the accent gives 2.09:1 on cream — a ring a sighted keyboard user has to hunt for is
-   * the failure the rule is written about. On a dark surface the same sand is 7.44:1, so the
+   * it and the accent gives 2.05:1 on cream — a ring a sighted keyboard user has to hunt for is
+   * the failure the rule is written about. On a dark surface the same accent is 6.62:1, so the
    * value follows the surface exactly like every other role here (D-29).
    */
   focus: string;
@@ -139,7 +139,7 @@ interface ThemeRoles {
  * A dark section is not a different theme — it is the same brand on a different backdrop — so
  * it overrides a handful of roles rather than the whole set. `<Section tone="dark">` puts
  * `data-surface="dark"` on its element and everything inside picks these up: headings become
- * cream, borders become light, the eyebrow's link colour switches from the muted sand to the
+ * cream, borders become light, the eyebrow's link colour switches from the muted accent to the
  * bright one. The alternative is a `tone` prop threaded through every primitive, which is the
  * same mistake as a `theme` prop and this file exists to avoid.
  *
@@ -158,10 +158,10 @@ const darkSurface: Vars = {
   '--c-body': `rgba(var(--c-cream-rgb), ${String(onDarkAlpha.body)})`,
   '--c-muted': `rgba(var(--c-cream-rgb), ${String(onDarkAlpha.muted)})`,
   '--c-nav': `rgba(var(--c-cream-rgb), ${String(onDarkAlpha.body)})`,
-  // The muted sand is a link colour on light and unreadable on dark; the bright one is both.
+  // The muted accent is a link colour on light and unreadable on dark; the bright one is both.
   '--c-accent-text': 'var(--c-accent)',
   '--c-accent-active': 'var(--c-accent-hover)',
-  // The deep sand disappears on dark; the bright one is 7.44:1 there.
+  // The deep accent disappears on dark; the bright one is 6.62:1 there.
   '--c-focus': 'var(--c-accent)',
   '--c-danger': 'var(--c-danger-on-dark)',
   // Borders flip to light. Shadows do not — `--c-ink-rgb` is untouched on purpose.
@@ -181,12 +181,12 @@ const globalTheme: ThemeRoles = {
   body: globalPalette.brown500,
   muted: globalPalette.brown400,
   nav: globalPalette.brown700,
-  accent: sand.DEFAULT,
-  accentHover: sand.light,
-  accentText: sand.dark,
-  accentActive: sand.deep,
-  focus: sand.deep,
-  onAccent: sand.contrast,
+  accent: accent.DEFAULT,
+  accentHover: accent.light,
+  accentText: accent.dark,
+  accentActive: accent.deep,
+  focus: accent.deep,
+  onAccent: accent.contrast,
   dark: globalPalette.brown950,
   darkAlt: globalPalette.brown900,
   onDark: globalPalette.cream,
@@ -216,12 +216,12 @@ const umrahTheme: ThemeRoles = {
   body: umrahPalette.green500,
   muted: umrahPalette.green400,
   nav: umrahPalette.green700,
-  accent: sand.DEFAULT,
-  accentHover: sand.light,
+  accent: accent.DEFAULT,
+  accentHover: accent.light,
   accentText: umrahPalette.link,
-  accentActive: sand.deep,
-  focus: sand.deep,
-  onAccent: sand.contrast,
+  accentActive: accent.deep,
+  focus: accent.deep,
+  onAccent: accent.contrast,
   dark: umrahPalette.green950,
   darkAlt: umrahPalette.green800,
   onDark: umrahPalette.cream,
@@ -260,12 +260,12 @@ const choiceTheme: ThemeRoles = {
   body: choicePalette.cream,
   muted: choicePalette.creamWarm,
   nav: choicePalette.cream,
-  accent: sand.DEFAULT,
-  accentHover: sand.light,
-  accentText: sand.DEFAULT,
-  accentActive: sand.light,
-  // Choice is dark everywhere, so the bright sand is the readable one.
-  focus: sand.DEFAULT,
+  accent: accent.DEFAULT,
+  accentHover: accent.light,
+  accentText: accent.DEFAULT,
+  accentActive: accent.light,
+  // Choice is dark everywhere, so the bright accent is the readable one.
+  focus: accent.DEFAULT,
   onAccent: choicePalette.btnText,
   dark: choicePalette.bg,
   darkAlt: choicePalette.bg,

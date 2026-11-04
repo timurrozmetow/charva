@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { choicePalette, globalPalette, sand, umrahPalette } from './tokens';
+import { accent, choicePalette, globalPalette, umrahPalette } from './tokens';
 
 /**
  * The one stylesheet that cannot use the tokens.
@@ -64,7 +64,7 @@ describe('the loading screen each app paints before its bundle arrives', () => {
       });
 
       it('turns the ring in the brand accent', () => {
-        expect(html.toLowerCase()).toContain(`border-top-color: ${sand.DEFAULT.toLowerCase()}`);
+        expect(html.toLowerCase()).toContain(`border-top-color: ${accent.DEFAULT.toLowerCase()}`);
       });
 
       it('gives up on its own if the script never arrives', () => {

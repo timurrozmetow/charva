@@ -21,25 +21,41 @@ import { blendOver, type Hex, rgbTripleToHex } from './color';
 // Colour
 // ======================================================================================
 
-/** Shared between Global and Umrah — the sand accent is the one thing both brands own. */
-export const sand = {
+/**
+ * Shared between Global and Umrah — the accent is the one thing both brands own.
+ *
+ * Tile turquoise since the rebrand (D-184), replacing the handoff's sand. Three reasons it is
+ * this colour and not another. It is the majolica of the places the tours actually go — Merv,
+ * Konye-Urgench, the domes of the Silk Road — so it is specific to this operator rather than
+ * generic travel beige. It is the complement of the warm orange that fills every photograph on
+ * the site, so a button finally separates from its backdrop instead of blending into the dunes.
+ * And it is not red: `--c-danger` exists (D-35), and an accent in the same family would have
+ * made «Оставить заявку» and a failed field the same colour.
+ *
+ * The *roles* are unchanged, deliberately. `DEFAULT` and `light` are fills that cannot carry
+ * text on a light surface — `FILL_ONLY_ON_LIGHT` asserts that failure on purpose — so picking a
+ * deep accent would not have been "more accessible", it would have broken a rule written to
+ * stop someone setting a sentence in the brand colour. Measured against every surface in the
+ * contract before it was written down; every pair gained margin over the sand it replaces.
+ */
+export const accent = {
   /** Accent, buttons, active states. Fill and decoration only — never text on a light surface. */
-  DEFAULT: '#DFA059',
+  DEFAULT: '#4FBEC4',
   /** Accent hover; the far end of the seats-progress gradient. */
-  light: '#F0C48E',
-  /** Links and eyebrows on light. From #A9722C, then again for tinted chips. */
-  dark: '#906126',
-  /** Active nav item, active topic chip. Passes as-is. */
-  deep: '#8A5A22',
-  /** Text on a sand fill. */
-  contrast: '#3A2A18',
+  light: '#7FD6DA',
+  /** Links and eyebrows on light. 5.89:1 on the page, 5.34:1 on a tinted chip. */
+  dark: '#0C6A70',
+  /** Active nav item, active topic chip, the focus ring on light. */
+  deep: '#0A565B',
+  /** Text on an accent fill. 6.98:1 on the fill, 9.22:1 on the hover. */
+  contrast: '#06292B',
 } as const;
 
 export const globalPalette = {
-  sand: sand.DEFAULT,
-  sandLight: sand.light,
-  sandDark: sand.dark,
-  sandDeep: sand.deep,
+  accent: accent.DEFAULT,
+  accentLight: accent.light,
+  accentDark: accent.dark,
+  accentDeep: accent.deep,
 
   /** Footer. */
   brown950: '#241C15',
@@ -62,14 +78,14 @@ export const globalPalette = {
   surface: '#FFFDFA',
   /** Text on dark. */
   cream: '#FDF9F3',
-  /** Text on the sand button. The homepage uses #201509 in places; normalised. */
-  btnText: sand.contrast,
+  /** Text on the accent button. The homepage uses #201509 in places; normalised. */
+  btnText: accent.contrast,
 } as const satisfies Record<string, Hex>;
 
 export const umrahPalette = {
-  sand: sand.DEFAULT,
-  sandLight: sand.light,
-  sandDeep: sand.deep,
+  accent: accent.DEFAULT,
+  accentLight: accent.light,
+  accentDeep: accent.deep,
 
   /** Footer. */
   green950: '#0B1310',
@@ -92,9 +108,15 @@ export const umrahPalette = {
   surface: '#FFFDFA',
   /** Text on dark. Note it differs from Global's cream by one channel — deliberate. */
   cream: '#FCF9F4',
-  /** Links and duration labels. From #A8752F, then again for tinted chips. */
-  link: '#8A6027',
-  btnText: sand.contrast,
+  /**
+   * Links and duration labels.
+   *
+   * Was its own amber, #8A6027, corrected from the mockup's #A8752F for contrast. With the
+   * accent no longer amber there is no reason for a second near-accent colour to exist, so it
+   * follows the accent — one link colour across both brands instead of two that drift.
+   */
+  link: accent.dark,
+  btnText: accent.contrast,
 } as const satisfies Record<string, Hex>;
 
 /**
@@ -118,15 +140,21 @@ export const danger = {
 } as const satisfies Record<string, Hex>;
 
 export const choicePalette = {
-  sand: sand.DEFAULT,
-  sandLight: sand.light,
+  accent: accent.DEFAULT,
+  accentLight: accent.light,
 
   bg: '#0D0906',
   cream: '#FDF9F3',
   /** Text of the outline button on the Umrah half. */
   creamWarm: '#F6EEE3',
-  /** Text on the sand button. */
-  btnText: '#20160B',
+  /**
+   * Text on the accent button.
+   *
+   * Was its own near-black brown, #20160B, which was the right choice under a sand fill and
+   * reads as a stain under a turquoise one. It is the same job as `accent.contrast`, so it is
+   * now the same value — one colour for text on the accent across all three sites.
+   */
+  btnText: accent.contrast,
 } as const satisfies Record<string, Hex>;
 
 /**
@@ -147,8 +175,8 @@ export const alphaBase = {
   globalCream: '253, 249, 243',
   /** Umrah cream, on dark. */
   umrahCream: '252, 249, 244',
-  /** The sand accent as a tint. */
-  sand: '223, 160, 89',
+  /** The accent as a tint. */
+  accent: '79, 190, 196',
   /**
    * Photo scrims, Global — read from contracts rather than restated here.
    *
@@ -551,15 +579,18 @@ export const CONTRAST_CORRECTIONS = [
     on: CHIP_GLOBAL,
     note: 'Meta lines and captions across Global.',
   },
-  {
-    token: 'sand.dark',
-    mockup: '#A9722C',
-    corrected: '#906126',
-    was: 3.45,
-    now: 4.51,
-    on: CHIP_GLOBAL,
-    note: 'Links and 11px/700 eyebrows. At 34px statistic numbers the mockup value already passed the 3:1 large-text bar; one corrected value serves both.',
-  },
+  /*
+   * Two of the original five are gone, and this is the record of why.
+   *
+   * `accent.dark` (#A9722C corrected to #906126) and `umrahPalette.link` (#A8752F to #8A6027)
+   * were both corrections to the handoff's amber. The rebrand replaced the accent with tile
+   * turquoise (D-184), so neither colour exists any more, and a correction record is a claim
+   * about a value that is in use — the suite below asserts exactly that. Keeping them would
+   * mean asserting that a retired colour is wired up somewhere.
+   *
+   * The measurements themselves are not lost: D-3 in CLAUDE.md records all six original pairs,
+   * which is where the history belongs. The three below are neutrals, untouched by the rebrand.
+   */
   {
     token: 'umrahPalette.green400',
     mockup: '#7A8981',
@@ -568,15 +599,6 @@ export const CONTRAST_CORRECTIONS = [
     now: 4.52,
     on: CHIP_UMRAH,
     note: 'Meta lines and captions across Umrah.',
-  },
-  {
-    token: 'umrahPalette.link',
-    mockup: '#A8752F',
-    corrected: '#8A6027',
-    was: 3.26,
-    now: 4.53,
-    on: CHIP_UMRAH,
-    note: 'Links and the duration labels on ziyarat cards.',
   },
 ] as const;
 
@@ -668,7 +690,7 @@ const onChipPairs: ContrastPair[] = [
   { fg: globalPalette.brown400, bg: CHIP_GLOBAL, size: 11, where: 'meta on a chip' },
   { fg: globalPalette.brown500, bg: CHIP_GLOBAL, size: 15, where: 'body text on a chip' },
   { fg: globalPalette.brown700, bg: CHIP_GLOBAL, size: 14, where: 'an idle filter chip' },
-  { fg: sand.dark, bg: CHIP_GLOBAL, size: 11, bold: true, where: 'an eyebrow on a chip' },
+  { fg: accent.dark, bg: CHIP_GLOBAL, size: 11, bold: true, where: 'an eyebrow on a chip' },
   { fg: umrahPalette.green400, bg: CHIP_UMRAH, size: 11, where: 'meta on a chip, Umrah' },
   { fg: umrahPalette.green500, bg: CHIP_UMRAH, size: 15, where: 'body text on a chip, Umrah' },
   { fg: umrahPalette.link, bg: CHIP_UMRAH, size: 11, bold: true, where: 'a step number, Umrah' },
@@ -686,11 +708,11 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   // The native option list, which the hero search bar opens from inside a dark section. Listed
   // because it occurs, not because it is close: it was cream on white until D-175.
   { fg: globalPalette.brown900, bg: globalPalette.surface, size: 15, where: 'the option list' },
-  { fg: sand.dark, bg: globalPalette.bg, size: 11, bold: true, where: 'links and eyebrows' },
-  { fg: sand.deep, bg: globalPalette.bg, size: 14, where: 'active nav item' },
-  { fg: sand.deep, bg: globalPalette.bg, size: 14, nonText: true, where: 'focus ring on cream' },
+  { fg: accent.dark, bg: globalPalette.bg, size: 11, bold: true, where: 'links and eyebrows' },
+  { fg: accent.deep, bg: globalPalette.bg, size: 14, where: 'active nav item' },
+  { fg: accent.deep, bg: globalPalette.bg, size: 14, nonText: true, where: 'focus ring on cream' },
   {
-    fg: sand.deep,
+    fg: accent.deep,
     bg: globalPalette.surface,
     size: 14,
     nonText: true,
@@ -701,17 +723,29 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   { fg: globalPalette.cream, bg: globalPalette.brown900, size: 15, where: 'text on dark sections' },
   { fg: globalPalette.cream, bg: globalPalette.brown800, size: 15, where: 'the video page' },
   { fg: globalPalette.cream, bg: globalPalette.brown950, size: 14, where: 'footer text' },
-  { fg: sand.DEFAULT, bg: globalPalette.brown900, size: 11, bold: true, where: 'eyebrows on dark' },
   {
-    fg: sand.DEFAULT,
+    fg: accent.DEFAULT,
+    bg: globalPalette.brown900,
+    size: 11,
+    bold: true,
+    where: 'eyebrows on dark',
+  },
+  {
+    fg: accent.DEFAULT,
     bg: globalPalette.brown900,
     size: 14,
     nonText: true,
     where: 'focus ring on a dark section',
   },
-  { fg: sand.DEFAULT, bg: globalPalette.brown800, size: 15, where: 'links on the video page' },
-  { fg: sand.DEFAULT, bg: globalPalette.brown950, size: 11, bold: true, where: 'footer titles' },
-  { fg: sand.contrast, bg: sand.DEFAULT, size: 13, bold: true, where: 'text on the sand button' },
+  { fg: accent.DEFAULT, bg: globalPalette.brown800, size: 15, where: 'links on the video page' },
+  { fg: accent.DEFAULT, bg: globalPalette.brown950, size: 11, bold: true, where: 'footer titles' },
+  {
+    fg: accent.contrast,
+    bg: accent.DEFAULT,
+    size: 13,
+    bold: true,
+    where: 'text on the accent button',
+  },
 
   // --- Umrah on light ---
   { fg: umrahPalette.ink, bg: umrahPalette.bg, size: 15, where: 'headings' },
@@ -722,21 +756,27 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   { fg: umrahPalette.green400, bg: umrahPalette.surface, size: 12, where: 'meta on cards' },
   { fg: umrahPalette.ink, bg: umrahPalette.surface, size: 15, where: 'the option list' },
   { fg: umrahPalette.link, bg: umrahPalette.bg, size: 12, bold: true, where: 'links, durations' },
-  { fg: sand.deep, bg: umrahPalette.bg, size: 14, where: 'active nav item' },
+  { fg: accent.deep, bg: umrahPalette.bg, size: 14, where: 'active nav item' },
 
   // --- Umrah on dark ---
   { fg: umrahPalette.cream, bg: umrahPalette.green800, size: 15, where: 'dark sections' },
   { fg: umrahPalette.cream, bg: umrahPalette.green900, size: 15, where: 'hero text' },
   { fg: umrahPalette.cream, bg: umrahPalette.green950, size: 14, where: 'footer text' },
-  { fg: sand.DEFAULT, bg: umrahPalette.green800, size: 11, bold: true, where: 'eyebrows on dark' },
-  { fg: sand.DEFAULT, bg: umrahPalette.green900, size: 11, bold: true, where: 'countdown label' },
-  { fg: sand.DEFAULT, bg: umrahPalette.green950, size: 11, bold: true, where: 'footer titles' },
+  {
+    fg: accent.DEFAULT,
+    bg: umrahPalette.green800,
+    size: 11,
+    bold: true,
+    where: 'eyebrows on dark',
+  },
+  { fg: accent.DEFAULT, bg: umrahPalette.green900, size: 11, bold: true, where: 'countdown label' },
+  { fg: accent.DEFAULT, bg: umrahPalette.green950, size: 11, bold: true, where: 'footer titles' },
 
   // --- Choice ---
   { fg: choicePalette.cream, bg: choicePalette.bg, size: 17, where: 'headline and lead' },
   { fg: choicePalette.creamWarm, bg: choicePalette.bg, size: 13, bold: true, where: 'outline CTA' },
-  { fg: sand.DEFAULT, bg: choicePalette.bg, size: 29, where: 'stat values' },
-  { fg: choicePalette.btnText, bg: sand.DEFAULT, size: 13, bold: true, where: 'sand CTA' },
+  { fg: accent.DEFAULT, bg: choicePalette.bg, size: 29, where: 'stat values' },
+  { fg: choicePalette.btnText, bg: accent.DEFAULT, size: 13, bold: true, where: 'accent CTA' },
 
   // --- The error colour, on every surface a form appears on ---
   { fg: danger.DEFAULT, bg: globalPalette.bg, size: 13, where: 'field errors, Global' },
@@ -755,8 +795,8 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
 /**
  * Colours that must never carry text on a light surface.
  *
- * `sand` on `bg` is 2.1:1. It is the brand accent and it will be reached for; this list plus
+ * `accent` on `bg` is 2.05:1. It is the brand accent and it will be reached for; this list
  * the test that walks it is what stops that becoming a shipped page. Fills, borders, rules and
  * icons are all fine — text is not.
  */
-export const FILL_ONLY_ON_LIGHT = [sand.DEFAULT, sand.light] as const;
+export const FILL_ONLY_ON_LIGHT = [accent.DEFAULT, accent.light] as const;

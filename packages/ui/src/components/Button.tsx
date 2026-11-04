@@ -37,7 +37,7 @@ const BASE = [
  * four that invert to brown are the navigation CTA, which passes its own hover classes.
  *
  * The outline hover — a full sand fill — is likewise the prototypes' own
- * `background:#DFA059;color:#3A2A18;border-color:#DFA059`.
+ * `background:#4FBEC4;color:#06292B;border-color:#4FBEC4`.
  */
 const VARIANT: Record<ButtonVariant, string> = {
   solid: 'bg-accent text-accent-on hover:bg-dark-on',

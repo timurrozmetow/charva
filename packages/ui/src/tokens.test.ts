@@ -96,9 +96,7 @@ describe('the recorded corrections are accurate', () => {
     const applied: Record<string, Hex> = {
       'globalPalette.brown300': globalPalette.brown300,
       'globalPalette.brown400': globalPalette.brown400,
-      'sand.dark': globalPalette.sandDark,
       'umrahPalette.green400': umrahPalette.green400,
-      'umrahPalette.link': umrahPalette.link,
     };
     for (const fix of CONTRAST_CORRECTIONS) {
       expect(applied[fix.token], `${fix.token} is not wired to its corrected value`).toBe(
