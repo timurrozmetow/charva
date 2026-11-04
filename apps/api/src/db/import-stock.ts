@@ -1,7 +1,7 @@
 import { unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import { loadEnv } from '../env';
 import { storeUpload, uploadsRootOf } from '../modules/admin/media/service';
@@ -131,6 +131,21 @@ interface Subject {
   key: string;
   /** Searched for in the category namespace; the best match is the one whose files are taken. */
   category: string;
+  /**
+   * Which site's rows this subject may illustrate.
+   *
+   * Added after the Umrah site was found to be two thirds Turkmenistan: of its ninety
+   * photographs, sixty were Ashgabat, the Darvaza gas crater, Yangykala and so on, and seven of
+   * the nine ziyarat covers were «Туркменская кухня». Nothing malfunctioned — `pick` below
+   * matches a row's text against these subjects' hints and, finding none, deals from the whole
+   * pool. There were only two Saudi subjects, so for Saudi rows it always found none.
+   *
+   * A photograph never crosses sites now. A burning gas crater on a page about the pilgrimage
+   * is not a near miss, and no amount of brief-matching protects a row whose subject was never
+   * downloaded. Where a site's pool has nothing to offer, a nullable column is left null and
+   * `ImageSlot` draws the brief instead (D-21) — which is the state the design was built for.
+   */
+  site: 'global' | 'umrah';
   want: number;
   /**
    * Words that, appearing in a slot's Russian brief, mean this subject is what was asked for.
@@ -147,6 +162,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'darvaza',
     category: 'Darvaza gas crater',
+    site: 'global',
     want: 10,
     hints: ['дарваз', 'кратер', 'врата ада'],
     alt: {
@@ -158,6 +174,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'ashgabat',
     category: 'Ashgabat',
+    site: 'global',
     want: 16,
     hints: ['ашхабад', 'столиц', 'город', 'мрамор', 'проспект', 'фонтан'],
     alt: {
@@ -169,6 +186,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'nisa',
     category: 'Nisa, Turkmenistan',
+    site: 'global',
     want: 6,
     hints: ['ниса', 'парфян', 'крепост', 'юнеско'],
     alt: {
@@ -180,6 +198,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'merv',
     category: 'Merv',
+    site: 'global',
     want: 8,
     hints: ['мерв', 'древн', 'шёлков', 'шелков', 'руин', 'городищ'],
     alt: {
@@ -191,6 +210,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'konye_urgench',
     category: 'Konye-Urgench',
+    site: 'global',
     want: 6,
     hints: ['ургенч', 'куняургенч', 'минарет', 'мавзолей', 'хорезм'],
     alt: {
@@ -202,6 +222,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'yangikala',
     category: 'Yangykala',
+    site: 'global',
     want: 8,
     hints: ['янги', 'каньон', 'кала', 'обрыв'],
     alt: {
@@ -213,6 +234,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'caspian',
     category: 'Turkmenbashi',
+    site: 'global',
     want: 8,
     hints: ['каспи', 'туркменбаши', 'аваза', 'море', 'пляж', 'берег'],
     alt: {
@@ -224,6 +246,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'karakum',
     category: 'Karakum Desert',
+    site: 'global',
     want: 8,
     hints: ['каракум', 'пустын', 'бархан', 'песок', 'юрт', 'звёзд', 'звезд'],
     alt: {
@@ -235,6 +258,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'akhal_teke',
     category: 'Akhal-Teke',
+    site: 'global',
     want: 6,
     hints: ['ахалтекин', 'конь', 'лошад', 'ипподром', 'скакун'],
     alt: {
@@ -246,6 +270,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'carpet',
     category: 'Turkmen carpets',
+    site: 'global',
     want: 6,
     hints: ['ковёр', 'ковер', 'орнамент', 'ремесл', 'сувенир', 'узор'],
     alt: {
@@ -257,6 +282,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'people',
     category: 'People of Turkmenistan',
+    site: 'global',
     want: 8,
     hints: ['люди', 'гид', 'портрет', 'улыб', 'гост', 'семь'],
     alt: {
@@ -268,6 +294,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'food',
     category: 'Cuisine of Turkmenistan',
+    site: 'global',
     want: 6,
     hints: ['еда', 'кухн', 'плов', 'чай', 'ужин', 'обед', 'базар', 'рынок'],
     alt: {
@@ -279,6 +306,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'kowata',
     category: 'Kow Ata',
+    site: 'global',
     want: 4,
     hints: ['ков-ата', 'ков ата', 'подземн', 'озер', 'пещер'],
     alt: {
@@ -290,6 +318,7 @@ const SUBJECTS: Subject[] = [
   {
     key: 'mekka',
     category: 'Masjid al-Haram',
+    site: 'umrah',
     want: 8,
     hints: ['мекк', 'кааб', 'харам', 'mekge'],
     alt: {
@@ -301,12 +330,120 @@ const SUBJECTS: Subject[] = [
   {
     key: 'medina',
     category: 'Al-Masjid an-Nabawi',
+    site: 'umrah',
     want: 8,
     hints: ['медин', 'пророк', 'набави', 'medine'],
     alt: {
       ru: 'Мечеть Пророка в Медине',
       en: 'The Prophet’s Mosque in Medina',
       tr: 'Medine’deki Mescid-i Nebevi',
+    },
+  },
+
+  /*
+   * The seven ziyarat places that had no photographs at all.
+   *
+   * Mecca and Medina were the entire Saudi half of this list, which is why the other seven
+   * places on `/ziyarat` were showing Turkmen cuisine. Every category below was checked against
+   * Commons before it was written here — D-127 records a search for «Merv» returning two
+   * photographs of Mashhad, and a category name that reads obviously right in English is still
+   * a guess until someone asks.
+   *
+   * Two of them needed the answer the obvious name did not give:
+   *
+   *   — `Battle of Badr` holds forty-seven files and almost all of them are maps of the battle
+   *     and fourteenth-century manuscript miniatures. It is a category about an event in 624,
+   *     not about the place a pilgrim is driven to, and D-127 already refuses engravings.
+   *     `Badr Hunayn` is the modern town and holds photographs of it.
+   *   — `Masjid al-Qiblatayn` exists and holds nothing: no files, no subcategories. The
+   *     photographs are on Commons but uncategorised, so this one relies on the name search
+   *     this script already falls back to when a category turns out to be an empty shell.
+   *
+   * `Mina` has no category under any spelling, which costs nothing: the place row is «Arafat,
+   * Mina we Muzdalifa», one card, and Mount Arafat illustrates it.
+   */
+  {
+    key: 'jabal_nur',
+    category: 'Jabal al-Nour',
+    site: 'umrah',
+    want: 6,
+    hints: ['hira', 'хира', 'an-nur', 'ан-нур', 'нур дагы'],
+    alt: {
+      ru: 'Гора Джебель ан-Нур и пещера Хира близ Мекки',
+      en: 'Jabal al-Nour and the cave of Hira near Mecca',
+      tr: 'Mekke yakınındaki Nur Dağı ve Hira mağarası',
+    },
+  },
+  {
+    key: 'arafat',
+    category: 'Mount Arafat',
+    site: 'umrah',
+    want: 6,
+    hints: ['arafat', 'арафат', 'muzdalifa', 'муздалиф', 'mina', 'мина'],
+    alt: {
+      ru: 'Гора Арафат',
+      en: 'Mount Arafat',
+      tr: 'Arafat Dağı',
+    },
+  },
+  {
+    key: 'uhud',
+    category: 'Mount Uhud',
+    site: 'umrah',
+    want: 6,
+    hints: ['uhud', 'ухуд'],
+    alt: {
+      ru: 'Гора Ухуд в Медине',
+      en: 'Mount Uhud in Medina',
+      tr: 'Medine’deki Uhud Dağı',
+    },
+  },
+  {
+    key: 'badr',
+    category: 'Badr Hunayn',
+    site: 'umrah',
+    want: 5,
+    hints: ['bedir', 'badr', 'бедр', 'бадр'],
+    alt: {
+      ru: 'Бадр — город и место битвы',
+      en: 'Badr, the town and the site of the battle',
+      tr: 'Bedir kasabası ve savaş alanı',
+    },
+  },
+  {
+    key: 'quba',
+    category: 'Quba Mosque',
+    site: 'umrah',
+    want: 6,
+    hints: ['kuba', 'quba', 'куба'],
+    alt: {
+      ru: 'Мечеть Куба в Медине',
+      en: 'The Quba Mosque in Medina',
+      tr: 'Medine’deki Kuba Mescidi',
+    },
+  },
+  {
+    key: 'qiblatayn',
+    category: 'Masjid al-Qiblatayn',
+    site: 'umrah',
+    want: 5,
+    hints: ['kyblateýn', 'kyblateyn', 'qiblatayn', 'киблатейн', 'кыблатейн'],
+    alt: {
+      ru: 'Мечеть Кыблатейн в Медине',
+      en: 'The Qiblatayn Mosque in Medina',
+      tr: 'Medine’deki Kıbleteyn Mescidi',
+    },
+  },
+  {
+    key: 'jeddah',
+    category: 'Jeddah Corniche',
+    site: 'umrah',
+    want: 6,
+    hints: ['jidda', 'jeddah', 'джидд', 'kenary'],
+    alt: {
+      ru: 'Набережная Джидды на Красном море',
+      en: 'The Jeddah Corniche on the Red Sea',
+      tr: 'Kızıldeniz kıyısında Cidde Korniş',
     },
   },
 ];
@@ -364,6 +501,38 @@ interface Stored {
   id: number;
   subject: string;
   landscape: boolean;
+}
+
+/** Which site a stored photograph may illustrate, from the subject it came from. */
+const siteOfSubject = new Map(SUBJECTS.map((subject) => [subject.key, subject.site]));
+
+/** The Russian caption back to the subject that wrote it. */
+const subjectOfAlt = new Map(SUBJECTS.map((subject) => [subject.alt.ru, subject.key]));
+
+/**
+ * Everything already in the library, with its subject recovered.
+ *
+ * The assignment step needs the whole library, not just what this run downloaded — otherwise
+ * `--only=quba` would offer every row in the database exactly one photograph of one mosque.
+ * The subject is recovered from the caption, because this script is what wrote it: the row's
+ * `alt.ru` is a subject's `alt.ru`, verbatim.
+ *
+ * A photograph whose caption matches no subject keeps an empty subject and so belongs to no
+ * site, which means `pick` will never deal it anywhere. That is the right answer for the one
+ * row that has been re-captioned by hand — the airport meal that spent months illustrating the
+ * Prophet's Mosque.
+ */
+async function libraryFromDb(db: Db): Promise<Stored[]> {
+  const rows = await db
+    .select({ id: t.media.id, alt: t.media.alt, width: t.media.width, height: t.media.height })
+    .from(t.media)
+    .where(eq(t.media.source, 'stock'));
+
+  return rows.map((row) => ({
+    id: row.id,
+    subject: subjectOfAlt.get(row.alt?.ru ?? '') ?? '',
+    landscape: (row.width ?? 0) >= (row.height ?? 0),
+  }));
 }
 
 function plainText(html: string | undefined): string {
@@ -632,6 +801,168 @@ async function reset(db: Db, uploadsRoot: string): Promise<void> {
   process.stdout.write(`reset: removed ${String(placeholders.length)} placeholders\n`);
 }
 
+/**
+ * Takes the other site's photographs back off a site's rows.
+ *
+ * The assignment step only ever writes into columns that are still empty, which is right — it
+ * must not overturn an editor's choice — and it means a wrong photograph already in place stays
+ * there forever. Sixty of the Umrah site's ninety images were Turkmenistan: Ashgabat fifteen
+ * times, the Darvaza gas crater eight, and seven of the nine ziyarat covers were cuisine or
+ * «Люди Туркменистана». None of that would have been touched by a re-run.
+ *
+ * So this empties them first, and `assign` then refills from the right pool. What it cannot
+ * refill it leaves null, and `ImageSlot` draws the brief (D-21) — the state the design has
+ * always had a component for.
+ *
+ * A photograph the owner uploaded is never touched: only `source = 'stock'` rows are
+ * considered, and only those whose caption identifies a subject belonging to the other site.
+ */
+async function unmixSites(db: Db): Promise<void> {
+  const library = await libraryFromDb(db);
+  const idsOf = (site: 'global' | 'umrah'): number[] =>
+    library.filter((photo) => siteOfSubject.get(photo.subject) === site).map((photo) => photo.id);
+
+  const globalPhotos = idsOf('global');
+  const umrahPhotos = idsOf('umrah');
+  if (globalPhotos.length === 0 && umrahPhotos.length === 0) return;
+
+  let cleared = 0;
+  const clear = async (what: string, run: () => Promise<unknown>): Promise<void> => {
+    const before = cleared;
+    await run();
+    if (cleared > before) process.stdout.write(`  cleared ${what}\n`);
+  };
+
+  /** Umrah rows holding a Turkmenistan photograph. */
+  if (globalPhotos.length > 0) {
+    const slots = await db
+      .select({ id: t.contentSlots.id })
+      .from(t.contentSlots)
+      .where(and(eq(t.contentSlots.site, 'umrah'), inArray(t.contentSlots.mediaId, globalPhotos)));
+    await clear(`${String(slots.length)} Umrah content slots`, async () => {
+      if (slots.length === 0) return;
+      await db
+        .update(t.contentSlots)
+        .set({ mediaId: null })
+        .where(
+          inArray(
+            t.contentSlots.id,
+            slots.map((row) => row.id),
+          ),
+        );
+      cleared += slots.length;
+    });
+
+    const slides = await db
+      .select({ id: t.heroSlides.id })
+      .from(t.heroSlides)
+      .where(and(eq(t.heroSlides.site, 'umrah'), inArray(t.heroSlides.mediaId, globalPhotos)));
+    await clear(`${String(slides.length)} Umrah hero slides`, async () => {
+      if (slides.length === 0) return;
+      await db
+        .update(t.heroSlides)
+        .set({ mediaId: null })
+        .where(
+          inArray(
+            t.heroSlides.id,
+            slides.map((row) => row.id),
+          ),
+        );
+      cleared += slides.length;
+    });
+
+    const places = await db
+      .select({ id: t.ziyaratPlaces.id })
+      .from(t.ziyaratPlaces)
+      .where(inArray(t.ziyaratPlaces.coverMediaId, globalPhotos));
+    await clear(`${String(places.length)} ziyarat covers`, async () => {
+      if (places.length === 0) return;
+      await db
+        .update(t.ziyaratPlaces)
+        .set({ coverMediaId: null })
+        .where(
+          inArray(
+            t.ziyaratPlaces.id,
+            places.map((row) => row.id),
+          ),
+        );
+      cleared += places.length;
+    });
+
+    const groups = await db
+      .select({ id: t.umrahGroups.id })
+      .from(t.umrahGroups)
+      .where(inArray(t.umrahGroups.coverMediaId, globalPhotos));
+    await clear(`${String(groups.length)} Umrah group covers`, async () => {
+      if (groups.length === 0) return;
+      await db
+        .update(t.umrahGroups)
+        .set({ coverMediaId: null })
+        .where(
+          inArray(
+            t.umrahGroups.id,
+            groups.map((row) => row.id),
+          ),
+        );
+      cleared += groups.length;
+    });
+  }
+
+  /*
+   * And a stock photograph that belongs to no subject at all.
+   *
+   * There is exactly one: the airport meal that was captioned «Мечеть Пророка в Медине» and
+   * re-captioned as what it shows. Losing its subject is what makes it unpickable, and it is
+   * also what made the sweep above walk past it — it is neither this site's nor the other's —
+   * so it kept illustrating one Umrah slot after everything else was put right.
+   *
+   * Only `source = 'stock'` rows are in the library, so nothing the owner uploaded is at risk.
+   */
+  const orphans = library.filter((photo) => photo.subject === '').map((photo) => photo.id);
+  if (orphans.length > 0) {
+    const slots = await db
+      .select({ id: t.contentSlots.id })
+      .from(t.contentSlots)
+      .where(inArray(t.contentSlots.mediaId, orphans));
+    await clear(`${String(slots.length)} slots holding a photograph of no subject`, async () => {
+      if (slots.length === 0) return;
+      await db
+        .update(t.contentSlots)
+        .set({ mediaId: null })
+        .where(
+          inArray(
+            t.contentSlots.id,
+            slots.map((row) => row.id),
+          ),
+        );
+      cleared += slots.length;
+    });
+  }
+
+  /** And the mirror: a Saudi photograph on a Turkmenistan page. */
+  if (umrahPhotos.length > 0) {
+    const slots = await db
+      .select({ id: t.contentSlots.id })
+      .from(t.contentSlots)
+      .where(and(eq(t.contentSlots.site, 'global'), inArray(t.contentSlots.mediaId, umrahPhotos)));
+    await clear(`${String(slots.length)} Global content slots`, async () => {
+      if (slots.length === 0) return;
+      await db
+        .update(t.contentSlots)
+        .set({ mediaId: null })
+        .where(
+          inArray(
+            t.contentSlots.id,
+            slots.map((row) => row.id),
+          ),
+        );
+      cleared += slots.length;
+    });
+  }
+
+  process.stdout.write(`unmixed ${String(cleared)} rows holding the other site's photographs\n`);
+}
+
 async function main(): Promise<void> {
   const env = loadEnv();
   const wantsReset = process.argv.includes('--reset');
@@ -646,21 +977,16 @@ async function main(): Promise<void> {
    */
   if (process.argv.includes('--assign-only')) {
     await withDb(async (db) => {
-      const stored = await db
-        .select({ id: t.media.id, width: t.media.width, height: t.media.height })
-        .from(t.media)
-        .where(eq(t.media.source, 'stock'));
-
-      await assign(
-        db,
-        stored.map((row) => ({
-          id: row.id,
-          // Subject is unknown from the row alone — the brief matching below falls through to
-          // the round-robin, which is what an already-placed library deserves anyway.
-          subject: '',
-          landscape: (row.width ?? 0) >= (row.height ?? 0),
-        })),
-      );
+      /*
+       * The subject is recovered from the caption now, rather than left blank.
+       *
+       * It used to be dropped here, with the note that the round-robin «is what an already-
+       * placed library deserves anyway». That round-robin is what put Turkmen cuisine on the
+       * Battle of Badr: without a subject, every photograph was eligible for every row. The
+       * caption identifies it exactly, because this script wrote it.
+       */
+      if (process.argv.includes('--unmix')) await unmixSites(db);
+      await assign(db, await libraryFromDb(db));
     });
     return;
   }
@@ -692,7 +1018,30 @@ async function main(): Promise<void> {
 
     const stored: Stored[] = [];
 
-    for (const subject of SUBJECTS) {
+    /*
+     * `--only=jabal_nur,arafat` — download a few subjects rather than all of them.
+     *
+     * The full run is a hundred and fifteen files and about twenty minutes of somebody else's
+     * bandwidth. Adding seven subjects should cost seven subjects. The photographs already
+     * stored are still read back below, so the assignment step sees the whole library either
+     * way — `storeUpload` returns the existing row for bytes it already has.
+     */
+    // Split on commas *or* spaces: PowerShell turns `a,b,c` after `=` into `a b c` when it
+    // hands the argument to a native command, which is how the first run of this asked for a
+    // subject called «jabal_nur arafat uhud badr quba qiblatayn jeddah».
+    const only = process.argv
+      .find((arg) => arg.startsWith('--only='))
+      ?.slice(7)
+      .split(/[\s,]+/)
+      .filter(Boolean);
+    const wanted = only === undefined ? SUBJECTS : SUBJECTS.filter((s) => only.includes(s.key));
+    if (only !== undefined) {
+      const unknown = only.filter((key) => !SUBJECTS.some((s) => s.key === key));
+      if (unknown.length > 0) throw new Error(`no such subject: ${unknown.join(', ')}`);
+      process.stdout.write(`only: ${wanted.map((s) => s.key).join(', ')}\n`);
+    }
+
+    for (const subject of wanted) {
       const category = await findCategory(subject.category);
       if (category === null) {
         process.stdout.write(`  ${subject.key}: no category found, skipped\n`);
@@ -782,9 +1131,13 @@ async function main(): Promise<void> {
     }
 
     if (stored.length === 0) throw new Error('nothing was imported; leaving the slots alone');
-    process.stdout.write(`\nstored ${String(stored.length)} photographs\n`);
+    process.stdout.write(`\nstored ${String(stored.length)} photographs this run\n`);
 
-    await assign(db, stored);
+    if (process.argv.includes('--unmix')) await unmixSites(db);
+
+    const library = await libraryFromDb(db);
+    process.stdout.write(`library holds ${String(library.length)} stock photographs\n`);
+    await assign(db, library);
   });
 }
 
@@ -808,12 +1161,20 @@ async function assign(db: Db, stored: Stored[]): Promise<void> {
   const chosen = await attachOwnerTourMedia(db);
   if (chosen > 0) process.stdout.write(`gave ${String(chosen)} owner tours their photographs\n`);
 
-  const landscape = stored.filter((photo) => photo.landscape);
-  const pool = landscape.length > 0 ? landscape : stored;
   let cursor = 0;
 
-  const pick = (text: string, wide: boolean): number => {
+  const pick = (text: string, wide: boolean, site: 'global' | 'umrah'): number | null => {
     const haystack = text.toLowerCase();
+
+    /*
+     * Nothing crosses sites.
+     *
+     * Everything below — the subject match and the deal that follows it — happens inside one
+     * site's photographs. This single filter is the whole repair: the Umrah site was two thirds
+     * Turkmenistan, not because the matching failed but because when it found no subject it
+     * dealt from every photograph there was, and for a Saudi row it never found one.
+     */
+    const forSite = stored.filter((photo) => siteOfSubject.get(photo.subject) === site);
 
     /*
      * The subject the brief mentions first wins, not the one listed first here.
@@ -830,35 +1191,54 @@ async function assign(db: Db, stored: Stored[]): Promise<void> {
       .filter((entry) => entry.at !== Infinity)
       .sort((a, b) => a.at - b.at)[0]?.subject;
 
-    const candidates = matched
-      ? stored.filter((photo) => photo.subject === matched.key && (!wide || photo.landscape))
-      : [];
+    const candidates =
+      matched?.site === site
+        ? forSite.filter((photo) => photo.subject === matched.key && (!wide || photo.landscape))
+        : [];
 
-    const from = candidates.length > 0 ? candidates : wide ? pool : stored;
+    const sitePool = wide ? forSite.filter((photo) => photo.landscape) : forSite;
+    const from = candidates.length > 0 ? candidates : sitePool.length > 0 ? sitePool : forSite;
+
+    /*
+     * Null rather than something from the other site.
+     *
+     * Every column this is written into is nullable, and an empty one is a state the design
+     * was built for: `ImageSlot` draws the brief, and the admin shows the row as still needing
+     * a photograph (D-21, D-45). That is strictly better than a plate of plov on the page about
+     * the Battle of Badr, which is what the alternative produced.
+     */
+    if (from.length === 0) return null;
+
     cursor += 1;
-
     const chosen = from[cursor % from.length];
-    // `main` refuses to assign when nothing was imported, so this cannot fire — and if the
-    // guard above it is ever loosened, an exception beats writing a null into every slot.
     if (chosen === undefined) throw new Error('no photograph to assign');
     return chosen.id;
   };
 
   const slots = await db
-    .select({ id: t.contentSlots.id, brief: t.contentSlots.brief, key: t.contentSlots.slotKey })
+    .select({
+      id: t.contentSlots.id,
+      brief: t.contentSlots.brief,
+      key: t.contentSlots.slotKey,
+      site: t.contentSlots.site,
+    })
     .from(t.contentSlots)
     .where(isNull(t.contentSlots.mediaId));
 
+  let filledSlots = 0;
   for (const slot of slots) {
     // The chooser's two panels are the only frames on any of the three sites that are taller
     // than they are wide, so they are the only ones a portrait photograph suits.
     const wide = !slot.key.startsWith('choice-');
-    await db
-      .update(t.contentSlots)
-      .set({ mediaId: pick(`${slot.brief} ${slot.key}`, wide) })
-      .where(eq(t.contentSlots.id, slot.id));
+    // The chooser shows both brands, so it draws on Global's photographs; it has no pool of
+    // its own and its two panels are the Turkmenistan half and the pilgrimage half.
+    const site = slot.site === 'umrah' ? 'umrah' : 'global';
+    const mediaId = pick(`${slot.brief} ${slot.key}`, wide, site);
+    if (mediaId === null) continue;
+    await db.update(t.contentSlots).set({ mediaId }).where(eq(t.contentSlots.id, slot.id));
+    filledSlots += 1;
   }
-  process.stdout.write(`filled ${String(slots.length)} content slots\n`);
+  process.stdout.write(`filled ${String(filledSlots)} of ${String(slots.length)} content slots\n`);
 
   /*
    * The hero slides, matched on their own brief.
@@ -869,36 +1249,59 @@ async function assign(db: Db, stored: Stored[]): Promise<void> {
    * and a portrait photograph in one is a vertical strip of its own middle.
    */
   const slides = await db
-    .select({ id: t.heroSlides.id, brief: t.heroSlides.brief, title: t.heroSlides.title })
+    .select({
+      id: t.heroSlides.id,
+      brief: t.heroSlides.brief,
+      title: t.heroSlides.title,
+      site: t.heroSlides.site,
+    })
     .from(t.heroSlides)
     .where(isNull(t.heroSlides.mediaId));
 
+  let filledSlides = 0;
   for (const slide of slides) {
     const caption = Object.values(slide.title as Record<string, string>).join(' ');
-    await db
-      .update(t.heroSlides)
-      .set({ mediaId: pick(`${slide.brief ?? ''} ${caption}`, true) })
-      .where(eq(t.heroSlides.id, slide.id));
+    const mediaId = pick(`${slide.brief ?? ''} ${caption}`, true, slide.site);
+    if (mediaId === null) continue;
+    await db.update(t.heroSlides).set({ mediaId }).where(eq(t.heroSlides.id, slide.id));
+    filledSlides += 1;
   }
-  process.stdout.write(`filled ${String(slides.length)} hero slides\n`);
+  process.stdout.write(`filled ${String(filledSlides)} of ${String(slides.length)} hero slides\n`);
 
+  // Each cover table belongs to one site, and that is what decides which photographs it may
+  // draw on. `ziyarat` is the only Umrah one, and it is the one that was showing Turkmen food.
   const covers = [
-    { name: 'tours', table: t.tours, column: t.tours.coverMediaId, label: t.tours.title },
-    { name: 'hotels', table: t.hotels, column: t.hotels.coverMediaId, label: t.hotels.name },
+    {
+      name: 'tours',
+      site: 'global',
+      table: t.tours,
+      column: t.tours.coverMediaId,
+      label: t.tours.title,
+    },
+    {
+      name: 'hotels',
+      site: 'global',
+      table: t.hotels,
+      column: t.hotels.coverMediaId,
+      label: t.hotels.name,
+    },
     {
       name: 'articles',
+      site: 'global',
       table: t.articles,
       column: t.articles.coverMediaId,
       label: t.articles.title,
     },
     {
       name: 'places',
+      site: 'global',
       table: t.placesToSee,
       column: t.placesToSee.coverMediaId,
       label: t.placesToSee.name,
     },
     {
       name: 'ziyarat',
+      site: 'umrah',
       table: t.ziyaratPlaces,
       column: t.ziyaratPlaces.coverMediaId,
       label: t.ziyaratPlaces.name,
@@ -911,14 +1314,20 @@ async function assign(db: Db, stored: Stored[]): Promise<void> {
       .from(cover.table)
       .where(isNull(cover.column));
 
+    let filled = 0;
     for (const row of rows) {
       const text = Object.values(row.label as Record<string, string>).join(' ');
+      const coverMediaId = pick(text, true, cover.site);
+      if (coverMediaId === null) continue;
       await db
         .update(cover.table)
-        .set({ coverMediaId: pick(text, true) })
+        .set({ coverMediaId })
         .where(sql`id = ${row.id}`);
+      filled += 1;
     }
-    process.stdout.write(`filled ${String(rows.length)} ${cover.name} covers\n`);
+    process.stdout.write(
+      `filled ${String(filled)} of ${String(rows.length)} ${cover.name} covers\n`,
+    );
   }
 
   await linkGallery(db);
