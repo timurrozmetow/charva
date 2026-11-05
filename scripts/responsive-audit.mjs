@@ -277,7 +277,29 @@ async function launch() {
     },
     async visit(url) {
       await browser.send('Page.navigate', { url }, sessionId);
-      await new Promise((r) => setTimeout(r, 2000));
+      /*
+        Wait for React, not for a stopwatch.
+        A fixed delay measured the fallback body on the narrow widths and reported its links as
+        targets 17px high. They are not targets: that list is the plain HTML the shell writes
+        for crawlers that do not run JavaScript (D-147), and React clears the container the
+        moment it mounts, so nobody can tap them. The fallback is a bare list straight inside
+        the root; the app never is, which makes its disappearance the signal that the page
+        under measurement is the real one.
+      */
+      for (let i = 0; i < 40; i += 1) {
+        const ready = await browser.send(
+          'Runtime.evaluate',
+          {
+            expression:
+              "document.readyState === 'complete' && document.querySelector('#root > ul') === null",
+            returnByValue: true,
+          },
+          sessionId,
+        );
+        if (ready.result.value === true) break;
+        await new Promise((r) => setTimeout(r, 250));
+      }
+      await new Promise((r) => setTimeout(r, 1200));
     },
     async probe() {
       const out = await browser.send(
