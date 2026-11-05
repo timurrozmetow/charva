@@ -466,6 +466,16 @@ function Indicators({
                 the rail looks exactly as drawn and can be hit.
               */
               'group -my-2.5 flex items-center gap-3 py-2.5 transition-colors duration-caret',
+              /*
+                A dot is 14px across and the padding gave it 23 of height — one pixel under
+                SC 2.5.8's 24, and ten short across. Measured on the live Umrah hero, where
+                three dots are the only way to reach two of the three slides.
+
+                24 rather than 44, for the reason the rail gives above: the row's `gap-3` is
+                twelve pixels, and a 44px box would leave neighbouring targets close enough
+                that the wrong slide is the likelier hit. The dot itself does not change size.
+              */
+              !rail && 'min-h-[24px] min-w-[24px] justify-center',
               // The bars are the part that does not fit at 412px — see the note on the rail
               // above. The pause button is a sibling of these and stays.
               rail && 'justify-end mob:hidden',

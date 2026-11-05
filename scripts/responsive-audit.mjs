@@ -124,6 +124,15 @@ const PROBE = String.raw`(() => {
   const stranded = [];
   for (const el of document.body.querySelectorAll('*')) {
     if (!shown(el) || insideAScroller(el)) continue;
+    /*
+      Nothing that cannot be touched can be stranded.
+
+      This check is about reachability, and the first version flagged the loading hairline on
+      every narrow screen: it is viewport-anchored, two pixels tall and takes no pointer, so
+      in mobile emulation it reports Chrome's widened idea of the viewport rather than any
+      width the layout chose. Three findings, none of them about anything a visitor wants.
+    */
+    if (getComputedStyle(el).pointerEvents === 'none') continue;
     const r = el.getBoundingClientRect();
     /* The honeypot is parked at -9999px on purpose (D-19) and is nobody's target. */
     if (r.left < -4000) continue;
