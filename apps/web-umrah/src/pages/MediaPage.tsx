@@ -203,11 +203,23 @@ export function MediaPage({ lang }: MediaPageProps) {
                             media={{ src: photo.media.url, alt: photo.media.alt }}
                             className="size-full"
                           />
-                          {photo.caption !== '' && (
-                            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-scrim-strong to-transparent p-4 text-bodySm font-semibold text-dark-on">
-                              {photo.caption}
-                            </span>
-                          )}
+                          {/*
+                            No caption band over the tile — the owner's call, 5 November.
+
+                            It said what the photograph already shows: «Группа перед Каабой,
+                            днём» over a picture of the group in front of the Kaaba in daylight.
+                            That is the archive of one trip, where every tile is the same group
+                            in the same two cities, so the words added a row of text and no
+                            information, and they sat over the faces in the lower third.
+
+                            Global's gallery keeps its band, and the difference is what the
+                            words do there: «Каньон Йангыкала на закате» names a place a reader
+                            cannot be expected to recognise. Naming is not describing.
+
+                            The description itself is not lost: it stays as the image's `alt`,
+                            where it is read aloud and indexed, and it is still shown in the
+                            lightbox once a photograph is opened on purpose.
+                          */}
                           <span className="sr-only">{copy.suratlar.openPhoto}</span>
                         </button>
                       ),
