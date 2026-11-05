@@ -122,6 +122,60 @@ describe('no component is handed a colour it cannot use', () => {
 });
 
 /**
+ * The same argument, one property family over: where a component puts itself.
+ *
+ * Colour was caught first because it is visible in a screenshot — a brown heading on a brown
+ * panel. Position is worse, because the two halves cancel instead of overlapping and what is
+ * left looks deliberate. Umrah's hero asked for its dots at the gutter with
+ * `indicatorsClassName="bottom-10 left-gutter mob:left-6"`; the component writes `left-1/2
+ * -translate-x-1/2`, clsx kept both, the caller's `left-` won and the translate did not go
+ * anywhere. The row of dots sat at x=-51 on a 412px phone with the first one off the screen,
+ * at every width, for as long as the page has existed. Found by measuring a browser, not by
+ * reading either file — both files are correct on their own.
+ *
+ * `translate-` is the half that cannot be overridden from outside, which is why a component
+ * that uses it has to own the whole placement. The answer is a prop (`indicatorsAlign`) or a
+ * wrapper, never a class handed in.
+ */
+const POSITIONED_COMPONENTS: Record<string, string> = {
+  Carousel: 'places its own indicators and sets `relative` on itself',
+};
+
+const PLACEMENT = /^(-?(left|right|top|bottom|inset|translate-x|translate-y)-|inset$)/;
+
+describe('no component is handed a position it cannot use', () => {
+  const files = SCANNED.flatMap((dir) => sourceFiles(dir));
+
+  it('leaves placement to the component or to a wrapper', () => {
+    const offenders: string[] = [];
+
+    for (const file of files) {
+      const source = stripComments(readFileSync(file, 'utf8'));
+      const where = file.split(/[\\/]/).slice(-4).join('/');
+
+      for (const [component, own] of Object.entries(POSITIONED_COMPONENTS)) {
+        for (const tag of openingTags(source, component)) {
+          const passed = [...tag.matchAll(/["'`]([^"'`\n]*)["'`]/g)]
+            .flatMap((match) => (match[1] ?? '').split(/\s+/))
+            .map((token) => token.slice(token.lastIndexOf(':') + 1))
+            .filter((token) => PLACEMENT.test(token));
+
+          for (const dead of new Set(passed)) {
+            offenders.push(`${where}: <${component}> is given ${dead}, but ${own}`);
+          }
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      `placement classes that will fight the component's own:\n${offenders.join('\n')}\n` +
+        "Use the component's own prop, or wrap it in a positioned element (D-90).",
+    ).toEqual([]);
+  });
+});
+
+/**
  * A sticky panel inside a grid that will not let it move.
  *
  * `position: sticky` travels inside its containing block, which for a grid child is its cell.

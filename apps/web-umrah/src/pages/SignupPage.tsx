@@ -204,7 +204,13 @@ export function SignupPage({ lang }: SignupPageProps) {
                           ) : (
                             <a
                               href={row.href}
-                              className="transition-colors duration-colour hover:text-accent-text"
+                              /*
+                                A phone number is a target, not a word in a sentence: text
+                                alone makes it 17px high against the 24 of SC 2.5.8, and these
+                                three lines are how somebody who will not fill in a form gets
+                                in touch. The negative margin returns the height to the layout.
+                              */
+                              className="-my-3 inline-flex min-h-tap items-center transition-colors duration-colour hover:text-accent-text"
                             >
                               {row.value}
                             </a>

@@ -72,6 +72,9 @@ export function carouselLabels(copy: CarouselCopy): CarouselLabels {
 
 export type CarouselIndicators = 'rail' | 'dots' | 'none';
 
+/** Where the dots sit. The rail has only one place it can go, so this does not reach it. */
+export type CarouselAlign = 'center' | 'start';
+
 export interface CarouselProps {
   slides: readonly CarouselSlide[];
   labels: CarouselLabels;
@@ -83,6 +86,8 @@ export interface CarouselProps {
   indicators?: CarouselIndicators;
   className?: string;
   indicatorsClassName?: string;
+  /** Dots centred under the slide, or tucked against the gutter. Default `center`. */
+  indicatorsAlign?: CarouselAlign;
 }
 
 /**
@@ -117,6 +122,7 @@ export function Carousel({
   indicators = 'rail',
   className,
   indicatorsClassName,
+  indicatorsAlign = 'center',
 }: CarouselProps) {
   const [index, setIndex] = useState(0);
   const [interacting, setInteracting] = useState(false);
@@ -352,6 +358,7 @@ export function Carousel({
             setStopped((current) => !current);
           }}
           className={indicatorsClassName}
+          align={indicatorsAlign}
           idBase={base}
         />
       )}
@@ -369,6 +376,7 @@ interface IndicatorsProps {
   stopped: boolean;
   onToggleStopped: () => void;
   className?: string | undefined;
+  align: CarouselAlign;
   idBase: string;
 }
 
@@ -382,6 +390,7 @@ function Indicators({
   stopped,
   onToggleStopped,
   className,
+  align,
   idBase,
 }: IndicatorsProps) {
   const rail = variant === 'rail';
@@ -417,7 +426,23 @@ function Indicators({
         rail
           ? 'right-gutter top-1/2 -translate-y-1/2 flex-col gap-[14px] lap:right-10 tab:right-8 ' +
               'mob:top-24 mob:translate-y-0'
-          : 'bottom-6 left-1/2 -translate-x-1/2 flex-row items-center gap-3',
+          : 'flex-row items-center gap-3',
+        /*
+          Where the dots sit is a prop, not a class the caller passes — D-90 again, and this
+          time it had shipped.
+
+          Umrah's hero wanted its dots at the gutter rather than centred and said so with
+          `indicatorsClassName="bottom-10 left-gutter mob:left-6"`. `cn` is clsx: the component's
+          own `left-1/2` and the caller's `left-gutter` both landed in the attribute, the
+          caller's won — and `-translate-x-1/2` stayed, because nothing the caller can write
+          removes it. Measured on the live site: the row sat at x=-51 on a 412px phone and
+          x=-15 at 1440, the first dot half off the screen at every width in between. Nothing
+          looked broken in the source; both halves were written correctly.
+        */
+        !rail &&
+          (align === 'start'
+            ? 'bottom-10 left-gutter mob:left-6'
+            : 'bottom-6 left-1/2 -translate-x-1/2'),
         className,
       )}
     >

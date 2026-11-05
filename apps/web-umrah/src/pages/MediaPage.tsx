@@ -288,7 +288,12 @@ export function MediaPage({ lang }: MediaPageProps) {
                         onClick={() => {
                           setSelected(item.slug);
                         }}
-                        className="text-label font-black uppercase text-accent-text hover:underline"
+                        /*
+                          The only control in the row, and it was 59x11 — the height of its own
+                          text. SC 2.5.8 asks for 24; the padding takes it past that without
+                          moving the cell, which already carries py-[18px].
+                        */
+                        className="-my-2 inline-flex min-h-tap items-center text-label font-black uppercase text-accent-text hover:underline"
                       >
                         {copy.suratlar.archive.view}
                       </button>

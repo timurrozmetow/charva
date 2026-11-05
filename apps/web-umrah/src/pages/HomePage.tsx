@@ -121,7 +121,7 @@ export function HomePage({ lang }: HomePageProps) {
                 indicators="dots"
                 labels={carouselLabels(copy.home)}
                 className="size-full"
-                indicatorsClassName="bottom-10 left-gutter mob:left-6"
+                indicatorsAlign="start"
               />
             </div>
           )}

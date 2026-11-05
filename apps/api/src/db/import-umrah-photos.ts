@@ -237,6 +237,173 @@ const LIBRARY_ONLY = [
 ];
 
 /**
+ * A batch is one trip's photographs: where they are, which group they belong to, what was kept.
+ *
+ * There was one of these and it was four top-level constants. The second batch arrived three
+ * months later and would have meant either a second script or editing the first one in place —
+ * and editing it in place loses the record of what the August run actually did, which is the
+ * only thing that explains why the pages look the way they do.
+ */
+interface Batch {
+  dir: string;
+  trip: {
+    slug: string;
+    departedOn: string;
+    label: { tm: string; ru: string };
+    shortLabel: { tm: string; ru: string };
+    description: { tm: string; ru: string };
+  };
+  keep: Frame[];
+  libraryOnly: string[];
+}
+
+/**
+ * October: 16 to 30 October 2026, and this time the year is the owner's, not an inference.
+ *
+ * He gave both dates in full. The August batch had to guess the year from where the departure
+ * fell among the other groups (see OWNER_TRIP); this one does not, and the difference is worth
+ * writing down so nobody later «corrects» one to match the other.
+ *
+ * These arrived through WhatsApp, so they are 960×1280 — about 1.2 megapixels, against the
+ * 2560 the site is willing to serve (D-150). That is enough for an archive tile and not enough
+ * for the hero, which is why not one of them is aimed at a slide or a ziyarat cover: a slide is
+ * the largest image on the site and would be upscaled visibly. The originals off the phone
+ * would be three or four times this, and are worth asking for.
+ */
+const OCTOBER: Batch = {
+  dir: process.env['UMRAH_PHOTOS_DIR_OCT'] ?? 'C:/Users/1293/Desktop/charva/1610',
+  trip: {
+    slug: 'oktyabr26',
+    departedOn: '2026-10-16',
+    label: { tm: 'Oktýabr aýyndaky toparymyz', ru: 'Наша группа в октябре' },
+    shortLabel: { tm: 'Oktýabr 2026', ru: 'Октябрь 2026' },
+    description: { tm: '16.10.2026 — 30.10.2026', ru: '16.10.2026 — 30.10.2026' },
+  },
+  /*
+   * Twelve of the twenty-three, read off a contact sheet.
+   *
+   * The captions name a place only where the place is in the frame. The Kaaba and the Haram
+   * gates are unmistakable and are named; the pigeons, the hotel lobby and the three pilgrims
+   * at dusk are not, so they say what is happening and stop there. Guessing a city from a hotel
+   * sign is the same move that put a Somaliland mosque on the ziyarat page (D-186).
+   */
+  keep: [
+    {
+      file: 'oct-08.jpg',
+      name: 'october-group-at-the-kaaba-night',
+      alt: {
+        tm: 'Topar Käbäniň öňünde, agşam',
+        ru: 'Группа перед Каабой, вечер',
+      },
+      target: { kind: 'groupCover' },
+    },
+    {
+      file: 'oct-01.jpg',
+      name: 'october-group-at-the-kaaba-day',
+      alt: { tm: 'Topar Käbäniň öňünde, gündiz', ru: 'Группа перед Каабой, днём' },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-03.jpg',
+      name: 'october-pilgrims-in-a-row',
+      alt: { tm: 'Zyýaratçylar hatarda, agşam', ru: 'Паломники в ряд, вечер' },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-04.jpg',
+      name: 'october-with-the-group',
+      alt: { tm: 'Topar bilen surat, Käbe arkada', ru: 'Снимок с группой, Кааба позади' },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-09.jpg',
+      name: 'october-pilgrim-in-ihram',
+      alt: { tm: 'Ihramdaky zyýaratçy', ru: 'Паломник в ихраме' },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-11.jpg',
+      name: 'october-women-of-the-group',
+      alt: {
+        tm: 'Toparyň aýal-gyzlary, Käbe we minaralar',
+        ru: 'Женщины группы, Кааба и минареты',
+      },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-13.jpg',
+      name: 'october-feeding-the-pigeons',
+      alt: { tm: 'Kepderileri iýmitlendirmek', ru: 'Кормление голубей' },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-15.jpg',
+      name: 'october-two-pilgrims',
+      alt: { tm: 'Iki zyýaratçy Käbäniň ýanynda', ru: 'Двое паломников у Каабы' },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-17.jpg',
+      name: 'october-group-gathering',
+      alt: { tm: 'Topar Käbäniň öňünde ýygnanýar', ru: 'Группа собирается перед Каабой' },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-18.jpg',
+      name: 'october-group-in-the-hotel-lobby',
+      alt: { tm: 'Topar myhmanhananyň eýwanynda', ru: 'Группа в холле гостиницы' },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-20.jpg',
+      name: 'october-group-at-the-haram-gate',
+      alt: { tm: 'Topar Haremiň derwezesiniň öňünde', ru: 'Группа у ворот Харама' },
+      target: { kind: 'gallery' },
+    },
+    {
+      file: 'oct-21.jpg',
+      name: 'october-three-pilgrims-at-dusk',
+      alt: { tm: 'Üç zyýaratçy agşam', ru: 'Трое паломников вечером' },
+      target: { kind: 'gallery' },
+    },
+  ],
+  /*
+   * Near-duplicates of the twelve, and two frames whose subject I will not name.
+   *
+   * `oct-23` is a hand on a dark stone in a gold surround. It is one of the best photographs in
+   * the set and it is almost certainly a thing with a name, which is exactly why a script does
+   * not caption it: the Maqam Ibrahim and the Rukn are not interchangeable, and a wrong label
+   * on that subject is not a typo. The owner was there and can caption it in one click.
+   */
+  libraryOnly: [
+    'oct-02.jpg',
+    'oct-05.jpg',
+    'oct-06.jpg',
+    'oct-07.jpg',
+    'oct-10.jpg',
+    'oct-12.jpg',
+    'oct-14.jpg',
+    'oct-16.jpg',
+    'oct-19.jpg',
+    'oct-22.jpg',
+    'oct-23.jpg',
+  ],
+};
+
+const AUGUST: Batch = {
+  dir: SOURCE_DIR,
+  trip: OWNER_TRIP,
+  keep: KEEP,
+  libraryOnly: LIBRARY_ONLY,
+};
+
+/** `--group=` picks one. A slug with no batch is a typo, and is refused rather than guessed. */
+const BATCHES: Record<string, Batch> = {
+  [AUGUST.trip.slug]: AUGUST,
+  [OCTOBER.trip.slug]: OCTOBER,
+};
+
+/**
  * The Medina repair.
  *
  * Eight stock photographs carry the caption «Мечеть Пророка в Медине». Seven of them are the
@@ -350,8 +517,13 @@ async function decodeEmbeddedPreview(bytes: Buffer): Promise<Buffer | null> {
   return null;
 }
 
-async function toWebp(file: string, ffmpegPath: string, scratch: string): Promise<Buffer> {
-  const path = join(SOURCE_DIR, file);
+async function toWebp(
+  file: string,
+  dir: string,
+  ffmpegPath: string,
+  scratch: string,
+): Promise<Buffer> {
+  const path = join(dir, file);
   let frame: Buffer | null;
   let why = '';
   try {
@@ -578,9 +750,26 @@ async function main(): Promise<void> {
       /** Every media id this run has placed, so nothing is used twice. */
       const placed = new Set<number>();
 
+      const wanted = process.argv.find((arg) => arg.startsWith('--group='))?.slice(8);
+
+      /*
+       * Which trip's photographs this run is about.
+       *
+       * Without `--group=` it is still August, because that is what the script did before there
+       * was a second batch and because re-running it is harmless — `storeUpload` returns the
+       * existing row for bytes it already holds. A slug that names a group but no batch is
+       * refused: importing August's files into the October group would be silent and wrong.
+       */
+      const batch = BATCHES[wanted ?? AUGUST.trip.slug];
+      if (batch === undefined) {
+        throw new Error(
+          `no photographs for «${String(wanted)}». Batches: ${Object.keys(BATCHES).join(', ')}.`,
+        );
+      }
+
       const everything: Frame[] = [
-        ...KEEP,
-        ...LIBRARY_ONLY.map((file) => ({
+        ...batch.keep,
+        ...batch.libraryOnly.map((file) => ({
           file,
           name: file.replace(/\.(HEIC|DNG)$/i, '').toLowerCase(),
           alt: null,
@@ -590,7 +779,7 @@ async function main(): Promise<void> {
 
       const stored = new Map<string, number>();
       for (const frame of everything) {
-        const webp = await toWebp(frame.file, env.FFMPEG_PATH, scratch);
+        const webp = await toWebp(frame.file, batch.dir, env.FFMPEG_PATH, scratch);
         const result = await storeUpload(context, {
           filename: `${frame.name}.webp`,
           buffer: webp,
@@ -639,8 +828,6 @@ async function main(): Promise<void> {
        * row, so `--group=awgust26` creates it — see OWNER_TRIP above for what is asserted and
        * what is inferred.
        */
-      const wanted = process.argv.find((arg) => arg.startsWith('--group='))?.slice(8);
-
       const findGroup = async (slug: string): Promise<{ id: number; slug: string } | undefined> => {
         const [row] = await db
           .select({ id: t.umrahGroups.id, slug: t.umrahGroups.slug })
@@ -661,18 +848,18 @@ async function main(): Promise<void> {
        * one slug is ever created: any other name is a typo, and a group invented from a typo is
        * worse than a refusal.
        */
-      if (wanted === OWNER_TRIP.slug && group === undefined) {
+      if (wanted === batch.trip.slug && group === undefined) {
         await db.insert(t.umrahGroups).values({
-          slug: OWNER_TRIP.slug,
-          departedOn: OWNER_TRIP.departedOn,
-          label: OWNER_TRIP.label,
-          shortLabel: OWNER_TRIP.shortLabel,
-          description: OWNER_TRIP.description,
+          slug: batch.trip.slug,
+          departedOn: batch.trip.departedOn,
+          label: batch.trip.label,
+          shortLabel: batch.trip.shortLabel,
+          description: batch.trip.description,
           isPublished: true,
         });
-        group = await findGroup(OWNER_TRIP.slug);
+        group = await findGroup(batch.trip.slug);
         process.stdout.write(
-          `created group «${OWNER_TRIP.slug}», departed ${OWNER_TRIP.departedOn}\n`,
+          `created group «${batch.trip.slug}», departed ${batch.trip.departedOn}\n`,
         );
       }
 
@@ -680,7 +867,7 @@ async function main(): Promise<void> {
         const all = await db.select({ slug: t.umrahGroups.slug }).from(t.umrahGroups);
         throw new Error(
           `no group «${wanted}». Known: ${all.map((row) => row.slug).join(', ')}. ` +
-            `Only «${OWNER_TRIP.slug}» is created automatically.`,
+            `Only a slug with a batch of photographs is created automatically.`,
         );
       }
       if (wanted === undefined) {
@@ -690,7 +877,7 @@ async function main(): Promise<void> {
       }
 
       let galleryOrder = 0;
-      for (const frame of KEEP) {
+      for (const frame of batch.keep) {
         const mediaId = stored.get(frame.file);
         if (mediaId === undefined || frame.target === null) continue;
         if (placed.has(mediaId)) continue;
