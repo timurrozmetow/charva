@@ -424,7 +424,16 @@ const SUBJECTS: Subject[] = [
   },
   {
     key: 'qiblatayn',
-    category: 'Masjid al-Qiblatayn',
+    /*
+     * `Qiblatayn Mosque`, not `Masjid al-Qiblatayn` — the second one is in Somaliland.
+     *
+     * There is no Commons category under the Arabic spelling, so the fallback name search runs,
+     * and it lands on `Masjid al-Qiblatayn (Somaliland)`: the ruined stone mosque at Zeila,
+     * which carries the same name for the same reason and is three thousand kilometres from
+     * Medina. Two of its files reached the site before anyone looked — one of them with
+     * «Saylac Somaliland» burned into the corner. The Medina mosque is filed under this name.
+     */
+    category: 'Qiblatayn Mosque',
     site: 'umrah',
     want: 5,
     hints: ['kyblateýn', 'kyblateyn', 'qiblatayn', 'киблатейн', 'кыблатейн'],
