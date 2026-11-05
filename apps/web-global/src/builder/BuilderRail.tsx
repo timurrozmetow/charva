@@ -32,13 +32,31 @@ export function BuilderRail({ lang, steps, current, answered, onSelect }: Builde
 
   return (
     <nav aria-label={copy.builder.railLabel}>
-      <ol className="flex list-none flex-col gap-0.5 rounded-panel border border-line bg-cream-fill p-3.5">
+      {/*
+        Below 1024 the rail lies down and becomes a progress strip.
+
+        Nine labelled rows are 487px tall, and the grid is a single column at that width, so on
+        a 360px phone the first question began at y=1375 — measured, not guessed: nearly two
+        screens of step names before the thing the visitor came to do. A tablet at 820 was no
+        better, which is why this is `tab:` and not `mob:`.
+
+        The names are not lost, they are `sr-only`: the panel beside this already says «Шаг 1 из
+        9 — Куда хотите поехать?», so on a narrow screen the rail's job is how far along you are
+        and how to jump, and that is what a numbered strip says. A screen reader still hears
+        every name, because the strip is the same nine buttons.
+      */}
+      <ol
+        className={[
+          'flex list-none flex-col gap-0.5 rounded-panel border border-line bg-cream-fill p-3.5',
+          'tab:flex-row tab:gap-2 tab:overflow-x-auto tab:p-2',
+        ].join(' ')}
+      >
         {steps.map((step, index) => {
           const active = index === current;
           const done = answered(step.code) && !active;
 
           return (
-            <li key={step.code}>
+            <li key={step.code} className="tab:shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -47,6 +65,9 @@ export function BuilderRail({ lang, steps, current, answered, onSelect }: Builde
                 aria-current={active ? 'step' : undefined}
                 className={[
                   'flex w-full items-center gap-3 rounded-sm px-3.5 py-3 text-left text-chip font-semibold',
+                  // 25px circle plus ten each side is a 45px target, which is what the strip
+                  // is once the name stops taking width.
+                  'tab:w-auto tab:gap-0 tab:rounded-full tab:p-2.5',
                   'transition-colors duration-option',
                   active ? 'bg-tint-strong text-dark-on' : 'text-cream-muted hover:bg-cream-fill',
                 ].join(' ')}
@@ -64,7 +85,7 @@ export function BuilderRail({ lang, steps, current, answered, onSelect }: Builde
                 >
                   {done ? <Icon name="check" size={12} /> : index + 1}
                 </span>
-                {labels[step.code] ?? step.railLabel}
+                <span className="tab:sr-only">{labels[step.code] ?? step.railLabel}</span>
               </button>
             </li>
           );

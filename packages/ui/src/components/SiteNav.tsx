@@ -184,7 +184,14 @@ export function SiteNav({
             onClick={() => {
               setOpen((was) => !was);
             }}
-            className="hidden h-tap w-tap place-items-center rounded-full text-ink transition-colors duration-colour hover:bg-line-soft navbar:grid"
+            /*
+              `shrink-0`, because `w-tap` is a width and a flex item's width is a suggestion.
+
+              At 280px the island ran out of room and the only child that could give any back
+              was this button: measured 27px wide against the 44 it asks for, which is the one
+              control on the page that has to be hit before anything else can be.
+            */
+            className="hidden h-tap w-tap shrink-0 place-items-center rounded-full text-ink transition-colors duration-colour hover:bg-line-soft navbar:grid"
           >
             {/*
               Three bars, the middle one folding away as the outer two cross.

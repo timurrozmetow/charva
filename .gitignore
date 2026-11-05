@@ -76,3 +76,4 @@ new-tour/
 # belong in `uploads/` through the admin upload, which strips EXIF and builds the derivatives
 # (D-82, D-150) — never in the repository.
 1293/
+1610/

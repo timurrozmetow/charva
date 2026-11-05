@@ -24,7 +24,8 @@
     "verify": "pnpm format:check && pnpm design:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm budget",
     "setup:services": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1",
     "prepare": "husky",
-    "budget": "node scripts/check-bundle-budget.mjs"
+    "budget": "node scripts/check-bundle-budget.mjs",
+    "audit:responsive": "node scripts/responsive-audit.mjs"
   },
   "devDependencies": {
     "@charva/config": "workspace:*",

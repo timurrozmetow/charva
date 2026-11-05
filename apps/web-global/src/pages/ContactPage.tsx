@@ -167,7 +167,14 @@ export function ContactPage({ lang }: ContactPageProps) {
                               ) : (
                                 <a
                                   href={row.href}
-                                  className="transition-colors duration-colour hover:text-accent-text"
+                                  /*
+                                    A phone number is a target, not a word in a sentence.
+                                    Text alone makes it 18px high; SC 2.5.8 asks for 24, and
+                                    this is the line the visitor taps to call. The negative
+                                    margin hands the extra height back so the rows keep the
+                                    spacing they are drawn with.
+                                  */
+                                  className="-my-3 inline-flex min-h-tap items-center transition-colors duration-colour hover:text-accent-text"
                                 >
                                   {row.value}
                                 </a>

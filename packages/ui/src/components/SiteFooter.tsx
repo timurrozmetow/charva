@@ -133,7 +133,17 @@ export function SiteFooter({
               Filtered here rather than in either app, so the third one cannot forget. Each
               circle comes back by itself the day the address is filled in from the admin.
             */}
-            <ul className="m-0 flex list-none gap-3 p-0">
+            {/*
+              `flex-wrap`, because seven 44px circles and their gaps need 368px and the
+              narrowest screens still in use are narrower than that.
+
+              The row did not push the page sideways — measured: `scrollLeft` stays at 0, so
+              there is no sideways scroll to find them with. The links were simply **past the
+              edge and unreachable**: at 320px (an iPhone SE 1st generation, a Fold cover
+              screen) that was imo, and at 280px Facebook as well. A link nobody can reach is
+              the same promise-not-kept the filter above exists to avoid.
+            */}
+            <ul className="m-0 flex list-none flex-wrap gap-3 p-0">
               {socials.filter(isReachable).map((social) => (
                 <li key={social.key}>
                   <a
@@ -166,9 +176,17 @@ export function SiteFooter({
               <ul className="m-0 flex list-none flex-col gap-3 p-0">
                 {column.links.map((link) => (
                   <li key={link.key}>
+                    {/*
+                      `flex`, not `inline-flex`: the row is the target, not the word.
+
+                      D-172 gave these links their 44px height and stopped there, so the height
+                      was right and the width was the width of the label — «Отели» measured
+                      42×44 while «Онлайн-заявка» beside it measured 140. One list, two sizes,
+                      and the short ones are the ones a thumb misses.
+                    */}
                     {renderLink(link, {
                       className:
-                        'inline-flex min-h-tap items-center text-bodySm text-muted no-underline transition-colors duration-colour hover:text-accent',
+                        'flex min-h-tap items-center text-bodySm text-muted no-underline transition-colors duration-colour hover:text-accent',
                       children: link.label,
                     })}
                   </li>
