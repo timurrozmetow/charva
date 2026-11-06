@@ -9,10 +9,11 @@ export interface HotelShowcaseProps {
   lang: Lang;
 }
 
+// No caption field: nothing shows one any more, and a shape that carries a string no view
+// reads is how a caption quietly comes back.
 interface Shot {
   src: string;
   alt: string;
-  caption: string;
 }
 
 /**
@@ -34,13 +35,10 @@ export function HotelShowcase({ hotel, lang }: HotelShowcaseProps) {
   const [zoomed, setZoomed] = useState<number | null>(null);
 
   const shots: Shot[] = [
-    ...(hotel.cover === null
-      ? []
-      : [{ src: hotel.cover.url, alt: hotel.cover.alt, caption: hotel.name }]),
+    ...(hotel.cover === null ? [] : [{ src: hotel.cover.url, alt: hotel.cover.alt }]),
     ...hotel.gallery.map((shot) => ({
       src: shot.media.url,
       alt: shot.media.alt,
-      caption: shot.caption,
     })),
   ];
 
@@ -119,7 +117,9 @@ export function HotelShowcase({ hotel, lang }: HotelShowcaseProps) {
           id: String(index),
           src: shot.src,
           alt: shot.alt,
-          caption: shot.caption,
+          // The photograph alone, with no caption under it — the owner's instruction. The
+          // text is still the image's `alt`.
+          caption: undefined,
         }))}
         index={zoomed}
         onIndexChange={setZoomed}

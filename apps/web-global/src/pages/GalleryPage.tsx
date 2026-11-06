@@ -125,11 +125,12 @@ export function GalleryPage({ lang }: GalleryPageProps) {
                       media={{ src: item.media.url, alt: item.media.alt }}
                       className="size-full"
                     />
-                    {item.caption !== '' && (
-                      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-scrim-strong to-transparent p-4 text-bodySm font-semibold text-dark-on">
-                        {item.caption}
-                      </span>
-                    )}
+                    {/* No caption band over the tile: the owner asked for the photographs to
+                        carry no text (the same request removed the band from the Umrah
+                        archive). The caption itself is not lost — it is the image's `alt`,
+                        which a screen reader announces and search indexes, and it is printed
+                        under the photograph in the lightbox, where the visitor asked to see
+                        the picture on its own. */}
                     {/* The accessible name says what pressing it does; the caption alone would
                         read as a label on a photograph rather than as a control. */}
                     <span className="sr-only">{copy.gallery.openPhoto}</span>
@@ -145,7 +146,11 @@ export function GalleryPage({ lang }: GalleryPageProps) {
           id: String(item.id),
           src: item.media?.url ?? '',
           alt: item.media?.alt ?? item.caption,
-          caption: item.caption === '' ? undefined : item.caption,
+          // No caption in the lightbox either: «в общем, подпись убери, мне не нужно
+          // подпись от фото». The counter stays, because it answers a different question —
+          // where in the set the visitor is — and the text still reaches a screen reader
+          // through `alt` above.
+          caption: undefined,
         }))}
         index={open}
         onIndexChange={setOpen}

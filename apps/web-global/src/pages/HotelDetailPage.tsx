@@ -201,9 +201,8 @@ export function HotelDetailPage({ lang, slug }: HotelDetailPageProps) {
                                 ratio="4/3"
                                 className="h-[240px] w-full rounded-media"
                               />
-                              {shot.caption !== '' && (
-                                <p className="mt-3 text-bodySm text-muted">{shot.caption}</p>
-                              )}
+                              {/* No caption line under the photograph — the owner asked for
+                                  none. It survives as the image's `alt`. */}
                             </li>
                           ))}
                         </ul>

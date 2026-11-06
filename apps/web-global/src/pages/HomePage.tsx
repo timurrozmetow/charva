@@ -373,11 +373,12 @@ export function HomePage({ lang }: HomePageProps) {
                       sizes={mosaicTileSizes(item.spanCols)}
                       className="size-full"
                     />
-                    {item.caption !== '' && (
-                      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-scrim-strong to-transparent p-4 text-bodySm font-semibold text-dark-on">
-                        {item.caption}
-                      </span>
-                    )}
+                    {/* No caption band: the owner asked for no text over the photographs.
+                        The caption lives on as the image's `alt`. This link carries a name of
+                        its own because a tile whose photograph has not been uploaded yet
+                        renders a brief placeholder with no `alt` at all, and a link with no
+                        accessible name is announced as its URL. */}
+                    <span className="sr-only">{copy.home.gallery.all}</span>
                   </Link>
                 ),
               }))}

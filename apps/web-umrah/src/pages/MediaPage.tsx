@@ -356,7 +356,9 @@ export function MediaPage({ lang }: MediaPageProps) {
           id: String(photo.id),
           src: photo.media?.url ?? '',
           alt: photo.media?.alt ?? photo.caption,
-          caption: photo.caption === '' ? undefined : photo.caption,
+          // The band over the tile went first; this is the same caption one tap further in,
+          // and the owner's instruction covers it too. Only the counter is left.
+          caption: undefined,
         }))}
         index={open}
         onIndexChange={setOpen}
